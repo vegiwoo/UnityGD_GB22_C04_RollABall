@@ -13,8 +13,12 @@ namespace RollABall.Managers
     {
         #region Links
 
-        [SerializeField] private GameObject positiveBonusPrefab;
-        [SerializeField] private GameObject negativeBonusPrefab;
+        [SerializeField] 
+        private GameObject positiveBonusPrefab;
+        [SerializeField] 
+        private GameObject negativeBonusPrefab;
+
+        private const float DelayAppearance = 0.25f;
         
         #endregion
         
@@ -105,13 +109,13 @@ namespace RollABall.Managers
                     case BonusType.Positive:
                         newBonusObject = Instantiate(positiveBonusPrefab, randomPoint.position, Quaternion.identity);
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        newBonus.PositiveInit(PositiveBonusType.GamePoints, null, randomPoint, 10); // рандомно! 
+                        newBonus.PositiveInit(PositiveBonusType.GamePoints, null, randomPoint, 10); // TODO: Implement random spawns
                         _positiveBonuses.Add(newBonus);
                         break;
                     case BonusType.Negative:
                         newBonusObject = Instantiate(negativeBonusPrefab, randomPoint.position, Quaternion.identity);
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        newBonus.NegativeInit(NegativeBonusType.Wound, randomPoint, 10); // рандомно!
+                        newBonus.NegativeInit(NegativeBonusType.Wound, randomPoint, 10); // TODO: Implement random spawns
                         _negativeBonuses.Add(newBonus);
                         break;
                 }
@@ -121,7 +125,7 @@ namespace RollABall.Managers
                 freePoints.Remove(randomPoint);
                 --counter;
                 
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(DelayAppearance);
                 yield return null;
             }
         }
