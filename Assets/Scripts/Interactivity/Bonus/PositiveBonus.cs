@@ -1,8 +1,7 @@
-
-// ReSharper disable once CheckNamespace
-
+using GameDevLib.Helpers;
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
     public class PositiveBonus : InteractiveObject, IBonusRepresentable
@@ -11,10 +10,17 @@ namespace RollABall.Interactivity.Bonuses
         
         public BonusType Type { get; } = BonusType.Positive;
         public NegativeBonusType? NegativeType { get; } = null;
+        
+        [field:SerializeField,ReadonlyField]
         public PositiveBonusType? PositiveType { get; set; }
+        
+        [field:SerializeField,ReadonlyField]
         public BoosterType? BoosterType { get; set; }
+        
         public Transform PointOfPlacement { get; private set; }
-        public float Power { get; private set; }
+        
+        [field:SerializeField, ReadonlyField]
+        public float Power { get; set; }
         
         #endregion
   

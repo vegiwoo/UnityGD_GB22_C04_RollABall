@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using RollABall.Interactivity.Bonuses;
 using UnityEngine;
-using static UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 // ReSharper disable once CheckNamespace
@@ -72,36 +71,57 @@ namespace RollABall.Managers
         {
             while (true)
             {
-                var freePoints = FindFreePoints();
-                if(freePoints.Count == 0) continue;
-                
-                if (_positiveBonuses.Count != _requiredNumberPositiveBonuses)
+                if (_requiredNumberPositiveBonuses != _positiveBonuses.Count)
                 {
                     var numberOfAddition = _requiredNumberPositiveBonuses - _positiveBonuses.Count;
-                    
-                    // Вынести в отдельную корутину с задержкой
-                    for (int i = 0; i < numberOfAddition; i++)
-                    {
-                        var randomIndex = Random.Range(0, freePoints.Count - 1);
-                        var randomPoint = freePoints[randomIndex];
-
-                        var newBonusObject = Instantiate(positiveBonusPrefab, randomPoint.position, Quaternion.identity);
-                        var newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        newBonus.PositiveInit(PositiveBonusType.GamePoints, null, randomPoint, 10);
-                        
-                        _positiveBonuses.Add(newBonus);
-
-                        freePoints.Remove(randomPoint);
-                    }
+                    yield return StartCoroutine(BonusPlacingСoroutine(BonusType.Positive, numberOfAddition));
                 }
-                
+  
                 if (_negativeBonuses.Count != _requiredNumberNegativeBonuses)
                 {
-                    // Найти пустые точки и добавить негативные бонусы 
+                    var numberOfAddition = _requiredNumberNegativeBonuses - _negativeBonuses.Count;
+                    yield return StartCoroutine(BonusPlacingСoroutine(BonusType.Negative, numberOfAddition));
                 }
 
-                yield return new WaitForSeconds(20);
+                yield return null;
+            }
+        }
+        
+        private IEnumerator BonusPlacingСoroutine(BonusType type, int count)
+        {
+            var freePoints = FindFreePoints();
+            
+            var counter = count;
+            while (counter != 0 && freePoints.Count > 0)
+            {
+                var randomIndex = Random.Range(0, freePoints.Count - 1);
+                var randomPoint = freePoints[randomIndex];
+
+                GameObject newBonusObject = default;
+                IBonusRepresentable newBonus;
+
+                switch (type)
+                {
+                    case BonusType.Positive:
+                        newBonusObject = Instantiate(positiveBonusPrefab, randomPoint.position, Quaternion.identity);
+                        newBonus = newBonusObject.AddComponent<PositiveBonus>();
+                        newBonus.PositiveInit(PositiveBonusType.GamePoints, null, randomPoint, 10); // рандомно! 
+                        _positiveBonuses.Add(newBonus);
+                        break;
+                    case BonusType.Negative:
+                        newBonusObject = Instantiate(negativeBonusPrefab, randomPoint.position, Quaternion.identity);
+                        newBonus = newBonusObject.AddComponent<NegativeBonus>();
+                        newBonus.NegativeInit(NegativeBonusType.Wound, randomPoint, 10); // рандомно!
+                        _negativeBonuses.Add(newBonus);
+                        break;
+                }
+
+                if (newBonusObject != null) newBonusObject.transform.parent = transform;
+
+                freePoints.Remove(randomPoint);
+                --counter;
                 
+                yield return new WaitForSeconds(0.5f);
                 yield return null;
             }
         }
