@@ -3,6 +3,14 @@ namespace RollABall.Interactivity.Bonuses
 {
     public enum BoosterType
     {
-        TempSpeedBoost, Immortality
+        /// <summary>
+        /// Temporary increase in movement speed.
+        /// </summary>
+        TempSpeedBoost, 
+        
+        /// <summary>
+        /// Temporary invulnerability.
+        /// </summary>
+        TempInvulnerability
     }
 }

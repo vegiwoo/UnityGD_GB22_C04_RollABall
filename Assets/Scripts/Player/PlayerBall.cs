@@ -1,3 +1,6 @@
+using System;
+using RollABall.Interactivity.Bonuses;
+using RollABall.Interactivity.Effects;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
@@ -18,5 +21,16 @@ namespace RollABall.Player
         }
 
         #endregion
+        
+        #region Functionality
+
+        private void ApplyEffect()
+        {
+            
+        }
+        
+        #endregion
     }
+
+
 }

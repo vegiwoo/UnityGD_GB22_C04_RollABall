@@ -1,46 +1,25 @@
+using RollABall.Interactivity.Effects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    public interface IBonusRepresentable
+    public interface IBonusRepresentable : IInteractable<IBonusRepresentable>
     {
         #region Properties
-        
-        BonusType Type { get;}
-        NegativeBonusType? NegativeType { get; }
-        PositiveBonusType? PositiveType { get; set; }
+        BonusType BonusType { get; }
+        EffectType EffectType { get;}
         BoosterType? BoosterType { get; set; }
-        BonusActionPointType ActionPointType { get; set; }
         Transform PointOfPlacement { get; }
-        float Power { get; }
         
-        /// <summary>
-        ///  Bonus duration in seconds
-        /// </summary>
-        float Duration { get; }
-        
-        /// <summary>
-        /// Bonus receive event delegate.
-        /// </summary>
-        delegate void GettingBonusHandler(IBonusRepresentable bonus);
-        
-        /// <summary>
-        /// Bonus Receipt Event.
-        /// </summary>
-        event GettingBonusHandler GettingNotify;
-        
+        Effect EffectOfBonus { get; set; }
+
         #endregion
         
         #region Functionality
-        void PositiveInit(PositiveBonusType positiveType, Transform point);
-        void NegativeInit(NegativeBonusType negativeType, Transform point);
 
-        /// <summary>
-        /// Triggers a bonus receive event.
-        /// </summary>
-        /// <param name="bonus">Received bonus</param>
-        void OnGettingNotify(IBonusRepresentable bonus);
+        void Init(BonusType bonusType, Effect effect, Transform point, BoosterType? boosterType = null);
+
         #endregion
     }
 }

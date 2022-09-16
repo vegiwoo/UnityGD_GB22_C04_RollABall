@@ -1,9 +1,40 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
     public enum BonusType
     {
-        Positive, Negative
+        // Positive
+        
+        /// <summary>
+        /// Getting game points
+        /// </summary>
+        Gift, 
+        
+        /// <summary>
+        /// Getting booster
+        /// </summary>
+        Booster,
+        
+        // Negative
+        
+        /// <summary>
+        /// Temporary slowdown.
+        /// </summary>
+        TempSlowdown, 
+        
+        /// <summary>
+        /// Theft (loss of game points)
+        /// </summary>
+        Theft, 
+        
+        /// <summary>
+        /// Sudden death
+        /// </summary>
+        SuddenDeath
     }
+
 }

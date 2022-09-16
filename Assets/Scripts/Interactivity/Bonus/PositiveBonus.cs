@@ -1,4 +1,5 @@
 using GameDevLib.Helpers;
+using RollABall.Interactivity.Effects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -7,81 +8,44 @@ namespace RollABall.Interactivity.Bonuses
     public class PositiveBonus : InteractiveObject, IBonusRepresentable
     {
         #region Properties
-        
-        public BonusType Type { get; } = BonusType.Positive;
-        public NegativeBonusType? NegativeType { get; } = null;
-        
-        [field:SerializeField,ReadonlyField]
-        public PositiveBonusType? PositiveType { get; set; }
-        
-        [field:SerializeField,ReadonlyField]
-        public BoosterType? BoosterType { get; set; }
-
-        public BonusActionPointType ActionPointType { get; set; }
-
+        [field:SerializeField, ReadonlyField] public BonusType BonusType { get; set; }
+        [field:SerializeField, ReadonlyField] public EffectType EffectType { get; set; } = EffectType.Buff;
+        [field:SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; }
         public Transform PointOfPlacement { get; private set; }
-        
-        [field:SerializeField, ReadonlyField]
-        public float Power { get; set; }
+        public Effect EffectOfBonus { get; set; }
+        public event IInteractable<IBonusRepresentable>.InteractiveHandler InteractiveNotify;
 
-        public float Duration { get; private set; }
-       
-        public event IBonusRepresentable.GettingBonusHandler GettingNotify;
+        #endregion
+        
+        #region MonoBehavior methods
+
+        protected override void Start()
+        {
+            base.Start();
+            CompareTags.Add(GameData.PlayerTag);
+        }
 
         #endregion
 
         #region Functionality
-        public void PositiveInit(PositiveBonusType positiveType,  Transform pointOfPlacement)
+        public void Init(BonusType bonusType, Effect effect, Transform point, BoosterType? boosterType)
         {
-            PositiveType = positiveType.RandomValue(positiveType);
-            PointOfPlacement = pointOfPlacement;
-
-            switch (positiveType)
-            {
-                case PositiveBonusType.GamePoints:
-                    ActionPointType = BonusActionPointType.GamePoints;
-                    Power = 10;
-                    Duration = 0;
-                    break;
-                case PositiveBonusType.Booster:
-                    var buster = Bonuses.BoosterType.Immortality;
-                    var randomBuster = buster.RandomValue(Bonuses.BoosterType.Immortality);
-                    BoosterType = randomBuster;
-
-                    switch (BoosterType)
-                    {
-                        case Bonuses.BoosterType.TempSpeedBoost:
-                            ActionPointType = BonusActionPointType.Speed;
-                            Power = 2;
-                            Duration = 10f;
-                            break;
-                        case Bonuses.BoosterType.Immortality:
-                            ActionPointType = BonusActionPointType.Hp;
-                            Power = 1000f;
-                            Duration = 10f;
-                            break;
-                        case null:
-                            break;
-                    }
-
-                    break;
-            }
+            BonusType = bonusType;
+            EffectOfBonus = effect;
+            PointOfPlacement = point;
+            BoosterType = boosterType;
         }
 
-        public void NegativeInit(NegativeBonusType negativeType, Transform point)
+        protected override void Interaction(string tagElement)
         {
-            // Not implement
-        }
-
-        protected override void Interaction()
-        {
-           OnGettingNotify(this);
+            OnGettingNotify(this, tagElement);
         }
         
-        public void OnGettingNotify(IBonusRepresentable bonus)
+        public void OnGettingNotify(IBonusRepresentable bonus, string tagElement)
         {
-            GettingNotify?.Invoke(bonus);
+            InteractiveNotify?.Invoke(bonus, tagElement);
         }
+        
         #endregion
     }
 }

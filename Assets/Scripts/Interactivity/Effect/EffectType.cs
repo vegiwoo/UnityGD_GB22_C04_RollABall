@@ -1,8 +1,9 @@
+
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    public enum PositiveBonusType
+    public enum EffectType
     {
-        GamePoints, Booster
+        Buff, Debuff
     }
 }
