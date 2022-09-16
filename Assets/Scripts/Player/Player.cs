@@ -7,11 +7,12 @@ using UnityEngine;
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class Player : MonoBehaviour, GameDevLib.Interfaces.IObserver<InputManagerArgs>
+    public class Player : MonoBehaviour, IObserver<InputManagerArgs>
     {
         #region Links
 
-        [SerializeField] private InputManagerEvent inputEvent;
+        [SerializeField] 
+        private InputManagerEvent inputEvent;
 
         private Rigidbody _rigidbody;
         #endregion
