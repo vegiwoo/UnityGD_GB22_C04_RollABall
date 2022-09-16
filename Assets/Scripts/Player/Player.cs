@@ -20,14 +20,14 @@ namespace RollABall.Player
         private InputManagerEvent inputEvent;
         
         [SerializeField] 
-        private PlayerEvent playerEvent;
+        protected PlayerEvent playerEvent;
 
         private Rigidbody _rigidbody;
         #endregion
         
         #region Properties
         
-        private float CurrentHp { get; set; }
+        protected float CurrentHp { get; set; }
         private float CurrentSpeed { get; set; }
 
         private Vector2? MoveDirection { get; set; } = null;
@@ -41,7 +41,7 @@ namespace RollABall.Player
             _rigidbody = GetComponent<Rigidbody>();
         }
 
-        private void Start()
+        protected virtual void Start()
         {
             CurrentHp = stats.MaxHp;
             CurrentSpeed = stats.MaxHp;

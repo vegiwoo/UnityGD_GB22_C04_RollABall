@@ -1,4 +1,3 @@
-using System;
 using GameDevLib.Helpers;
 using UnityEngine;
 
@@ -25,6 +24,7 @@ namespace RollABall.Interactivity.Bonuses
         public float Power { get; private set; }
         
         public float Duration { get; private set; }
+        public event IBonusRepresentable.GettingBonusHandler GettingNotify;
 
         #endregion
         
@@ -58,8 +58,13 @@ namespace RollABall.Interactivity.Bonuses
         public void PositiveInit(PositiveBonusType positiveType, Transform point) { }
         
         protected override void Interaction()
+        { 
+            OnGettingNotify(this);
+        }
+        
+        public void OnGettingNotify(IBonusRepresentable bonus)
         {
-            //...
+            GettingNotify?.Invoke(bonus);
         }
         
         #endregion

@@ -25,6 +25,8 @@ namespace RollABall.Interactivity.Bonuses
         public float Power { get; set; }
 
         public float Duration { get; private set; }
+       
+        public event IBonusRepresentable.GettingBonusHandler GettingNotify;
 
         #endregion
 
@@ -70,11 +72,16 @@ namespace RollABall.Interactivity.Bonuses
         {
             // Not implement
         }
+
         protected override void Interaction()
         {
-       
+           OnGettingNotify(this);
         }
         
+        public void OnGettingNotify(IBonusRepresentable bonus)
+        {
+            GettingNotify?.Invoke(bonus);
+        }
         #endregion
     }
 }

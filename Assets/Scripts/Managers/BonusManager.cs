@@ -66,6 +66,8 @@ namespace RollABall.Managers
         
         private List<Transform> FindFreePoints()
         {
+            return bonusPoints.Where(t => t.gameObject.transform.childCount == 0).ToList();
+
             return bonusPoints
                 .Where(point => _positiveBonuses.Count(el => el.PointOfPlacement == point) == 0 && 
                                 _negativeBonuses.Count(el => el.PointOfPlacement) == 0)
@@ -102,7 +104,7 @@ namespace RollABall.Managers
                 var randomIndex = Random.Range(0, freePoints.Count - 1);
                 var randomPoint = freePoints[randomIndex];
 
-                IBonusRepresentable newBonus;
+                IBonusRepresentable newBonus = default;
                 GameObject newBonusObject = default;
                 
                 switch (type)
@@ -120,8 +122,13 @@ namespace RollABall.Managers
                         _negativeBonuses.Add(newBonus);
                         break;
                 }
-
-                if (newBonusObject != null) newBonusObject.transform.parent = transform;
+                
+                if (newBonus is not null)
+                { 
+                    newBonus.GettingNotify += OnGettingBonusNotify;
+                    newBonusObject.tag = GameData.BonusTag;
+                    newBonusObject.transform.parent = randomPoint;
+                }
 
                 freePoints.Remove(randomPoint);
                 --counter;
@@ -129,6 +136,11 @@ namespace RollABall.Managers
                 yield return new WaitForSeconds(DelayAppearance);
                 yield return null;
             }
+        }
+
+        private void OnGettingBonusNotify(IBonusRepresentable bonus)
+        {
+            print($"Получен бонус {bonus.PointOfPlacement}");
         }
         #endregion
     }
