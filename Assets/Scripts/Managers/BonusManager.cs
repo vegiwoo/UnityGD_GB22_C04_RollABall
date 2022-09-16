@@ -22,6 +22,7 @@ namespace RollABall.Managers
         
         #endregion
         
+        // TODO: Бонусы в одном классе с 2 мя списками (+ и -), индексаторы для этих списков
         
         #region Constant and variables
         
@@ -30,7 +31,7 @@ namespace RollABall.Managers
         
         private List<IBonusRepresentable> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
-        
+
         #endregion
         
         #region Properties
@@ -101,21 +102,21 @@ namespace RollABall.Managers
                 var randomIndex = Random.Range(0, freePoints.Count - 1);
                 var randomPoint = freePoints[randomIndex];
 
-                GameObject newBonusObject = default;
                 IBonusRepresentable newBonus;
-
+                GameObject newBonusObject = default;
+                
                 switch (type)
                 {
                     case BonusType.Positive:
                         newBonusObject = Instantiate(positiveBonusPrefab, randomPoint.position, Quaternion.identity);
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        newBonus.PositiveInit(PositiveBonusType.GamePoints, null, randomPoint, 10); // TODO: Implement random spawns
+                        newBonus.PositiveInit(PositiveBonusType.GamePoints, randomPoint);
                         _positiveBonuses.Add(newBonus);
                         break;
                     case BonusType.Negative:
                         newBonusObject = Instantiate(negativeBonusPrefab, randomPoint.position, Quaternion.identity);
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        newBonus.NegativeInit(NegativeBonusType.Wound, randomPoint, 10); // TODO: Implement random spawns
+                        newBonus.NegativeInit(NegativeBonusType.Wound, randomPoint); 
                         _negativeBonuses.Add(newBonus);
                         break;
                 }
@@ -129,10 +130,6 @@ namespace RollABall.Managers
                 yield return null;
             }
         }
-        
         #endregion
     }
 }
-
-
-// Бонусы в одном классе с 2 мя списками (+ и -), индексаторы для этих списков

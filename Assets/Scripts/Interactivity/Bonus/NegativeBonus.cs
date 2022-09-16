@@ -1,3 +1,4 @@
+using System;
 using GameDevLib.Helpers;
 using UnityEngine;
 
@@ -16,27 +17,45 @@ namespace RollABall.Interactivity.Bonuses
         public PositiveBonusType? PositiveType { get; set; } = null;
         
         public BoosterType? BoosterType { get; set; } = null;
-        
+       
+        public BonusActionPointType ActionPointType { get; set; }
+
         public Transform PointOfPlacement { get; private set; }
         
         public float Power { get; private set; }
         
+        public float Duration { get; private set; }
+
         #endregion
         
         #region Functionality
         
-        public void NegativeInit(NegativeBonusType negativeType, Transform point, float power)
+        public void NegativeInit(NegativeBonusType negativeType, Transform point)
         {
-            NegativeType = negativeType;
             PointOfPlacement = point;
-            Power = power;
+            NegativeType = negativeType.RandomValue(negativeType);
+
+            switch (NegativeType)
+            {
+                case NegativeBonusType.TempSlowdown:
+                    ActionPointType = BonusActionPointType.Speed;
+                    Power = -2f;
+                    Duration = 10f;
+                    break;
+                case NegativeBonusType.Wound:
+                    ActionPointType = BonusActionPointType.GamePoints;
+                    Power = -15f;
+                    Duration = 0;
+                    break;
+                case NegativeBonusType.InstantDeath:
+                    ActionPointType = BonusActionPointType.Hp;
+                    Power = -1000f;
+                    Duration = 0;
+                    break;
+            }
         }
 
-        public void PositiveInit(PositiveBonusType positiveType, BoosterType? boosterType, Transform pointOfPlacement,
-            float power)
-        {
-            // .. Not implement
-        }
+        public void PositiveInit(PositiveBonusType positiveType, Transform point) { }
         
         protected override void Interaction()
         {

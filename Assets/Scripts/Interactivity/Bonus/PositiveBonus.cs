@@ -16,33 +16,60 @@ namespace RollABall.Interactivity.Bonuses
         
         [field:SerializeField,ReadonlyField]
         public BoosterType? BoosterType { get; set; }
-        
+
+        public BonusActionPointType ActionPointType { get; set; }
+
         public Transform PointOfPlacement { get; private set; }
         
         [field:SerializeField, ReadonlyField]
         public float Power { get; set; }
-        
+
+        public float Duration { get; private set; }
+
         #endregion
-  
-        #region Constructors
-        
-        public void PositiveInit(PositiveBonusType positiveType, BoosterType? boosterType, Transform pointOfPlacement, float power)
+
+        #region Functionality
+        public void PositiveInit(PositiveBonusType positiveType,  Transform pointOfPlacement)
         {
-            PositiveType = positiveType;
-            BoosterType = boosterType;
+            PositiveType = positiveType.RandomValue(positiveType);
             PointOfPlacement = pointOfPlacement;
-            Power = power;
+
+            switch (positiveType)
+            {
+                case PositiveBonusType.GamePoints:
+                    ActionPointType = BonusActionPointType.GamePoints;
+                    Power = 10;
+                    Duration = 0;
+                    break;
+                case PositiveBonusType.Booster:
+                    var buster = Bonuses.BoosterType.Immortality;
+                    var randomBuster = buster.RandomValue(Bonuses.BoosterType.Immortality);
+                    BoosterType = randomBuster;
+
+                    switch (BoosterType)
+                    {
+                        case Bonuses.BoosterType.TempSpeedBoost:
+                            ActionPointType = BonusActionPointType.Speed;
+                            Power = 2;
+                            Duration = 10f;
+                            break;
+                        case Bonuses.BoosterType.Immortality:
+                            ActionPointType = BonusActionPointType.Hp;
+                            Power = 1000f;
+                            Duration = 10f;
+                            break;
+                        case null:
+                            break;
+                    }
+
+                    break;
+            }
         }
-        
-        public void NegativeInit(NegativeBonusType negativeType, Transform point, float power)
+
+        public void NegativeInit(NegativeBonusType negativeType, Transform point)
         {
             // Not implement
         }
-
-        #endregion
-        
-        #region Functionality
-        
         protected override void Interaction()
         {
        
