@@ -154,7 +154,13 @@ namespace RollABall.Player
                 }   
             }
         }
-        
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            bonusEvent.Detach(this);
+        }
+
         #endregion
     }
 }

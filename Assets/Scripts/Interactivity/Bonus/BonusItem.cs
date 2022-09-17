@@ -4,7 +4,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    internal class BonusItem : IEquatable<BonusItem>
+    public class BonusItem : IEquatable<BonusItem>
     {
         public Transform Point { get; }
         public IBonusRepresentable Bonus { get; }

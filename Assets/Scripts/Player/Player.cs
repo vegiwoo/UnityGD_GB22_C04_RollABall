@@ -12,7 +12,7 @@ using UnityEngine;
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public abstract class Player : MonoBehaviour, GameDevLib.Interfaces.IObserver<InputManagerArgs>
+    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>
     {
         #region Links
         [Header("Stats")]
@@ -25,15 +25,15 @@ namespace RollABall.Player
         #endregion
         
         #region Constants and variables
+        
         private Rigidbody _rigidbody;
-        
-        [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
-        
         #endregion
-        
+
         #region Properties
+        
         [field: SerializeField, ReadonlyField] protected float CurrentScore { get; set; }
         [field: SerializeField, ReadonlyField] protected float CurrentHp { get; set; }
+        [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
         
         private Vector2? MoveDirection { get; set; } = null;
 
@@ -112,6 +112,12 @@ namespace RollABall.Player
             
             playerEvent.Notify(args);
         }
+
+        public virtual void Dispose()
+        {
+            inputEvent.Detach(this);
+        }
+
         #endregion
     }
 }

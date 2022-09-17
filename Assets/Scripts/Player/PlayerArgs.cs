@@ -7,6 +7,7 @@ namespace RollABall.Args
 {
     public struct PlayerArgs
     {
+        #region Properties
         public float CurrentHp { get; }
         public bool IsUnitInvulnerable { get; }
         public int GamePoints { get; }
@@ -14,6 +15,9 @@ namespace RollABall.Args
         
         public bool IsSpeedUp { get; }
         public bool IsSpeedDown { get; }
+        #endregion
+        
+        #region Constructor
         public PlayerArgs(float currentHp, bool isUnitInvulnerable,  float velocity, bool isSpeedUp, bool isSpeedDown, int gamePoints = 0)
         {
             CurrentHp = currentHp;
@@ -23,5 +27,6 @@ namespace RollABall.Args
             IsSpeedDown = isSpeedDown;
             GamePoints = gamePoints;
         }
+        #endregion
     }
 }

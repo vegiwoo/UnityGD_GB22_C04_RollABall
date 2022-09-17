@@ -1,12 +1,11 @@
 using System;
-using JetBrains.Annotations;
 using RollABall.Interactivity.Effects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    public interface IBonusRepresentable : IEquatable<IBonusRepresentable>, IInteractable<IBonusRepresentable>
+    public interface IBonusRepresentable : IEquatable<IBonusRepresentable>, IInteractable<IBonusRepresentable>, IDisposable
     {
         #region Properties
         Guid Id { get; }

@@ -29,14 +29,41 @@ namespace RollABall.Managers
         private Transform[] bonusPoints;
         #endregion
         
-        // TODO: индексаторы для этих списков бонусов
-        
         #region Constant and variables
+        
         private List<BonusItem> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
         private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
         private List<Effect> _effects;
+        
+        #endregion
+        
+        #region Properties 
+        
+        private BonusItem this[EffectType effectType, int i, bool isOverwrite] 
+        {   
+            get => (effectType == EffectType.Buff) ?  _positiveBonuses[i] : _negativeBonuses[i];
+            set
+            {
+                var collection = effectType == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
+                var lenght = collection.Count - 1;
+                
+                if (isOverwrite)
+                {
+                    collection[i] = value;
+                }
+                else
+                {
+                    while(i < lenght && collection[i] != null) i++;
+                    if(i < lenght)
+                    {
+                        collection[i] = value;
+                    } 
+                }
+            }
+        } 
+        
         #endregion
 
         #region MonoBehaviour methods
@@ -124,13 +151,17 @@ namespace RollABall.Managers
                     case EffectType.Buff:
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
                         SetUpBonus(type, ref newBonus, randomPoint);
-                        _positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
+                        // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
+                        this[EffectType.Buff, 0, false] = new BonusItem(randomPoint, newBonus); 
+                        //_positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                     case EffectType.Debuff:
                     
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
                         SetUpBonus(type, ref newBonus, randomPoint); 
-                        _negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
+                        // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
+                        this[EffectType.Debuff, 0, false] = new BonusItem(randomPoint, newBonus);
+                        //_negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                 }
                 

@@ -56,7 +56,13 @@ namespace RollABall.Interactivity.Bonuses
         {
             InteractiveNotify?.Invoke(bonus, tagElement);
         }
-        
+
+        public void Dispose()
+        {
+            CompareTags = null;
+            InteractiveNotify = null;
+        }
+
         #endregion
     }
 }
