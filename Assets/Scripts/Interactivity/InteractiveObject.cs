@@ -15,8 +15,7 @@ namespace RollABall.Interactivity
         protected List<string> CompareTags { get; set; }
         
         #endregion
-
-
+        
         #region MonoBehaviour methods
 
         protected virtual void Start()

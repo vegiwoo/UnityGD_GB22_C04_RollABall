@@ -1,6 +1,7 @@
 using System;
 using GameDevLib.Interfaces;
 using RollABall.Args;
+using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 
 // ReSharper disable once CheckNamespace
@@ -44,13 +45,26 @@ namespace RollABall.Player
         
         private void ApplyEffect(Effect effect)
         {
+            // Apply effects without duration
             if (effect.Duration == 0)
             {
                 switch (effect.EffectTarget)
                 {
                     case EffectTargetType.GamePoints:
-                        
-                        
+                        switch (effect.Type)
+                        {
+                            case EffectType.Buff:
+                                CurrentScore = CurrentScore + effect.Power < gameStats.GameHighScore ? 
+                                    CurrentScore += effect.Power : 
+                                    gameStats.GameHighScore;
+                                break;
+                            case EffectType.Debuff:
+                                CurrentScore = CurrentScore - effect.Power > 0 ? 
+                                    CurrentScore -= effect.Power : 0;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                         break;
                     case EffectTargetType.UnitHp:
                         break;
@@ -59,14 +73,14 @@ namespace RollABall.Player
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                
-                
-                // Без времени 
             }
             else
             {
-                // со временем
+                // Apply effects with duration (coroutines)
             }
+            
+            var args = new PlayerArgs(CurrentHp, (int)CurrentScore);
+            playerEvent.Notify(args);
         }
         #endregion
     }

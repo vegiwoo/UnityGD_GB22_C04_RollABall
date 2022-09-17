@@ -15,6 +15,7 @@ namespace RollABall.Managers
 {
     public class BonusManager : MonoBehaviour
     {
+        // TODO: Вынести
         class BonusItem : IEquatable<BonusItem>
         {
             public Transform Point { get; }

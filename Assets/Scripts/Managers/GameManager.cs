@@ -1,6 +1,7 @@
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Stats;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -9,19 +10,25 @@ namespace RollABall.Managers
     public class GameManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<PlayerArgs>
     {
         #region Links
+        [field:Header("Links")]
+        [field: SerializeField] private BonusManager BonusManager { get; set; }
+        [field: SerializeField] private UIManager UIManager { get; set; }
+        [field:Header("Stats")]
+        [field: SerializeField] private GameStats GameStats { get; set; }
+        [field:Header("Events")]
+        [field:SerializeField] private PlayerEvent playerEvent;
+        #endregion
         
-        [field: SerializeField]
-        private BonusManager BonusManager { get; set; }
-        
-        [field: SerializeField]
-        private UIManager UIManager { get; set; }
-        
-        [SerializeField] 
-        private PlayerEvent playerEvent;
-        
+        #region Properties
+        private int GameCurrentScore { get; set; }
         #endregion
         
         #region MonoBehaviour methods
+
+        private void Start()
+        {
+            GameCurrentScore = 0;
+        }
 
         private void OnEnable()
         {

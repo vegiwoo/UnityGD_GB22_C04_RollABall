@@ -14,7 +14,8 @@ namespace RollABall.Player
     {
         #region Links
         [Header("Stats")]
-        [SerializeField] private PlayerStats playerStats;
+        [SerializeField] protected PlayerStats playerStats;
+        [field: SerializeField] protected GameStats gameStats;
         [Header("Events")]
         [SerializeField] private InputManagerEvent inputEvent;
         [SerializeField] protected BonusEvent bonusEvent;
@@ -26,7 +27,7 @@ namespace RollABall.Player
         #endregion
         
         #region Properties
-        
+        protected float CurrentScore { get; set; }
         protected float CurrentHp { get; set; }
         private float CurrentSpeed { get; set; }
 
@@ -43,6 +44,7 @@ namespace RollABall.Player
 
         protected virtual void Start()
         {
+            CurrentScore = 0;
             CurrentHp = playerStats.MaxHp;
             CurrentSpeed = playerStats.MaxHp;
 

@@ -7,9 +7,11 @@ namespace RollABall.Args
     {
         public float CurrentHp { get; }
 
-        public PlayerArgs(float currentHp)
+        public int GamePoints { get; }
+        public PlayerArgs(float currentHp, int gamePoints = 0)
         {
             CurrentHp = currentHp;
+            GamePoints = gamePoints;
         }
     }
 }
