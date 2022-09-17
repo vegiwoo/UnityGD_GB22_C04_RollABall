@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Stats;
 
@@ -9,8 +10,9 @@ namespace RollABall.Interactivity.Effects
     /// Formed when a bonus (buff or debuff) affects the character
     /// </summary>
     [Serializable]
-    public class Effect
+    public class Effect : IEquatable<Effect>
     {
+        public Guid Id { get; } = new ();
         public EffectType Type { get; }
         public EffectTargetType EffectTarget { get; }
         public float Power { get; }
@@ -23,5 +25,14 @@ namespace RollABall.Interactivity.Effects
             Duration = duration;
             Power = power;
         }
+        
+        #region Functionality
+        public bool Equals([CanBeNull] Effect other)  
+        {        
+            if (ReferenceEquals(null, other)) return false;  
+            if (ReferenceEquals(this, other)) return true;  
+            return Id == other.Id;  
+        }  
+        #endregion
     }
 }

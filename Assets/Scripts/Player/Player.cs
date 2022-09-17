@@ -13,15 +13,15 @@ namespace RollABall.Player
     public class Player : MonoBehaviour, IObserver<InputManagerArgs>
     {
         #region Links
-
-        [SerializeField] private PlayerStats stats;
+        [Header("Stats")]
+        [SerializeField] private PlayerStats playerStats;
+        [Header("Events")]
+        [SerializeField] private InputManagerEvent inputEvent;
+        [SerializeField] protected BonusEvent bonusEvent;
+        [SerializeField] protected PlayerEvent playerEvent;
+        #endregion
         
-        [SerializeField] 
-        private InputManagerEvent inputEvent;
-        
-        [SerializeField] 
-        protected PlayerEvent playerEvent;
-
+        #region Constants and variables
         private Rigidbody _rigidbody;
         #endregion
         
@@ -43,19 +43,19 @@ namespace RollABall.Player
 
         protected virtual void Start()
         {
-            CurrentHp = stats.MaxHp;
-            CurrentSpeed = stats.MaxHp;
+            CurrentHp = playerStats.MaxHp;
+            CurrentSpeed = playerStats.MaxHp;
 
             var args = new PlayerArgs(CurrentHp);
             playerEvent.Notify(args);
         }
 
-        private void OnEnable()
+        protected virtual void OnEnable()
         {
             inputEvent.Attach(this);
         }
 
-        private void OnDisable()
+        protected virtual void OnDisable()
         {
             inputEvent.Detach(this);
         }
@@ -77,7 +77,7 @@ namespace RollABall.Player
         {
             MoveDirection = args.Moving;
         }
-        
+
         #endregion
     }
 }

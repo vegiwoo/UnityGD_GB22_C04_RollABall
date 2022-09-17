@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RollABall.Args;
+using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
@@ -13,35 +15,48 @@ namespace RollABall.Managers
 {
     public class BonusManager : MonoBehaviour
     {
-        #region Links
+        class BonusItem : IEquatable<BonusItem>
+        {
+            public Transform Point { get; }
+            public IBonusRepresentable Bonus { get; }
 
+            public BonusItem(Transform point, IBonusRepresentable bonus)
+            {
+                Point = point;
+                Bonus = bonus;
+            }
+            
+            public bool Equals(BonusItem? other)  
+            {        
+                if (ReferenceEquals(null, other)) return false;  
+                if (ReferenceEquals(this, other)) return true;  
+                return Point == other.Point && Bonus == other.Bonus;  
+            }  
+        }
+        
+        #region Links
+        [Header("Stats")]
         [SerializeField] private BonusManagerStats stats;
+        [Header("Prefabs")]
         [SerializeField] private GameObject positiveBonusPrefab;
         [SerializeField] private GameObject negativeBonusPrefab;
-
+        [Header("Events")]
+        [SerializeField] private BonusEvent bonusEvent;
+        [Header("Links")]
+        [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
+        private Transform[] bonusPoints;
         #endregion
         
         // TODO: Бонусы в одном классе с 2 мя списками (+ и -), индексаторы для этих списков
         
         #region Constant and variables
-        
-        private List<IBonusRepresentable> _positiveBonuses;
+        private List<BonusItem> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
-        
-        private List<IBonusRepresentable> _negativeBonuses;
+        private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
-
         private List<Effect> effects;
-
         #endregion
-        
-        #region Properties
 
-        [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
-        private Transform[] bonusPoints;
-
-        #endregion
-        
         #region MonoBehaviour methods
 
         private void Start()
@@ -50,8 +65,8 @@ namespace RollABall.Managers
             _requiredNumberPositiveBonuses = halfOff;
             _requiredNumberNegativeBonuses = halfOff + remainder;
             
-            _positiveBonuses = new List<IBonusRepresentable>(_requiredNumberPositiveBonuses);
-            _negativeBonuses = new List<IBonusRepresentable>(_requiredNumberNegativeBonuses);
+            _positiveBonuses = new List<BonusItem>(_requiredNumberPositiveBonuses);
+            _negativeBonuses = new List<BonusItem>(_requiredNumberNegativeBonuses);
             
             MakeEffects();
             
@@ -126,14 +141,14 @@ namespace RollABall.Managers
                 {
                     case EffectType.Buff:
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        SetBonus(type, ref newBonus, randomPoint);
-                        _positiveBonuses.Add(newBonus);
+                        SetUpBonus(type, ref newBonus, randomPoint);
+                        _positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                     case EffectType.Debuff:
                     
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        SetBonus(type, ref newBonus, randomPoint); 
-                        _negativeBonuses.Add(newBonus);
+                        SetUpBonus(type, ref newBonus, randomPoint); 
+                        _negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                 }
                 
@@ -151,8 +166,8 @@ namespace RollABall.Managers
                 yield return null;
             }
         }
-
-        private void SetBonus(EffectType effectType, ref IBonusRepresentable bonus, Transform randomPoint)
+        
+        private void SetUpBonus(EffectType effectType, ref IBonusRepresentable bonus, Transform randomPoint)
         {
             var random = new System.Random();
             var effect = effects.Where(ef => ef.Type == effectType)
@@ -182,13 +197,41 @@ namespace RollABall.Managers
         
         private void OnGettingBonusNotify(IBonusRepresentable bonus, string tagElement)
         {
-            print($"{tagElement} получен бонус {bonus.PointOfPlacement}");
+            if (string.Equals(tagElement, GameData.PlayerTag))
+            {
+                bonusEvent.Notify(new BonusArgs(GameData.PlayerTag, bonus.Effect));
+            }
             
-            // Понять что за тег - разложить по элементам
-            // Оказать влияние на перса (опубликовать событие)
-            // Удалить игровой объект со сцены
-            // Удалить объект из коллекции
+            StartCoroutine(RemoveBonusCoroutine(bonus));
+        }
 
+        private IEnumerator RemoveBonusCoroutine(IBonusRepresentable bonus)
+        {
+            List<BonusItem> collection = default;
+
+            switch (bonus.Effect.Type)
+            {
+                case EffectType.Buff:
+                    collection = _positiveBonuses;
+                    break;
+                case EffectType.Debuff:
+                    collection = _negativeBonuses;
+                    break;
+            }
+
+            var existingElement = collection!.First(el => el.Bonus == bonus);
+            existingElement.Bonus.InteractiveNotify -= OnGettingBonusNotify;
+
+            if (existingElement.Point.gameObject.transform.childCount <= 0) yield break;
+            var bonusGameObject = existingElement.Point.gameObject.transform.GetChild(0);
+
+            Destroy(bonusGameObject.gameObject);
+
+            yield return new WaitForSeconds(stats.DelayAfterRemove);
+            
+            collection.Remove(existingElement);
+            
+            yield return null;
         }
         #endregion
     }

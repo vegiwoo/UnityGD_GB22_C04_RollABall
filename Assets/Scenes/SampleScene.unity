@@ -1062,8 +1062,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 033e244c11a014473b3ec880b8e282ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stats: {fileID: 11400000, guid: bd33f5890d13d4a59b5811b0395b7645, type: 2}
   positiveBonusPrefab: {fileID: 6284920437726574565, guid: 0097d3690769f4318a3ccf4f7c99247d, type: 3}
   negativeBonusPrefab: {fileID: 6284920437726574565, guid: 3ff35856f38f24036814b9481d8ba98a, type: 3}
+  bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   bonusPoints:
   - {fileID: 1053017601}
   - {fileID: 1678045484}
@@ -1852,7 +1854,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 2.2120483, y: 1}
+    m_SensorSize: {x: 3.1695502, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2296,8 +2298,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e0d73fe1c5954417b8ae998365e0e08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stats: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
+  playerStats: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
   inputEvent: {fileID: 11400000, guid: 2ff03efb4f4104ddc91e03f7e1730410, type: 2}
+  bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
 --- !u!1 &1282695528
 GameObject:

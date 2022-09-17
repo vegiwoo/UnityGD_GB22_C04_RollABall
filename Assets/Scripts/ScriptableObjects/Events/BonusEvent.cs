@@ -1,27 +1,27 @@
 using System.Collections.Generic;
-using RollABall.Args;
 using GameDevLib.Interfaces;
+using RollABall.Args;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Events
 {
-    [CreateAssetMenu(fileName = "PlayerEvent", menuName = "RollABall/Events/PlayerEvent", order = 0)]
-    public class PlayerEvent : ScriptableObject, ISubject<PlayerArgs>
+    [CreateAssetMenu(fileName = "BonusEvent", menuName = "RollABall/Events/BonusEvent", order = 1)]
+    public class BonusEvent : ScriptableObject, ISubject<BonusArgs>
     {
-        private readonly List<IObserver<PlayerArgs>> _observers = new ();
+        private readonly List<IObserver<BonusArgs>> _observers = new ();
         
-        public void Attach(IObserver<PlayerArgs> observer)
+        public void Attach(IObserver<BonusArgs> observer)
         {
             if (!_observers.Contains(observer))  _observers.Add(observer);
         }
 
-        public void Detach(IObserver<PlayerArgs> observer)
+        public void Detach(IObserver<BonusArgs> observer)
         {
             if (_observers.Contains(observer))  _observers.Remove(observer);
         }
 
-        public void Notify(PlayerArgs args)
+        public void Notify(BonusArgs args)
         {
             foreach (var observer in _observers)
             {
@@ -30,5 +30,3 @@ namespace RollABall.Events
         }
     }
 }
-
-

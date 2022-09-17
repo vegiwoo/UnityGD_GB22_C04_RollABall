@@ -9,6 +9,7 @@ namespace RollABall.Stats
     {
         [field: Header("Common")] 
         [field: SerializeField, Range(0.1f,5.0f)] public float DelayAppearance { get; set; } = 0.50f;
+        [field: SerializeField, Range(1f,10.0f)] public float DelayAfterRemove { get; set; } = 5.0f;
 
         [field:Header("Speed Effect")]
         [field: SerializeField, Range(1f, 20f)] public float SpeedEffectDuration { get; set; } = 10.0f;

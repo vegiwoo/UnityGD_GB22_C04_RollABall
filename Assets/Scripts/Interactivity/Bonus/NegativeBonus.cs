@@ -1,4 +1,6 @@
+using System;
 using GameDevLib.Helpers;
+using JetBrains.Annotations;
 using RollABall.Interactivity.Effects;
 using UnityEngine;
 
@@ -8,11 +10,13 @@ namespace RollABall.Interactivity.Bonuses
     public class NegativeBonus : InteractiveObject, IBonusRepresentable
     {
         #region Properties
+
+        public Guid Id { get; } = new ();
         [field: SerializeField, ReadonlyField] public BonusType BonusType { get; set; }
         [field: SerializeField, ReadonlyField] public EffectType EffectType { get; set; } = EffectType.Debuff;
         [field: SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; } = null;
-        public Transform PointOfPlacement { get; private set; }
-        public Effect EffectOfBonus { get; set; }
+        public Transform Point { get; private set; }
+        public Effect Effect { get; set; }
 
         public event IInteractable<IBonusRepresentable>.InteractiveHandler InteractiveNotify;
         
@@ -30,12 +34,17 @@ namespace RollABall.Interactivity.Bonuses
 
         #region Functionality
         
+        public bool Equals( [CanBeNull] IBonusRepresentable other)  
+        {        
+            return other != null && Id == other.Id && Point == other.Point;
+        }  
+        
         public void Init(BonusType bonusType,  Effect effect, Transform point, BoosterType? boosterType = null)
         {
             BonusType = bonusType;
             BoosterType = boosterType;
-            EffectOfBonus = effect;
-            PointOfPlacement = point;
+            Effect = effect;
+            Point = point;
         }
         
         protected override void Interaction(string tagElement)
