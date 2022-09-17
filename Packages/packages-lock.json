@@ -218,16 +218,15 @@
       "url": "https://packages.unity.com"
     },
     "com.vegi.gamedevlib": {
-      "version": "https://github.com/vegiwoo/unity-gamedevlib-package.git",
+      "version": "file:unity-gamedevlib-package",
       "depth": 0,
-      "source": "git",
+      "source": "embedded",
       "dependencies": {
         "com.unity.inputsystem": "1.3.0",
         "com.unity.cinemachine": "2.8.6",
         "com.unity.probuilder": "5.0.6",
         "com.unity.animation.rigging": "1.1.1"
-      },
-      "hash": "78370e428447a5ddc18ce2193a46423b76abeee7"
+      }
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

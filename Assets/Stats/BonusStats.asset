@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: BonusStats
   m_EditorClassIdentifier: 
   <DelayAppearance>k__BackingField: 0.5
-  <SpeedEffectDuration>k__BackingField: 10
-  <SpeedEffectMultiplier>k__BackingField: 2
+  <DelayAfterRemove>k__BackingField: 5
+  <SpeedEffectDuration>k__BackingField: 5
+  <SpeedEffectMultiplier>k__BackingField: 1.5
   <GamePointsEffectDuration>k__BackingField: 0
   <GamePointsEffectValue>k__BackingField: 10
   <UnitHpEffectDuration>k__BackingField: 0
-  <UnitHpEffectMultiplier>k__BackingField: 10
+  <UnitHpEffectValue>k__BackingField: 10

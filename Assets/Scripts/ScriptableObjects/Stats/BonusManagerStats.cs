@@ -13,7 +13,7 @@ namespace RollABall.Stats
 
         [field:Header("Speed Effect")]
         [field: SerializeField, Range(1f, 20f)] public float SpeedEffectDuration { get; set; } = 10.0f;
-        [field: SerializeField, Range(2f, 4f)] public float SpeedEffectMultiplier { get; set; } = 2.0f;
+        [field: SerializeField, Range(1.5f, 3f)] public float SpeedEffectMultiplier { get; set; } = 1.5f;
 
         [field:Header("Game Points Effect")]
         [field: SerializeField, ReadonlyField] public float GamePointsEffectDuration { get; set; } = 0.0f;
@@ -21,6 +21,6 @@ namespace RollABall.Stats
 
         [field: Header("Unit Hp Effect")]
         [field: SerializeField, ReadonlyField] public float UnitHpEffectDuration { get; set; } = 0.0f;
-        [field: SerializeField, Range(5f, 20f)] public float UnitHpEffectMultiplier { get; set; } = 10.0f;
+        [field: SerializeField, Range(5f, 20f)] public float UnitHpEffectValue { get; set; } = 10.0f;
     }
 }

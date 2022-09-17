@@ -15,26 +15,7 @@ namespace RollABall.Managers
 {
     public class BonusManager : MonoBehaviour
     {
-        // TODO: Вынести
-        class BonusItem : IEquatable<BonusItem>
-        {
-            public Transform Point { get; }
-            public IBonusRepresentable Bonus { get; }
 
-            public BonusItem(Transform point, IBonusRepresentable bonus)
-            {
-                Point = point;
-                Bonus = bonus;
-            }
-            
-            public bool Equals(BonusItem? other)  
-            {        
-                if (ReferenceEquals(null, other)) return false;  
-                if (ReferenceEquals(this, other)) return true;  
-                return Point == other.Point && Bonus == other.Bonus;  
-            }  
-        }
-        
         #region Links
         [Header("Stats")]
         [SerializeField] private BonusManagerStats stats;
@@ -48,14 +29,14 @@ namespace RollABall.Managers
         private Transform[] bonusPoints;
         #endregion
         
-        // TODO: Бонусы в одном классе с 2 мя списками (+ и -), индексаторы для этих списков
+        // TODO: индексаторы для этих списков бонусов
         
         #region Constant and variables
         private List<BonusItem> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
         private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
-        private List<Effect> effects;
+        private List<Effect> _effects;
         #endregion
 
         #region MonoBehaviour methods
@@ -85,13 +66,13 @@ namespace RollABall.Managers
 
         private void MakeEffects()
         {
-            effects = new List<Effect>
+            _effects = new List<Effect>
             {
                 new (EffectType.Buff, EffectTargetType.GamePoints, stats.GamePointsEffectDuration, stats.GamePointsEffectValue),
-                new (EffectType.Buff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectMultiplier),
-                new (EffectType.Buff, EffectTargetType.UnitSpeed, stats.SpeedEffectDuration, stats.SpeedEffectMultiplier),
+                new (EffectType.Buff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectValue, BoosterType.TempInvulnerability),
+                new (EffectType.Buff, EffectTargetType.UnitSpeed, stats.SpeedEffectDuration, stats.SpeedEffectMultiplier, BoosterType.TempSpeedBoost),
                 new (EffectType.Debuff, EffectTargetType.GamePoints, stats.GamePointsEffectDuration, stats.GamePointsEffectValue),
-                new (EffectType.Debuff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectMultiplier),
+                new (EffectType.Debuff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectValue),
                 new (EffectType.Debuff, EffectTargetType.UnitSpeed, stats.SpeedEffectDuration, stats.SpeedEffectMultiplier),
             };
         }
@@ -171,7 +152,7 @@ namespace RollABall.Managers
         private void SetUpBonus(EffectType effectType, ref IBonusRepresentable bonus, Transform randomPoint)
         {
             var random = new System.Random();
-            var effect = effects.Where(ef => ef.Type == effectType)
+            var effect = _effects.Where(ef => ef.Type == effectType)
                 .OrderBy(x => random.Next())
                 .First();
 
@@ -184,7 +165,7 @@ namespace RollABall.Managers
                     bonusType = effect.Type == EffectType.Buff ? BonusType.Gift : BonusType.Theft;
                     break;
                 case EffectTargetType.UnitHp:
-                    bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.SuddenDeath;
+                    bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.Wound;
                     boosterType = effect.Type == EffectType.Buff ? BoosterType.TempInvulnerability : null;
                     break;
                 case EffectTargetType.UnitSpeed:

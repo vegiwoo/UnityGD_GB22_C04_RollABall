@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
@@ -32,9 +29,9 @@ namespace RollABall.Interactivity.Bonuses
         Theft, 
         
         /// <summary>
-        /// Sudden death
+        /// Wound of unit
         /// </summary>
-        SuddenDeath
+        Wound
     }
 
 }

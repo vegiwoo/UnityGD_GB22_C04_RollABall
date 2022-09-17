@@ -1,5 +1,7 @@
+using System;
 using GameDevLib.Args;
 using GameDevLib.Events;
+using GameDevLib.Helpers;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
@@ -10,7 +12,7 @@ using UnityEngine;
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public class Player : MonoBehaviour, IObserver<InputManagerArgs>
+    public abstract class Player : MonoBehaviour, GameDevLib.Interfaces.IObserver<InputManagerArgs>
     {
         #region Links
         [Header("Stats")]
@@ -24,15 +26,22 @@ namespace RollABall.Player
         
         #region Constants and variables
         private Rigidbody _rigidbody;
+        
+        [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
+        
         #endregion
         
         #region Properties
-        protected float CurrentScore { get; set; }
-        protected float CurrentHp { get; set; }
-        private float CurrentSpeed { get; set; }
-
-        private Vector2? MoveDirection { get; set; } = null;
+        [field: SerializeField, ReadonlyField] protected float CurrentScore { get; set; }
+        [field: SerializeField, ReadonlyField] protected float CurrentHp { get; set; }
         
+        private Vector2? MoveDirection { get; set; } = null;
+
+        protected const float SpeedMultiplierConst = 3f;
+        [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
+
+        [field: SerializeField, ReadonlyField] private float Velocity { get; set; }
+
         #endregion
 
         #region MonoBehaviour methods
@@ -46,12 +55,15 @@ namespace RollABall.Player
         {
             CurrentScore = 0;
             CurrentHp = playerStats.MaxHp;
-            CurrentSpeed = playerStats.MaxHp;
-
-            var args = new PlayerArgs(CurrentHp);
-            playerEvent.Notify(args);
+            SpeedMultiplier = SpeedMultiplier;
         }
-
+        
+        protected virtual void Update()
+        {
+            Velocity = _rigidbody.velocity.magnitude;
+            SendNotify();
+        }
+        
         protected virtual void OnEnable()
         {
             inputEvent.Attach(this);
@@ -68,11 +80,12 @@ namespace RollABall.Player
         
         protected void Move()
         {
-            if (!MoveDirection.HasValue) return;
+            if (!MoveDirection.HasValue || Velocity >= playerStats.MaxSpeed) return;
             
             var value = MoveDirection.Value;
             var movement = new Vector3(value.x, 0, value.y);
-            _rigidbody.AddForce(movement * CurrentSpeed * Time.fixedDeltaTime, ForceMode.Impulse);
+
+            _rigidbody.AddForce(movement * SpeedMultiplier, ForceMode.VelocityChange);
         }
         
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
@@ -80,6 +93,25 @@ namespace RollABall.Player
             MoveDirection = args.Moving;
         }
 
+        /// <summary>
+        /// Sends an event about changes in stats of a unit.
+        /// </summary>
+        private void SendNotify()
+        {
+            var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;
+            var isSpeedDown = SpeedMultiplier < SpeedMultiplierConst;
+
+            var args = new PlayerArgs(
+                CurrentHp, 
+                IsUnitInvulnerable, 
+                Velocity, 
+                isSpeedUp, 
+                isSpeedDown,
+                (int)CurrentScore
+                );
+            
+            playerEvent.Notify(args);
+        }
         #endregion
     }
 }

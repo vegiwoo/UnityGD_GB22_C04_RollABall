@@ -1,14 +1,18 @@
 using System;
+using System.Collections;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
+using UnityEngine;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
     public class PlayerBall : Player, GameDevLib.Interfaces.IObserver<BonusArgs>
     {
+        
         #region MonoBehavior methods
 
         protected override void Start()
@@ -28,7 +32,7 @@ namespace RollABall.Player
             base.OnDisable();
             bonusEvent.Detach(this);
         }
-
+        
         private void FixedUpdate()
         {
             Move();
@@ -42,11 +46,14 @@ namespace RollABall.Player
         {
             ApplyEffect(args.Effect);
         }
-        
+
+        // TODO: Applying effects -> to separate manager
         private void ApplyEffect(Effect effect)
         {
+            Log(effect);
+
             // Apply effects without duration
-            if (effect.Duration == 0)
+            if (effect.Duration == 0 && !effect.BoosterType.HasValue)
             {
                 switch (effect.EffectTarget)
                 {
@@ -62,13 +69,13 @@ namespace RollABall.Player
                                 CurrentScore = CurrentScore - effect.Power > 0 ? 
                                     CurrentScore -= effect.Power : 0;
                                 break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
                         }
                         break;
                     case EffectTargetType.UnitHp:
-                        break;
-                    case EffectTargetType.UnitSpeed:
+                        if (effect.Type == EffectType.Debuff && !IsUnitInvulnerable)
+                        {
+                            CurrentHp = CurrentHp - effect.Power > 0 ? CurrentHp -= effect.Power : 0;
+                        }
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -76,12 +83,78 @@ namespace RollABall.Player
             }
             else
             {
-                // Apply effects with duration (coroutines)
+                StartCoroutine(ApplyEffectCoroutine(effect));
             }
-            
-            var args = new PlayerArgs(CurrentHp, (int)CurrentScore);
-            playerEvent.Notify(args);
         }
+
+        // TODO: Applying effects -> to separate manager
+        private IEnumerator ApplyEffectCoroutine(Effect effect)
+        {
+            // Apply effect
+            // Buff
+            if (effect.Type == EffectType.Buff)
+            {
+                if (effect.BoosterType.HasValue)
+                {
+                    switch (effect.BoosterType.Value) 
+                    {
+                        case BoosterType.TempSpeedBoost:
+                            SpeedMultiplier = SpeedMultiplierConst * effect.Power;
+                            break;
+                        case BoosterType.TempInvulnerability:
+                            IsUnitInvulnerable = true;
+                            break;
+                    }
+                }
+            }
+            // Debuff
+            else
+            {
+                switch (effect.EffectTarget)
+                {
+                    case EffectTargetType.GamePoints:
+                        break;
+                    case EffectTargetType.UnitHp:
+                        break;
+                    case EffectTargetType.UnitSpeed:
+                        SpeedMultiplier = SpeedMultiplierConst / effect.Power / 10;
+                        break;
+                }   
+            }
+
+            yield return new WaitForSeconds(effect.Duration == 0 ? gameStats.BuffDuration :  effect.Duration);
+
+            // Cancel effect
+            if (effect.Type == EffectType.Buff)
+            {
+                if (effect.BoosterType.HasValue)
+                {
+                    switch (effect.BoosterType.Value) 
+                    {
+                        case BoosterType.TempSpeedBoost:
+                            SpeedMultiplier = SpeedMultiplierConst;
+                            break;
+                        case BoosterType.TempInvulnerability:
+                            IsUnitInvulnerable = false;
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                switch (effect.EffectTarget)
+                {
+                    case EffectTargetType.GamePoints:
+                        break;
+                    case EffectTargetType.UnitHp:
+                        break;
+                    case EffectTargetType.UnitSpeed:
+                        SpeedMultiplier = SpeedMultiplierConst;
+                        break;
+                }   
+            }
+        }
+        
         #endregion
     }
 }

@@ -2,7 +2,9 @@ using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Stats;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -47,6 +49,18 @@ namespace RollABall.Managers
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
         {
             UIManager.SetValues(args);
+
+            var lost = args.CurrentHp <= 0;
+            var win = args.GamePoints >= GameStats.GameHighScore;
+            
+            EditorApplication.isPaused = lost|| win;
+            if (lost)
+            {
+                Log("You lose :(");
+            } else if (win)
+            {
+                Log("You win :)");
+            }
         }
         
         #endregion

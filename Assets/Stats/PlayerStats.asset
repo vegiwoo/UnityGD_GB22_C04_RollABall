@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   <MaxHp>k__BackingField: 100
-  <MaxSpeed>k__BackingField: 1
+  <MaxSpeed>k__BackingField: 7
