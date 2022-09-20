@@ -7,7 +7,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    public class PositiveBonus : InteractiveObject, IBonusRepresentable
+    public class PositiveBonus : InteractiveObject, IBonusable
     {
         #region Properties
         public Guid Id { get; } = new ();
@@ -15,8 +15,8 @@ namespace RollABall.Interactivity.Bonuses
         [field:SerializeField, ReadonlyField] public EffectType EffectType { get; set; } = EffectType.Buff;
         [field:SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; }
         public Transform Point { get; private set; }
-        public Effect Effect { get; set; }
-        public event IInteractable<IBonusRepresentable>.InteractiveHandler InteractiveNotify;
+        public IEffectable Effect { get; set; }
+        public event IInteractable<IBonusable>.InteractiveHandler InteractiveNotify;
 
         #endregion
         
@@ -31,12 +31,8 @@ namespace RollABall.Interactivity.Bonuses
         #endregion
 
         #region Functionality
-        public bool Equals( [CanBeNull] IBonusRepresentable other)  
-        {
-            return other != null && Id == other.Id && Point == other.Point;  
-        }
-        
-        public void Init(BonusType bonusType, Effect effect, Transform point, BoosterType? boosterType)
+
+        public void Init(BonusType bonusType, IEffectable effect, Transform point, BoosterType? boosterType)
         {
             BonusType = bonusType;
             Effect = effect;
@@ -49,7 +45,7 @@ namespace RollABall.Interactivity.Bonuses
             OnGettingNotify(this, tagElement);
         }
         
-        public void OnGettingNotify(IBonusRepresentable bonus, string tagElement)
+        public void OnGettingNotify(IBonusable bonus, string tagElement)
         {
             InteractiveNotify?.Invoke(bonus, tagElement);
         }

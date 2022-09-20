@@ -7,9 +7,9 @@ namespace RollABall.Interactivity.Bonuses
     public class BonusItem : IEquatable<BonusItem>
     {
         public Transform Point { get; }
-        public IBonusRepresentable Bonus { get; }
+        public IBonusable Bonus { get; }
 
-        public BonusItem(Transform point, IBonusRepresentable bonus)
+        public BonusItem(Transform point, IBonusable bonus)
         {
             Point = point;
             Bonus = bonus;

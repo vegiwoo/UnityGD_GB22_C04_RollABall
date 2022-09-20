@@ -48,7 +48,7 @@ namespace RollABall.Player
         }
 
         // TODO: Applying effects -> to separate manager
-        private void ApplyEffect(Effect effect)
+        private void ApplyEffect(IEffectable effect)
         {
             Log(effect);
 
@@ -71,7 +71,7 @@ namespace RollABall.Player
                                 break;
                         }
                         break;
-                    case EffectTargetType.UnitHp:
+                    case EffectTargetType.HitPoints:
                         if (effect.Type == EffectType.Debuff && !IsUnitInvulnerable)
                         {
                             CurrentHp = CurrentHp - effect.Power > 0 ? CurrentHp -= effect.Power : 0;
@@ -88,7 +88,7 @@ namespace RollABall.Player
         }
 
         // TODO: Applying effects -> to separate manager
-        private IEnumerator ApplyEffectCoroutine(Effect effect)
+        private IEnumerator ApplyEffectCoroutine(IEffectable effect)
         {
             // Apply effect
             // Buff
@@ -114,7 +114,7 @@ namespace RollABall.Player
                 {
                     case EffectTargetType.GamePoints:
                         break;
-                    case EffectTargetType.UnitHp:
+                    case EffectTargetType.HitPoints:
                         break;
                     case EffectTargetType.UnitSpeed:
                         SpeedMultiplier = SpeedMultiplierConst / effect.Power / 10;
@@ -146,7 +146,7 @@ namespace RollABall.Player
                 {
                     case EffectTargetType.GamePoints:
                         break;
-                    case EffectTargetType.UnitHp:
+                    case EffectTargetType.HitPoints:
                         break;
                     case EffectTargetType.UnitSpeed:
                         SpeedMultiplier = SpeedMultiplierConst;

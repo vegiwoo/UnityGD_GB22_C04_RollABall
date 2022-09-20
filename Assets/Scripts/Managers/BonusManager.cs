@@ -15,7 +15,6 @@ namespace RollABall.Managers
 {
     public class BonusManager : MonoBehaviour
     {
-
         #region Links
         [Header("Stats")]
         [SerializeField] private BonusManagerStats stats;
@@ -35,7 +34,22 @@ namespace RollABall.Managers
         private int _requiredNumberPositiveBonuses;
         private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
-        private List<Effect> _effects;
+
+        private Dictionary<EffectFactoryKey, EffectFactory> _factories;
+        
+        private List<EffectFactoryKey> _positiveEffectKeys = new (3)
+        {
+            EffectFactoryKey.GpUp,
+            EffectFactoryKey.HpUp,
+            EffectFactoryKey.SpeedUp
+        };
+            
+        private List<EffectFactoryKey> _negativeEffectKeys = new (3)
+        {
+            EffectFactoryKey.GpDown,
+            EffectFactoryKey.HpDown,
+            EffectFactoryKey.SpeedDown
+        };
         
         #endregion
         
@@ -77,7 +91,7 @@ namespace RollABall.Managers
             _positiveBonuses = new List<BonusItem>(_requiredNumberPositiveBonuses);
             _negativeBonuses = new List<BonusItem>(_requiredNumberNegativeBonuses);
             
-            MakeEffects();
+            MakeFactories();
             
             StartCoroutine(BonusСheckСoroutine());
         }
@@ -91,19 +105,19 @@ namespace RollABall.Managers
 
         #region Functionality
 
-        private void MakeEffects()
+        private void MakeFactories()
         {
-            _effects = new List<Effect>
+            _factories = new Dictionary<EffectFactoryKey, EffectFactory>()
             {
-                new (EffectType.Buff, EffectTargetType.GamePoints, stats.GamePointsEffectDuration, stats.GamePointsEffectValue),
-                new (EffectType.Buff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectValue, BoosterType.TempInvulnerability),
-                new (EffectType.Buff, EffectTargetType.UnitSpeed, stats.SpeedEffectDuration, stats.SpeedEffectMultiplier, BoosterType.TempSpeedBoost),
-                new (EffectType.Debuff, EffectTargetType.GamePoints, stats.GamePointsEffectDuration, stats.GamePointsEffectValue),
-                new (EffectType.Debuff, EffectTargetType.UnitHp, stats.UnitHpEffectDuration, stats.UnitHpEffectValue),
-                new (EffectType.Debuff, EffectTargetType.UnitSpeed, stats.SpeedEffectDuration, stats.SpeedEffectMultiplier),
+                { EffectFactoryKey.GpUp, new AddGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
+                { EffectFactoryKey.GpDown, new LostGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
+                { EffectFactoryKey.HpUp, new AddHitPointsEffectFactory(stats.HpEffectValue, stats.HpEffectDuration)},
+                { EffectFactoryKey.HpDown, new LostHitPointsEffectFactory(stats.HpEffectValue, stats.HpEffectDuration)},
+                { EffectFactoryKey.SpeedUp, new AddHitPointsEffectFactory(stats.SpeedEffectMultiplier, stats.SpeedEffectDuration)},
+                { EffectFactoryKey.SpeedDown, new LostHitPointsEffectFactory(stats.SpeedEffectMultiplier, stats.SpeedEffectDuration)}
             };
         }
-        
+
         private List<Transform> FindFreePoints()
         {
             return bonusPoints
@@ -141,7 +155,7 @@ namespace RollABall.Managers
                 var randomIndex = Random.Range(0, freePoints.Count - 1);
                 var randomPoint = freePoints[randomIndex];
 
-                IBonusRepresentable newBonus = default;
+                IBonusable newBonus = default;
                 GameObject newBonusObject = default;
                 
                 newBonusObject = Instantiate(type == EffectType.Buff ? positiveBonusPrefab : negativeBonusPrefab, randomPoint.position, Quaternion.identity);
@@ -152,16 +166,16 @@ namespace RollABall.Managers
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
                         SetUpBonus(type, ref newBonus, randomPoint);
                         // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
-                        this[EffectType.Buff, 0, false] = new BonusItem(randomPoint, newBonus); 
-                        //_positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
+                        //this[EffectType.Buff, 0, false] = new BonusItem(randomPoint, newBonus); 
+                        _positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                     case EffectType.Debuff:
                     
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
                         SetUpBonus(type, ref newBonus, randomPoint); 
                         // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
-                        this[EffectType.Debuff, 0, false] = new BonusItem(randomPoint, newBonus);
-                        //_negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
+                        // this[EffectType.Debuff, 0, false] = new BonusItem(randomPoint, newBonus);
+                        _negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
                         break;
                 }
                 
@@ -179,14 +193,28 @@ namespace RollABall.Managers
                 yield return null;
             }
         }
-        
-        private void SetUpBonus(EffectType effectType, ref IBonusRepresentable bonus, Transform randomPoint)
-        {
-            var random = new System.Random();
-            var effect = _effects.Where(ef => ef.Type == effectType)
-                .OrderBy(x => random.Next())
-                .First();
 
+        /// <summary>
+        /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
+        /// </summary>
+        /// <param name="effectType">Type of effect to generate.</param>
+        /// <returns>Random effect.</returns>
+        private IEffectable GetRandomEffectByType(EffectType effectType)
+        {
+            var key = effectType switch
+            {
+                EffectType.Buff => _positiveEffectKeys[Random.Range(0, _positiveEffectKeys.Count - 1)],
+                EffectType.Debuff => _negativeEffectKeys[Random.Range(0, _negativeEffectKeys.Count - 1)],
+                _ => default
+            };
+
+            var factory = _factories[key];
+            return factory.GetEffect();
+        }
+        
+        private void SetUpBonus(EffectType effectType, ref IBonusable bonus, Transform randomPoint)
+        {
+            var effect = GetRandomEffectByType(effectType);
             BonusType bonusType = default;
             BoosterType? boosterType = null;
 
@@ -195,7 +223,7 @@ namespace RollABall.Managers
                 case EffectTargetType.GamePoints:
                     bonusType = effect.Type == EffectType.Buff ? BonusType.Gift : BonusType.Theft;
                     break;
-                case EffectTargetType.UnitHp:
+                case EffectTargetType.HitPoints:
                     bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.Wound;
                     boosterType = effect.Type == EffectType.Buff ? BoosterType.TempInvulnerability : null;
                     break;
@@ -208,7 +236,7 @@ namespace RollABall.Managers
             bonus.Init(bonusType, effect, randomPoint, boosterType);
         }
         
-        private void OnGettingBonusNotify(IBonusRepresentable bonus, string tagElement)
+        private void OnGettingBonusNotify(IBonusable bonus, string tagElement)
         {
             if (string.Equals(tagElement, GameData.PlayerTag))
             {
@@ -218,7 +246,7 @@ namespace RollABall.Managers
             StartCoroutine(RemoveBonusCoroutine(bonus));
         }
 
-        private IEnumerator RemoveBonusCoroutine(IBonusRepresentable bonus)
+        private IEnumerator RemoveBonusCoroutine(IBonusable bonus)
         {
             List<BonusItem> collection = default;
 

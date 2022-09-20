@@ -5,7 +5,7 @@ using System;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Args
 {
-    public struct PlayerArgs
+    public class PlayerArgs : EventArgs
     {
         #region Properties
         public float CurrentHp { get; }
