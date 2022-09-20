@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GameDevLib.Audio;
+using GameDevLib.Enums;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
@@ -13,14 +15,14 @@ using Random = UnityEngine.Random;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
+    [RequireComponent(typeof(AudioIsPlaying))]
     public class BonusManager : MonoBehaviour
     {
         #region Links
         [Header("Stats")]
         [SerializeField] private BonusManagerStats stats;
         [Header("Prefabs")]
-        [SerializeField] private GameObject positiveBonusPrefab;
-        [SerializeField] private GameObject negativeBonusPrefab;
+        [SerializeField] private GameObject bonusPrefab;
         [Header("Events")]
         [SerializeField] private BonusEvent bonusEvent;
         [Header("Links")]
@@ -28,28 +30,30 @@ namespace RollABall.Managers
         private Transform[] bonusPoints;
         #endregion
         
-        #region Constant and variables
+        #region Fields
         
         private List<BonusItem> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
         private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
 
-        private Dictionary<EffectFactoryKey, EffectFactory> _factories;
+        private Dictionary<EffectFactoryKey, EffectFactory> _effectFactories;
         
-        private List<EffectFactoryKey> _positiveEffectKeys = new (3)
+        private readonly List<EffectFactoryKey> _positiveEffectKeys = new (3)
         {
             EffectFactoryKey.GpUp,
             EffectFactoryKey.HpUp,
             EffectFactoryKey.SpeedUp
         };
             
-        private List<EffectFactoryKey> _negativeEffectKeys = new (3)
+        private readonly List<EffectFactoryKey> _negativeEffectKeys = new (3)
         {
             EffectFactoryKey.GpDown,
             EffectFactoryKey.HpDown,
             EffectFactoryKey.SpeedDown
         };
+
+        private AudioIsPlaying _audioIsPlaying;
         
         #endregion
         
@@ -92,6 +96,8 @@ namespace RollABall.Managers
             _negativeBonuses = new List<BonusItem>(_requiredNumberNegativeBonuses);
             
             MakeFactories();
+
+            _audioIsPlaying = GetComponent<AudioIsPlaying>();
             
             StartCoroutine(BonusСheckСoroutine());
         }
@@ -107,7 +113,7 @@ namespace RollABall.Managers
 
         private void MakeFactories()
         {
-            _factories = new Dictionary<EffectFactoryKey, EffectFactory>()
+            _effectFactories = new Dictionary<EffectFactoryKey, EffectFactory>()
             {
                 { EffectFactoryKey.GpUp, new AddGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
                 { EffectFactoryKey.GpDown, new LostGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
@@ -158,13 +164,13 @@ namespace RollABall.Managers
                 IBonusable newBonus = default;
                 GameObject newBonusObject = default;
                 
-                newBonusObject = Instantiate(type == EffectType.Buff ? positiveBonusPrefab : negativeBonusPrefab, randomPoint.position, Quaternion.identity);
+                newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
                 
                 switch (type)
                 {
                     case EffectType.Buff:
                         newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        SetUpBonus(type, ref newBonus, randomPoint);
+                        InitBonus(type, ref newBonus, randomPoint);
                         // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
                         //this[EffectType.Buff, 0, false] = new BonusItem(randomPoint, newBonus); 
                         _positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
@@ -172,7 +178,7 @@ namespace RollABall.Managers
                     case EffectType.Debuff:
                     
                         newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        SetUpBonus(type, ref newBonus, randomPoint); 
+                        InitBonus(type, ref newBonus, randomPoint); 
                         // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
                         // this[EffectType.Debuff, 0, false] = new BonusItem(randomPoint, newBonus);
                         _negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
@@ -208,16 +214,19 @@ namespace RollABall.Managers
                 _ => default
             };
 
-            var factory = _factories[key];
+            var factory = _effectFactories[key];
             return factory.GetEffect();
         }
-        
-        private void SetUpBonus(EffectType effectType, ref IBonusable bonus, Transform randomPoint)
-        {
-            var effect = GetRandomEffectByType(effectType);
-            BonusType bonusType = default;
-            BoosterType? boosterType = null;
 
+        /// <summary>
+        /// Specifies type of bonus by effect.
+        /// </summary>
+        /// <param name="effect">"Effect to specifies type of bonus.</param>
+        /// <returns>Bonus type.</returns>
+        private static BonusType GetBonusTypeByEffect(IEffectable effect)
+        {
+            BonusType bonusType = default;
+            
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.GamePoints:
@@ -225,29 +234,50 @@ namespace RollABall.Managers
                     break;
                 case EffectTargetType.HitPoints:
                     bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.Wound;
-                    boosterType = effect.Type == EffectType.Buff ? BoosterType.TempInvulnerability : null;
                     break;
                 case EffectTargetType.UnitSpeed:
                     bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.TempSlowdown;
-                    boosterType = effect.Type == EffectType.Buff ? BoosterType.TempSpeedBoost: null;
                     break;
             }
+
+            return bonusType;
+        }
+        
+        private void InitBonus(EffectType effectType, ref IBonusable bonus, Transform point)
+        {
+            var effect = GetRandomEffectByType(effectType);
+            var bonusType = GetBonusTypeByEffect(effect);
             
-            bonus.Init(bonusType, effect, randomPoint, boosterType);
+            bonus.Init(bonusType, effect, point);
         }
         
         private void OnGettingBonusNotify(IBonusable bonus, string tagElement)
         {
-            if (string.Equals(tagElement, GameData.PlayerTag))
-            {
-                bonusEvent.Notify(new BonusArgs(GameData.PlayerTag, bonus.Effect));
-            }
+            if (!string.Equals(tagElement, GameData.PlayerTag)) return;
             
+            bonusEvent.Notify(new BonusArgs(GameData.PlayerTag, bonus.Effect));
+
+            switch (bonus.Effect.Type)
+            {
+                case EffectType.Buff:
+                    _audioIsPlaying.PlaySound(SoundType.Positive);
+                    break;
+                case EffectType.Debuff:
+                    _audioIsPlaying.PlaySound(SoundType.Negative);
+                    break;
+            }
+
             StartCoroutine(RemoveBonusCoroutine(bonus));
         }
 
         private IEnumerator RemoveBonusCoroutine(IBonusable bonus)
         {
+            var isSoundPlayed = false;
+            _audioIsPlaying.AudioTriggerNotify += (played) =>
+            {
+                isSoundPlayed = played;
+            };
+            
             List<BonusItem> collection = default;
 
             switch (bonus.Effect.Type)
@@ -266,6 +296,8 @@ namespace RollABall.Managers
             if (existingElement.Point.gameObject.transform.childCount <= 0) yield break;
             var bonusGameObject = existingElement.Point.gameObject.transform.GetChild(0);
 
+            yield return new WaitWhile(() => isSoundPlayed);
+   
             Destroy(bonusGameObject.gameObject);
 
             yield return new WaitForSeconds(stats.DelayAfterRemove);

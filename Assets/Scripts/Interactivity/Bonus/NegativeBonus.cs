@@ -14,7 +14,7 @@ namespace RollABall.Interactivity.Bonuses
         public Guid Id { get; } = new ();
         [field: SerializeField, ReadonlyField] public BonusType BonusType { get; set; }
         [field: SerializeField, ReadonlyField] public EffectType EffectType { get; set; } = EffectType.Debuff;
-        [field: SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; } = null;
+        [field: SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; }
         public Transform Point { get; private set; }
         public IEffectable Effect { get; set; }
 
@@ -34,10 +34,10 @@ namespace RollABall.Interactivity.Bonuses
 
         #region Functionality
 
-        public void Init(BonusType bonusType,  IEffectable effect, Transform point, BoosterType? boosterType = null)
+        public void Init(BonusType bonusType, IEffectable effect, Transform point)
         {
             BonusType = bonusType;
-            BoosterType = boosterType;
+            BoosterType = effect.BoosterType;
             Effect = effect;
             Point = point;
         }
@@ -61,3 +61,10 @@ namespace RollABall.Interactivity.Bonuses
         #endregion
     }
 }
+
+//  public Guid Id { get; } = new ();
+//         [field: SerializeField, ReadonlyField] public BonusType BonusType { get; set; } зачем?
+//    [field: SerializeField, ReadonlyField] public EffectType EffectType { get; set; } = EffectType.Debuff; - брать из эффекта 
+//  [field: SerializeField, ReadonlyField] public BoosterType? BoosterType { get; set; } зачем 
+//         public Transform Point { get; private set; }
+//   public IEffectable Effect { get; set; }

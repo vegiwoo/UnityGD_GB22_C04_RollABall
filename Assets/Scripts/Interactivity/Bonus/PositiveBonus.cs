@@ -32,12 +32,12 @@ namespace RollABall.Interactivity.Bonuses
 
         #region Functionality
 
-        public void Init(BonusType bonusType, IEffectable effect, Transform point, BoosterType? boosterType)
+        public void Init(BonusType bonusType, IEffectable effect, Transform point)
         {
             BonusType = bonusType;
             Effect = effect;
             Point = point;
-            BoosterType = boosterType;
+            BoosterType = effect.BoosterType;
         }
 
         protected override void Interaction(string tagElement)

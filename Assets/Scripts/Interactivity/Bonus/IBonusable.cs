@@ -9,8 +9,6 @@ namespace RollABall.Interactivity.Bonuses
     {
         #region Properties
         Guid Id { get; }
-        BonusType BonusType { get; }
-        BoosterType? BoosterType { get; set; }
         Transform Point { get; }
         public IEffectable Effect { get; set; }
         #endregion
@@ -24,9 +22,10 @@ namespace RollABall.Interactivity.Bonuses
                 null => false,
                 not null => Id == other.Id && Point == other.Point
             };
-        }  
-        
-        void Init(BonusType bonusType, IEffectable effect, Transform point, BoosterType? boosterType = null);
+        }
+
+        void Init(BonusType bonusType, IEffectable effect, Transform point);
+
         #endregion
     }
 }

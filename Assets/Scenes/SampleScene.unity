@@ -1084,8 +1084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: bd33f5890d13d4a59b5811b0395b7645, type: 2}
-  positiveBonusPrefab: {fileID: 6284920437726574565, guid: 0097d3690769f4318a3ccf4f7c99247d, type: 3}
-  negativeBonusPrefab: {fileID: 6284920437726574565, guid: 3ff35856f38f24036814b9481d8ba98a, type: 3}
+  bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
   bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   bonusPoints:
   - {fileID: 1053017601}
@@ -1955,7 +1954,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 3.1695502, y: 1}
+    m_SensorSize: {x: 3.0844157, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2405,9 +2404,9 @@ MonoBehaviour:
   inputEvent: {fileID: 11400000, guid: 2ff03efb4f4104ddc91e03f7e1730410, type: 2}
   bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
-  <IsUnitInvulnerable>k__BackingField: 0
   <CurrentScore>k__BackingField: 0
   <CurrentHp>k__BackingField: 0
+  <IsUnitInvulnerable>k__BackingField: 0
   <SpeedMultiplier>k__BackingField: 0.3
   <Velocity>k__BackingField: 0
 --- !u!1 &1282695528
