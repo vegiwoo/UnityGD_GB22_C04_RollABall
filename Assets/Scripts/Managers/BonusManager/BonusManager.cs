@@ -9,8 +9,10 @@ using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
+using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -20,7 +22,7 @@ namespace RollABall.Managers
     {
         #region Links
         [Header("Stats")]
-        [SerializeField] private BonusManagerStats stats;
+        [SerializeField] private EffectStats stats;
         [Header("Prefabs")]
         [SerializeField] private GameObject bonusPrefab;
         [Header("Events")]
@@ -32,26 +34,15 @@ namespace RollABall.Managers
         
         #region Fields
         
+        // Placed bonuses on field
         private List<BonusItem> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
         private List<BonusItem> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
 
-        private Dictionary<EffectFactoryKey, EffectFactory> _effectFactories;
-        
-        private readonly List<EffectFactoryKey> _positiveEffectKeys = new (3)
-        {
-            EffectFactoryKey.GpUp,
-            EffectFactoryKey.HpUp,
-            EffectFactoryKey.SpeedUp
-        };
-            
-        private readonly List<EffectFactoryKey> _negativeEffectKeys = new (3)
-        {
-            EffectFactoryKey.GpDown,
-            EffectFactoryKey.HpDown,
-            EffectFactoryKey.SpeedDown
-        };
+        // Stored effects by type
+        private List<Effect> _buffs;
+        private List<Effect> _debuffs;
 
         private AudioIsPlaying _audioIsPlaying;
         
@@ -89,13 +80,22 @@ namespace RollABall.Managers
         private void Start()
         {
             var halfOff = Math.DivRem(bonusPoints.Length, 2, out var remainder);
-            _requiredNumberPositiveBonuses = halfOff;
-            _requiredNumberNegativeBonuses = halfOff + remainder;
+            _requiredNumberPositiveBonuses = halfOff + remainder;
+            _requiredNumberNegativeBonuses = halfOff;
             
             _positiveBonuses = new List<BonusItem>(_requiredNumberPositiveBonuses);
             _negativeBonuses = new List<BonusItem>(_requiredNumberNegativeBonuses);
-            
-            MakeFactories();
+
+            try
+            {
+                _buffs = stats.effects.Where(el => el.Type == EffectType.Buff).ToList();
+                _debuffs = stats.effects.Where(el => el.Type == EffectType.Debuff).ToList();
+            }
+            catch (ArgumentNullException e)
+            {
+                LogError("Link to effect stats cannot be empty");
+                EditorApplication.isPlaying = false;
+            }
 
             _audioIsPlaying = GetComponent<AudioIsPlaying>();
             
@@ -110,19 +110,6 @@ namespace RollABall.Managers
         #endregion
 
         #region Functionality
-
-        private void MakeFactories()
-        {
-            _effectFactories = new Dictionary<EffectFactoryKey, EffectFactory>()
-            {
-                { EffectFactoryKey.GpUp, new AddGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
-                { EffectFactoryKey.GpDown, new LostGamePointsEffectFactory(stats.GpEffectValue, stats.GpEffectDuration)},
-                { EffectFactoryKey.HpUp, new AddHitPointsEffectFactory(stats.HpEffectValue, stats.HpEffectDuration)},
-                { EffectFactoryKey.HpDown, new LostHitPointsEffectFactory(stats.HpEffectValue, stats.HpEffectDuration)},
-                { EffectFactoryKey.SpeedUp, new AddHitPointsEffectFactory(stats.SpeedEffectMultiplier, stats.SpeedEffectDuration)},
-                { EffectFactoryKey.SpeedDown, new LostHitPointsEffectFactory(stats.SpeedEffectMultiplier, stats.SpeedEffectDuration)}
-            };
-        }
 
         private List<Transform> FindFreePoints()
         {
@@ -207,15 +194,17 @@ namespace RollABall.Managers
         /// <returns>Random effect.</returns>
         private IEffectable GetRandomEffectByType(EffectType effectType)
         {
-            var key = effectType switch
+            if (stats == null)
             {
-                EffectType.Buff => _positiveEffectKeys[Random.Range(0, _positiveEffectKeys.Count - 1)],
-                EffectType.Debuff => _negativeEffectKeys[Random.Range(0, _negativeEffectKeys.Count - 1)],
+                throw new ArgumentNullException(stats.effects.ToString());
+            }
+            
+            return effectType switch
+            {
+                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count - 1)],
+                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count - 1)],
                 _ => default
             };
-
-            var factory = _effectFactories[key];
-            return factory.GetEffect();
         }
 
         /// <summary>

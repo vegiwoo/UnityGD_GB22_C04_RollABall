@@ -3,6 +3,7 @@ namespace RollABall.Interactivity.Bonuses
 {
     public enum BoosterType
     {
+        None,
         /// <summary>
         /// Temporary increase in movement speed.
         /// </summary>

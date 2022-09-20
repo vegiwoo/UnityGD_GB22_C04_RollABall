@@ -10,7 +10,7 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
         Guid Id { get; }
         Transform Point { get; }
-        public IEffectable Effect { get; set; }
+        public IEffectable Effect { get; }
         #endregion
         
         #region Functionality

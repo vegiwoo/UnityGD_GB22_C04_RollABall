@@ -50,10 +50,10 @@ namespace RollABall.Player
         // TODO: Applying effects -> to separate manager
         private void ApplyEffect(IEffectable effect)
         {
-            Log(effect);
+            Log(effect.ToString());
 
             // Apply effects without duration
-            if (effect.Duration == 0 && !effect.BoosterType.HasValue)
+            if (effect.Duration == 0 && effect.BoosterType == BoosterType.None)
             {
                 switch (effect.EffectTarget)
                 {
@@ -61,20 +61,20 @@ namespace RollABall.Player
                         switch (effect.Type)
                         {
                             case EffectType.Buff:
-                                CurrentScore = CurrentScore + effect.Power < gameStats.GameHighScore ? 
-                                    CurrentScore += effect.Power : 
+                                CurrentScore = CurrentScore + effect.PositivePower < gameStats.GameHighScore ? 
+                                    CurrentScore += effect.PositivePower : 
                                     gameStats.GameHighScore;
                                 break;
                             case EffectType.Debuff:
-                                CurrentScore = CurrentScore - effect.Power > 0 ? 
-                                    CurrentScore -= effect.Power : 0;
+                                CurrentScore = CurrentScore - effect.NegativePower > 0 ? 
+                                    CurrentScore -= effect.NegativePower : 0;
                                 break;
                         }
                         break;
                     case EffectTargetType.HitPoints:
                         if (effect.Type == EffectType.Debuff && !IsUnitInvulnerable)
                         {
-                            CurrentHp = CurrentHp - effect.Power > 0 ? CurrentHp -= effect.Power : 0;
+                            CurrentHp = CurrentHp - effect.NegativePower > 0 ? CurrentHp -= effect.NegativePower : 0;
                         }
                         break;
                     default:
@@ -94,12 +94,12 @@ namespace RollABall.Player
             // Buff
             if (effect.Type == EffectType.Buff)
             {
-                if (effect.BoosterType.HasValue)
+                if (effect.BoosterType != BoosterType.None)
                 {
-                    switch (effect.BoosterType.Value) 
+                    switch (effect.BoosterType) 
                     {
                         case BoosterType.TempSpeedBoost:
-                            SpeedMultiplier = SpeedMultiplierConst * effect.Power;
+                            SpeedMultiplier = SpeedMultiplierConst * effect.PositivePower;
                             break;
                         case BoosterType.TempInvulnerability:
                             IsUnitInvulnerable = true;
@@ -107,6 +107,7 @@ namespace RollABall.Player
                     }
                 }
             }
+            
             // Debuff
             else
             {
@@ -117,7 +118,7 @@ namespace RollABall.Player
                     case EffectTargetType.HitPoints:
                         break;
                     case EffectTargetType.UnitSpeed:
-                        SpeedMultiplier = SpeedMultiplierConst / effect.Power / 10;
+                        SpeedMultiplier = SpeedMultiplierConst / effect.NegativePower / 10;
                         break;
                 }   
             }
@@ -127,9 +128,9 @@ namespace RollABall.Player
             // Cancel effect
             if (effect.Type == EffectType.Buff)
             {
-                if (effect.BoosterType.HasValue)
+                if (effect.BoosterType != BoosterType.None)
                 {
-                    switch (effect.BoosterType.Value) 
+                    switch (effect.BoosterType) 
                     {
                         case BoosterType.TempSpeedBoost:
                             SpeedMultiplier = SpeedMultiplierConst;

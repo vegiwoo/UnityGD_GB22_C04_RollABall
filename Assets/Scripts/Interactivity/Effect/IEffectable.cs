@@ -5,27 +5,23 @@ using RollABall.Interactivity.Effects;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
-    public interface IEffectable : IEquatable<Effect>
+    public interface IEffectable : IEquatable<IEffectable>
     {
         #region Properties
-        
         Guid Id { get; }
+        BonusType BonusType { get; }
         EffectType Type { get; }
         EffectTargetType EffectTarget { get; }
-        BoosterType? BoosterType { get; } 
-        float Power { get; }
+        BoosterType BoosterType { get; }
+        float NegativePower { get; }
+        float PositivePower { get; }
         float Duration { get; }
         
         #endregion
 
         #region Functionality
-        
-        public string ToString()
-        {
-            return $"Effect: type {Type.ToString()} (target {EffectTarget.ToString()}), power: {Power}, duration: {Duration}";
-        }
-        
-        bool IEquatable<Effect>.Equals(Effect? other)
+
+        bool IEquatable<IEffectable>.Equals(IEffectable? other)
         {
             return other switch
             {

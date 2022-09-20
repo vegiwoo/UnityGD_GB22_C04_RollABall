@@ -1,7 +1,5 @@
 using System;
 using GameDevLib.Helpers;
-using JetBrains.Annotations;
-using RollABall.Interactivity.Effects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
