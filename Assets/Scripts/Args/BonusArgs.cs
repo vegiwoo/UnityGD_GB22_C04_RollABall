@@ -9,7 +9,7 @@ namespace RollABall.Args
     {
         #region Properties
 
-        private string Tag { get; set; }
+        public string Tag { get; set; }
         public IEffectable Effect { get; set; }
         #endregion
         

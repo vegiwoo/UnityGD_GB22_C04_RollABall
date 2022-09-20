@@ -20,7 +20,6 @@ namespace RollABall.Player
         [field: SerializeField] protected GameStats gameStats;
         [Header("Events")]
         [SerializeField] private InputManagerEvent inputEvent;
-        [SerializeField] protected BonusEvent bonusEvent;
         [SerializeField] protected PlayerEvent playerEvent;
         #endregion
         
@@ -31,7 +30,7 @@ namespace RollABall.Player
 
         #region Properties
         
-        [field: SerializeField, ReadonlyField] protected float CurrentScore { get; set; }
+        [field: SerializeField, ReadonlyField] protected float GamePoints { get; set; }
         [field: SerializeField, ReadonlyField] protected float CurrentHp { get; set; }
         [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
         
@@ -53,7 +52,7 @@ namespace RollABall.Player
 
         protected virtual void Start()
         {
-            CurrentScore = 0;
+            GamePoints = 0;
             CurrentHp = playerStats.MaxHp;
             SpeedMultiplier = SpeedMultiplier;
         }
@@ -107,10 +106,41 @@ namespace RollABall.Player
                 Velocity, 
                 isSpeedUp, 
                 isSpeedDown,
-                (int)CurrentScore
+                (int)GamePoints
                 );
             
             playerEvent.Notify(args);
+        }
+
+        public void SetGamePoints(float points, bool increase)
+        {
+            GamePoints = increase switch
+            {
+                true => GamePoints + points >= gameStats.GameHighScore
+                    ? gameStats.GameHighScore
+                    : GamePoints += points,
+                false => GamePoints - points > 0 
+                    ? GamePoints -= points 
+                    : 0
+            };
+        }
+        
+        public void SetHitPoints(float hp, bool increase, bool isInvulnerable)
+        {
+            IsUnitInvulnerable = isInvulnerable;
+            
+            CurrentHp = increase switch
+            {
+                true => CurrentHp, 
+                false => CurrentHp - hp > 0 && !IsUnitInvulnerable
+                    ? CurrentHp -= hp 
+                    : CurrentHp
+            };
+        }
+        
+        public void SetSpeed(float multiplier, bool increase)
+        {
+            
         }
 
         public virtual void Dispose()

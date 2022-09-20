@@ -174,7 +174,7 @@ namespace RollABall.Managers
                 
                 if (newBonus is not null)
                 { 
-                    newBonus.InteractiveNotify += OnGettingBonusNotify;
+                    newBonus.InteractiveNotify += OnBonusNotify;
                     newBonusObject.tag = GameData.BonusTag;
                     newBonusObject.transform.parent = randomPoint;
                 }
@@ -240,7 +240,7 @@ namespace RollABall.Managers
             bonus.Init(bonusType, effect, point);
         }
         
-        private void OnGettingBonusNotify(IBonusable bonus, string tagElement)
+        private void OnBonusNotify(IBonusable bonus, string tagElement)
         {
             if (!string.Equals(tagElement, GameData.PlayerTag)) return;
             
@@ -280,7 +280,7 @@ namespace RollABall.Managers
             }
 
             var existingElement = collection!.First(el => el.Bonus == bonus);
-            existingElement.Bonus.InteractiveNotify -= OnGettingBonusNotify;
+            existingElement.Bonus.InteractiveNotify -= OnBonusNotify;
 
             if (existingElement.Point.gameObject.transform.childCount <= 0) yield break;
             var bonusGameObject = existingElement.Point.gameObject.transform.GetChild(0);

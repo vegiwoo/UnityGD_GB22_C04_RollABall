@@ -68,3 +68,8 @@ crashlytics-build.properties
 
 # Exceptions
 !*.dll
+
+# My
+.DS_Store
+
+
