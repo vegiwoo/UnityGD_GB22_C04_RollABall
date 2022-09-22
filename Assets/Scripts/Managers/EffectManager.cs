@@ -74,7 +74,6 @@ namespace RollABall.Managers
                         {
                             Player.SetHitPoints(effect.NegativePower, false);
                         }
-
                         break;
                 }
             }

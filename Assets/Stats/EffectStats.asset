@@ -26,7 +26,7 @@ MonoBehaviour:
     <Type>k__BackingField: 1
     <BonusType>k__BackingField: 4
     <BoosterType>k__BackingField: 0
-    <NegativePower>k__BackingField: 5
+    <NegativePower>k__BackingField: 10
     <PositivePower>k__BackingField: 0
     <Duration>k__BackingField: 0
   - <EffectTarget>k__BackingField: 1
@@ -48,12 +48,12 @@ MonoBehaviour:
     <BonusType>k__BackingField: 1
     <BoosterType>k__BackingField: 1
     <NegativePower>k__BackingField: 0
-    <PositivePower>k__BackingField: 1.5
+    <PositivePower>k__BackingField: 2
     <Duration>k__BackingField: 5
   - <EffectTarget>k__BackingField: 2
     <Type>k__BackingField: 1
     <BonusType>k__BackingField: 2
     <BoosterType>k__BackingField: 0
-    <NegativePower>k__BackingField: 1.5
+    <NegativePower>k__BackingField: 3
     <PositivePower>k__BackingField: 0
-    <Duration>k__BackingField: 5
+    <Duration>k__BackingField: 10

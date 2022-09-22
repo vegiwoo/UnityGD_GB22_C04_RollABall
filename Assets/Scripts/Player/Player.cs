@@ -25,7 +25,7 @@ namespace RollABall.Player
         
         #region Constants and variables
         
-        private Rigidbody _rigidbody;
+        protected Rigidbody playerRb;
         #endregion
 
         #region Properties
@@ -40,7 +40,7 @@ namespace RollABall.Player
         private Vector2? MoveDirection { get; set; } = null;
         protected const float SpeedMultiplierConst = 3f;
         [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
-        [field: SerializeField, ReadonlyField] private float Velocity { get; set; }
+        [field: SerializeField, ReadonlyField] protected float Velocity { get; set; }
 
         #endregion
 
@@ -48,7 +48,7 @@ namespace RollABall.Player
 
         private void Awake()
         {
-            _rigidbody = GetComponent<Rigidbody>();
+            playerRb = GetComponent<Rigidbody>();
         }
 
         protected virtual void Start()
@@ -60,7 +60,6 @@ namespace RollABall.Player
         
         protected virtual void Update()
         {
-            Velocity = _rigidbody.velocity.magnitude;
             SendNotify();
         }
         
@@ -85,7 +84,7 @@ namespace RollABall.Player
             var value = MoveDirection.Value;
             var movement = new Vector3(value.x, 0, value.y);
 
-            _rigidbody.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
+            playerRb.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
         }
         
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
@@ -96,115 +95,16 @@ namespace RollABall.Player
         /// <summary>
         /// Sends an event about changes in stats of a unit.
         /// </summary>
-        private void SendNotify()
-        {
-            var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;
-            var isSpeedDown = SpeedMultiplier < SpeedMultiplierConst;
+        /// <summary>
+        /// Sends an event about changes in stats of a unit.
+        /// </summary>
+        protected abstract void SendNotify();
 
-            var args = new PlayerArgs(
-                CurrentHp, 
-                IsUnitInvulnerable, 
-                Velocity, 
-                isSpeedUp, 
-                isSpeedDown,
-                (int)GamePoints
-                );
-            
-            playerEvent.Notify(args);
-        }
+        public abstract void SetGamePoints(float points, bool increase);
 
-        public void SetGamePoints(float points, bool increase)
-        {
-            GamePoints = increase switch
-            {
-                true => GamePoints + points >= gameStats.GameHighScore
-                    ? gameStats.GameHighScore
-                    : GamePoints += points,
-                false => GamePoints - points > 0 
-                    ? GamePoints -= points 
-                    : 0
-            };
-        }
-        
-        public void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null)
-        {
-            // Set Invulnerable
-            if (isInvulnerable.HasValue)
-            {
-                IsUnitInvulnerable = isInvulnerable.Value;
-            }
+        public abstract void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null);
 
-            // Set HP (only !increase)
-            if (hp.HasValue && increase.HasValue && !increase.Value && !IsUnitInvulnerable)
-            {
-                CurrentHp = CurrentHp - hp.Value > 0
-                    ? CurrentHp -= hp.Value
-                    : 0;
-            }
-        }
-
-        public void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null)
-        {
-            if (cancelEffect.HasValue && cancelEffect.Value)
-            {
-                SpeedMultiplier = SpeedMultiplierConst;
-                return;
-            }
-
-            if (multiplier.HasValue && increase.HasValue)
-            {
-                switch (increase.Value)
-                {
-                    case true:
-                        if (SpeedMultiplier > SpeedMultiplierConst)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            SpeedMultiplier = SpeedMultiplierConst * multiplier.Value;
-                        }
-
-                        break;
-                    case false:
-                        if (SpeedMultiplier < SpeedMultiplierConst)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            SpeedMultiplier = SpeedMultiplierConst / multiplier.Value;
-                        }
-                        break;
-                }
-            }
-            
-            
-            
-            
-            // Если тповыещение и уже повышкено - ничего не делать
-
-
-            // Если понимнижение и уже понижено - ничего не далеть
-            
-            
-            
-            // Если повышение и текущий SpeedMultiplier == SpeedMultiplierConst
-            // SpeedMultiplier = SpeedMultiplierConst * multiplier
-            
-            // Если   и текущий SpeedMultiplier == SpeedMultiplierConst
-            
-            
-            
-            switch (increase)
-            {
-                case true:
-                    
-                    break;
-                case false:
-                    break;
-            }
-        }
+        public abstract void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null);
 
         public virtual void Dispose()
         {
