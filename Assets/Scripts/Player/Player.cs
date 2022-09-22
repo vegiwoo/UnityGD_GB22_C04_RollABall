@@ -29,16 +29,17 @@ namespace RollABall.Player
         #endregion
 
         #region Properties
-        
+        // Game 
         [field: SerializeField, ReadonlyField] protected float GamePoints { get; set; }
+        
+        // HP
         [field: SerializeField, ReadonlyField] protected float CurrentHp { get; set; }
         [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
         
+        // Movement
         private Vector2? MoveDirection { get; set; } = null;
-
         protected const float SpeedMultiplierConst = 3f;
         [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
-
         [field: SerializeField, ReadonlyField] private float Velocity { get; set; }
 
         #endregion
@@ -54,7 +55,7 @@ namespace RollABall.Player
         {
             GamePoints = 0;
             CurrentHp = playerStats.MaxHp;
-            SpeedMultiplier = SpeedMultiplier;
+            SpeedMultiplier = SpeedMultiplierConst;
         }
         
         protected virtual void Update()
@@ -79,12 +80,12 @@ namespace RollABall.Player
         
         protected void Move()
         {
-            if (!MoveDirection.HasValue || Velocity >= playerStats.MaxSpeed) return;
+            if (!MoveDirection.HasValue) return;
             
             var value = MoveDirection.Value;
             var movement = new Vector3(value.x, 0, value.y);
 
-            _rigidbody.AddForce(movement * SpeedMultiplier, ForceMode.VelocityChange);
+            _rigidbody.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
         }
         
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
@@ -125,22 +126,84 @@ namespace RollABall.Player
             };
         }
         
-        public void SetHitPoints(float hp, bool increase, bool isInvulnerable)
+        public void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null)
         {
-            IsUnitInvulnerable = isInvulnerable;
-            
-            CurrentHp = increase switch
+            // Set Invulnerable
+            if (isInvulnerable.HasValue)
             {
-                true => CurrentHp, 
-                false => CurrentHp - hp > 0 && !IsUnitInvulnerable
-                    ? CurrentHp -= hp 
-                    : CurrentHp
-            };
+                IsUnitInvulnerable = isInvulnerable.Value;
+            }
+
+            // Set HP (only !increase)
+            if (hp.HasValue && increase.HasValue && !increase.Value && !IsUnitInvulnerable)
+            {
+                CurrentHp = CurrentHp - hp.Value > 0
+                    ? CurrentHp -= hp.Value
+                    : 0;
+            }
         }
-        
-        public void SetSpeed(float multiplier, bool increase)
+
+        public void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null)
         {
+            if (cancelEffect.HasValue && cancelEffect.Value)
+            {
+                SpeedMultiplier = SpeedMultiplierConst;
+                return;
+            }
+
+            if (multiplier.HasValue && increase.HasValue)
+            {
+                switch (increase.Value)
+                {
+                    case true:
+                        if (SpeedMultiplier > SpeedMultiplierConst)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            SpeedMultiplier = SpeedMultiplierConst * multiplier.Value;
+                        }
+
+                        break;
+                    case false:
+                        if (SpeedMultiplier < SpeedMultiplierConst)
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            SpeedMultiplier = SpeedMultiplierConst / multiplier.Value;
+                        }
+                        break;
+                }
+            }
             
+            
+            
+            
+            // Если тповыещение и уже повышкено - ничего не делать
+
+
+            // Если понимнижение и уже понижено - ничего не далеть
+            
+            
+            
+            // Если повышение и текущий SpeedMultiplier == SpeedMultiplierConst
+            // SpeedMultiplier = SpeedMultiplierConst * multiplier
+            
+            // Если   и текущий SpeedMultiplier == SpeedMultiplierConst
+            
+            
+            
+            switch (increase)
+            {
+                case true:
+                    
+                    break;
+                case false:
+                    break;
+            }
         }
 
         public virtual void Dispose()

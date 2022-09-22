@@ -111,6 +111,10 @@ namespace RollABall.Managers
 
         #region Functionality
 
+        /// <summary>
+        /// Finds free points without bonuses on playing field.
+        /// </summary>
+        /// <returns>Collection of points on playing field.</returns>
         private List<Transform> FindFreePoints()
         {
             return bonusPoints
@@ -118,6 +122,9 @@ namespace RollABall.Managers
                 .ToList();
         }
         
+        /// <summary>
+        /// Controls number of bonuses on playing field.
+        /// </summary>
         private IEnumerator BonusСheckСoroutine()
         {
             while (true)
@@ -150,30 +157,15 @@ namespace RollABall.Managers
 
                 IBonusable newBonus = default;
                 GameObject newBonusObject = default;
+                var collection = type == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
                 
                 newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
-                
-                switch (type)
-                {
-                    case EffectType.Buff:
-                        newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        InitBonus(type, ref newBonus, randomPoint);
-                        // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
-                        //this[EffectType.Buff, 0, false] = new BonusItem(randomPoint, newBonus); 
-                        _positiveBonuses.Add(new BonusItem(randomPoint, newBonus));
-                        break;
-                    case EffectType.Debuff:
-                    
-                        newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        InitBonus(type, ref newBonus, randomPoint); 
-                        // HACK: Использую индексатор, хотя в данном кейсе это наверное не нужно
-                        // this[EffectType.Debuff, 0, false] = new BonusItem(randomPoint, newBonus);
-                        _negativeBonuses.Add(new BonusItem(randomPoint, newBonus));
-                        break;
-                }
+                newBonus = newBonusObject.AddComponent<PositiveBonus>();
                 
                 if (newBonus is not null)
                 { 
+                    InitBonus(type, ref newBonus, randomPoint);
+                    collection.Add(new BonusItem(randomPoint, newBonus));
                     newBonus.InteractiveNotify += OnBonusNotify;
                     newBonusObject.tag = GameData.BonusTag;
                     newBonusObject.transform.parent = randomPoint;
@@ -194,6 +186,7 @@ namespace RollABall.Managers
         /// <returns>Random effect.</returns>
         private IEffectable GetRandomEffectByType(EffectType effectType)
         {
+            // Thrown Exception Implementation
             if (stats == null)
             {
                 throw new ArgumentNullException(stats.effects.ToString());
@@ -201,8 +194,8 @@ namespace RollABall.Managers
             
             return effectType switch
             {
-                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count - 1)],
-                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count - 1)],
+                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count)],
+                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count)],
                 _ => default
             };
         }

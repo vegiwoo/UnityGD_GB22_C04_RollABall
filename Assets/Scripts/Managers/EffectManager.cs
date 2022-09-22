@@ -47,21 +47,20 @@ namespace RollABall.Managers
         {
             if (args.Tag == GameData.PlayerTag)
             {
-                ApplyEffect(args.Effect);
+                ApplyEffectOnPlayer(args.Effect);
             }
         }
 
-        private void ApplyEffect(IEffectable effect)
+        private void ApplyEffectOnPlayer(IEffectable effect)
         {
             Log(effect.ToString());
 
             // Apply effects without duration
-            if (effect.Duration == 0 && effect.BoosterType == BoosterType.None)
+            if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
             {
                 switch (effect.EffectTarget)
                 {
                     case EffectTargetType.GamePoints:
-
                         Player.SetGamePoints(
                             effect.Type == EffectType.Buff ? 
                                 effect.PositivePower : 
@@ -73,7 +72,7 @@ namespace RollABall.Managers
 
                         if (effect.Type == EffectType.Debuff)
                         {
-                            Player.SetHitPoints(effect.NegativePower, false, false);
+                            Player.SetHitPoints(effect.NegativePower, false);
                         }
 
                         break;
@@ -89,8 +88,45 @@ namespace RollABall.Managers
 
         private IEnumerator ApplyEffectCoroutine(IEffectable effect)
         {
-            // ... HP buff 
-            // ... Speed up Speed Down
+            if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
+            {
+                yield break;
+            }
+
+            switch (effect.EffectTarget)
+            {
+                case EffectTargetType.HitPoints:
+                    if (effect.Type == EffectType.Buff)
+                    {
+                        Player.SetHitPoints(null, null, true);
+                    }
+                    break;
+                case EffectTargetType.UnitSpeed:
+                    Player.SetSpeed(
+                        effect.Type == EffectType.Buff ? effect.PositivePower : effect.NegativePower, 
+                        effect.Type == EffectType.Buff);
+                    break;
+                default:
+                    yield break;
+            }
+
+            // Apply effect
+            yield return new WaitForSeconds(effect.Duration);
+            
+            switch (effect.EffectTarget)
+            {
+                case EffectTargetType.HitPoints:
+                    if (effect.Type == EffectType.Buff)
+                    {
+                        Player.SetHitPoints(null, null, false);
+                    }
+                    break;
+                case EffectTargetType.UnitSpeed:
+                    Player.SetSpeed(null, null, true);
+                    break;
+                default:
+                    yield break;
+            }
             
             yield return null;
         }
@@ -98,108 +134,3 @@ namespace RollABall.Managers
         #endregion
     }
 }
-
-      // // TODO: Applying effects -> to separate manager
-        // private void ApplyEffect(IEffectable effect)
-        // {
-        //     Log(effect.ToString());
-        //
-        //    
-        //     if (effect.Duration == 0 && effect.BoosterType == BoosterType.None)
-        //     {
-        //         switch (effect.EffectTarget)
-        //         {
-        //             case EffectTargetType.GamePoints:
-        //                 switch (effect.Type)
-        //                 {
-        //                     case EffectType.Buff:
-        //                         CurrentScore = CurrentScore + effect.PositivePower < gameStats.GameHighScore ? 
-        //                             CurrentScore += effect.PositivePower : 
-        //                             gameStats.GameHighScore;
-        //                         break;
-        //                     case EffectType.Debuff:
-        //                         CurrentScore = CurrentScore - effect.NegativePower > 0 ? 
-        //                             CurrentScore -= effect.NegativePower : 0;
-        //                         break;
-        //                 }
-        //                 break;
-        //             case EffectTargetType.HitPoints:
-        //                 if (effect.Type == EffectType.Debuff && !IsUnitInvulnerable)
-        //                 {
-        //                     CurrentHp = CurrentHp - effect.NegativePower > 0 ? CurrentHp -= effect.NegativePower : 0;
-        //                 }
-        //                 break;
-        //             default:
-        //                 throw new ArgumentOutOfRangeException();
-        //         }
-        //     }
-// }
-        //
-        // // TODO: Applying effects -> to separate manager
-        // private IEnumerator ApplyEffectCoroutine(IEffectable effect)
-        // {
-        //     // Apply effect
-        //     // Buff
-        //     if (effect.Type == EffectType.Buff)
-        //     {
-        //         if (effect.BoosterType != BoosterType.None)
-        //         {
-        //             switch (effect.BoosterType) 
-        //             {
-        //                 case BoosterType.TempSpeedBoost:
-        //                     SpeedMultiplier = SpeedMultiplierConst * effect.PositivePower;
-        //                     break;
-        //                 case BoosterType.TempInvulnerability:
-        //                     IsUnitInvulnerable = true;
-        //                     break;
-        //             }
-        //         }
-        //     }
-        //     
-        //     // Debuff
-        //     else
-        //     {
-        //         switch (effect.EffectTarget)
-        //         {
-        //             case EffectTargetType.GamePoints:
-        //                 break;
-        //             case EffectTargetType.HitPoints:
-        //                 break;
-        //             case EffectTargetType.UnitSpeed:
-        //                 SpeedMultiplier = SpeedMultiplierConst / effect.NegativePower / 10;
-        //                 break;
-        //         }   
-        //     }
-        //
-        //     yield return new WaitForSeconds(effect.Duration == 0 ? gameStats.BuffDuration :  effect.Duration);
-        //
-        //     // Cancel effect
-        //     if (effect.Type == EffectType.Buff)
-        //     {
-        //         if (effect.BoosterType != BoosterType.None)
-        //         {
-        //             switch (effect.BoosterType) 
-        //             {
-        //                 case BoosterType.TempSpeedBoost:
-        //                     SpeedMultiplier = SpeedMultiplierConst;
-        //                     break;
-        //                 case BoosterType.TempInvulnerability:
-        //                     IsUnitInvulnerable = false;
-        //                     break;
-        //             }
-        //         }
-        //     }
-        //     else
-        //     {
-        //         switch (effect.EffectTarget)
-        //         {
-        //             case EffectTargetType.GamePoints:
-        //                 break;
-        //             case EffectTargetType.HitPoints:
-        //                 break;
-        //             case EffectTargetType.UnitSpeed:
-        //                 SpeedMultiplier = SpeedMultiplierConst;
-        //                 break;
-        //         }   
-        //     }
-        // }
