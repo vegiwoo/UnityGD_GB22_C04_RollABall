@@ -50,26 +50,13 @@ namespace RollABall.Managers
         
         #region Properties 
         
-        private BonusItem this[EffectType effectType, int i, bool isOverwrite] 
+        private BonusItem this[EffectType effectType, int i] 
         {   
             get => (effectType == EffectType.Buff) ?  _positiveBonuses[i] : _negativeBonuses[i];
             set
             {
                 var collection = effectType == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
-                var lenght = collection.Count - 1;
-                
-                if (isOverwrite)
-                {
-                    collection[i] = value;
-                }
-                else
-                {
-                    while(i < lenght && collection[i] != null) i++;
-                    if(i < lenght)
-                    {
-                        collection[i] = value;
-                    } 
-                }
+                collection[i] = value;
             }
         } 
         

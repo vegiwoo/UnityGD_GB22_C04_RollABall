@@ -23,11 +23,7 @@ namespace RollABall.Managers
         [SerializeField] private Color32 buffColor = new (166, 115, 243, 255);
 
         #endregion
-        
-        #region Constanst and variables
-        // ...
-        #endregion
-        
+
         #region MonoBehaviour methods
 
         private void Start()

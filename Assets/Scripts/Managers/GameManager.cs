@@ -9,16 +9,17 @@ using static UnityEngine.Debug;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class GameManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<PlayerArgs>
+    public class GameManager : MonoBehaviour, IObserver<PlayerArgs>
     {
         #region Links
+        
         [field:Header("Links")]
-        [field: SerializeField] private BonusManager BonusManager { get; set; }
         [field: SerializeField] private UIManager UIManager { get; set; }
         [field:Header("Stats")]
         [field: SerializeField] private GameStats GameStats { get; set; }
         [field:Header("Events")]
         [field:SerializeField] private PlayerEvent playerEvent;
+        
         #endregion
         
         #region Properties

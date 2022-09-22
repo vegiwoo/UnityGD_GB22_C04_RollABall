@@ -107,7 +107,5 @@ namespace RollABall.Player
         }
 
         #endregion
-        
-        
     }
 }
