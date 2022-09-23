@@ -1,56 +1,82 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
+using RollABall.Stats;
+using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Debug;
+using Random = UnityEngine.Random;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class EffectManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<BonusArgs>, IDisposable
+    public class EffectManager : MonoBehaviour, IDisposable
     {
         #region Properties
-        
-        [field: Header("Links")]
+
+        [field: Header("Links")] 
+        [field: SerializeField] public EffectStats Stats { get; set; }
         [field: SerializeField] public Player.Player Player { get; set; }
-        [field: SerializeField] public BonusEvent BonusEvent { get; set; }
+
+        // Stored effects by type
+        private List<Effect> _buffs;
+        private List<Effect> _debuffs;
         
         #endregion
         
         #region MonoBehaviour methods
 
-        private void OnEnable()
+        private void Start()
         {
-            BonusEvent.Attach(this);
-        }
-
-        private void OnDisable()
-        {
-            BonusEvent.Detach(this);
+            // Thrown Exception Implementation
+            if (Stats == null)
+            {
+                throw new ArgumentNullException(Stats.effects.ToString());
+            }
+            
+            try
+            {
+                _buffs = Stats.effects.Where(el => el.Type == EffectType.Buff).ToList();
+                _debuffs = Stats.effects.Where(el => el.Type == EffectType.Debuff).ToList();
+            }
+            catch (ArgumentNullException e)
+            {
+                LogError("Link to effect stats cannot be empty");
+                EditorApplication.isPlaying = false;
+            }
         }
 
         #endregion
 
         #region Funtionality
         
-        public void Dispose()
+        /// <summary>
+        /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
+        /// </summary>
+        /// <param name="effectType">Type of effect to generate.</param>
+        /// <returns>Random effect.</returns>
+        public IEffectable GetRandomEffectByType(EffectType effectType)
         {
-            BonusEvent.Detach(this);
-        }
-        
-        public void OnEventRaised(ISubject<BonusArgs> subject, BonusArgs args)
-        {
-            if (args.Tag == GameData.PlayerTag)
+            return effectType switch
             {
-                ApplyEffectOnPlayer(args.Effect);
-            }
+                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count)],
+                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count)],
+                _ => default
+            };
         }
 
-        private void ApplyEffectOnPlayer(IEffectable effect)
+        public void Dispose()
+        {
+            // ??? 
+        }
+
+        public void ApplyEffectOnPlayer(IEffectable effect)
         {
             Log(effect.ToString());
 

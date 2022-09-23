@@ -23,10 +23,9 @@ namespace RollABall.Managers
         #region Links
         [Header("Stats")]
         [SerializeField] private EffectStats stats;
+        [SerializeField] private EffectManager effectManager;
         [Header("Prefabs")]
         [SerializeField] private GameObject bonusPrefab;
-        [Header("Events")]
-        [SerializeField] private BonusEvent bonusEvent;
         [Header("Links")]
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
         private Transform[] bonusPoints;
@@ -35,22 +34,20 @@ namespace RollABall.Managers
         #region Fields
         
         // Placed bonuses on field
-        private List<BonusItem> _positiveBonuses;
+        private List<IBonusable> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
-        private List<BonusItem> _negativeBonuses;
+        private List<IBonusable> _negativeBonuses;
         private int _requiredNumberNegativeBonuses;
 
-        // Stored effects by type
-        private List<Effect> _buffs;
-        private List<Effect> _debuffs;
-
         private AudioIsPlaying _audioIsPlaying;
+
+        private Coroutine _removeBonusCoroutine;
         
         #endregion
         
         #region Properties 
         
-        private BonusItem this[EffectType effectType, int i] 
+        private IBonusable this[EffectType effectType, int i] 
         {   
             get => (effectType == EffectType.Buff) ?  _positiveBonuses[i] : _negativeBonuses[i];
             set
@@ -70,19 +67,8 @@ namespace RollABall.Managers
             _requiredNumberPositiveBonuses = halfOff + remainder;
             _requiredNumberNegativeBonuses = halfOff;
             
-            _positiveBonuses = new List<BonusItem>(_requiredNumberPositiveBonuses);
-            _negativeBonuses = new List<BonusItem>(_requiredNumberNegativeBonuses);
-
-            try
-            {
-                _buffs = stats.effects.Where(el => el.Type == EffectType.Buff).ToList();
-                _debuffs = stats.effects.Where(el => el.Type == EffectType.Debuff).ToList();
-            }
-            catch (ArgumentNullException e)
-            {
-                LogError("Link to effect stats cannot be empty");
-                EditorApplication.isPlaying = false;
-            }
+            _positiveBonuses = new List<IBonusable>(_requiredNumberPositiveBonuses);
+            _negativeBonuses = new List<IBonusable>(_requiredNumberNegativeBonuses);
 
             _audioIsPlaying = GetComponent<AudioIsPlaying>();
             
@@ -132,148 +118,111 @@ namespace RollABall.Managers
             }
         }
         
-        private IEnumerator BonusPlacingСoroutine(EffectType type, int count)
+        /// <summary>
+        /// Places new bonuses on playing field.
+        /// </summary>
+        /// <param name="effectType">Type of effect for group of spreadable bonuses.</param>
+        /// <param name="count">Number of placed bonuses.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        private IEnumerator BonusPlacingСoroutine(EffectType effectType, int count)
         {
+            yield return new WaitUntil(() => _removeBonusCoroutine == null);
+            
             var freePoints = FindFreePoints();
             
             var counter = count;
-            while (counter != 0 && freePoints.Count > 0)
+            while (counter > 0 && freePoints.Count > 0)
             {
                 var randomIndex = Random.Range(0, freePoints.Count - 1);
                 var randomPoint = freePoints[randomIndex];
-
+                
+                List<IBonusable> collection = default;
                 IBonusable newBonus = default;
-                GameObject newBonusObject = default;
-                var collection = type == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
                 
-                newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
-                newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                
-                if (newBonus is not null)
+                var newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
+                newBonusObject.tag = GameData.BonusTag;
+
+                switch (effectType)
+                {
+                    case EffectType.Buff:
+                        collection = _positiveBonuses;
+                        newBonus = newBonusObject.AddComponent<PositiveBonus>();
+                        break;
+                    case EffectType.Debuff:
+                        collection = _negativeBonuses;
+                        newBonus = newBonusObject.AddComponent<NegativeBonus>();
+                        break;
+                }
+
+                if (collection is not null && newBonus is not null)
                 { 
-                    InitBonus(type, ref newBonus, randomPoint);
-                    collection.Add(new BonusItem(randomPoint, newBonus));
+                    var effect = effectManager.GetRandomEffectByType(effectType);
+                    
+                    newBonus.Init(effect, randomPoint);
                     newBonus.InteractiveNotify += OnBonusNotify;
-                    newBonusObject.tag = GameData.BonusTag;
+                    
+                    collection.Add(newBonus);
+                    
                     newBonusObject.transform.parent = randomPoint;
+                }
+                else
+                {
+                    Destroy(newBonusObject);
                 }
 
                 freePoints.Remove(randomPoint);
                 --counter;
                 
                 yield return new WaitForSeconds(stats.DelayAppearance);
-                yield return null;
             }
-        }
-
-        /// <summary>
-        /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
-        /// </summary>
-        /// <param name="effectType">Type of effect to generate.</param>
-        /// <returns>Random effect.</returns>
-        private IEffectable GetRandomEffectByType(EffectType effectType)
-        {
-            // Thrown Exception Implementation
-            if (stats == null)
-            {
-                throw new ArgumentNullException(stats.effects.ToString());
-            }
-            
-            return effectType switch
-            {
-                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count)],
-                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count)],
-                _ => default
-            };
-        }
-
-        /// <summary>
-        /// Specifies type of bonus by effect.
-        /// </summary>
-        /// <param name="effect">"Effect to specifies type of bonus.</param>
-        /// <returns>Bonus type.</returns>
-        private static BonusType GetBonusTypeByEffect(IEffectable effect)
-        {
-            BonusType bonusType = default;
-            
-            switch (effect.EffectTarget)
-            {
-                case EffectTargetType.GamePoints:
-                    bonusType = effect.Type == EffectType.Buff ? BonusType.Gift : BonusType.Theft;
-                    break;
-                case EffectTargetType.HitPoints:
-                    bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.Wound;
-                    break;
-                case EffectTargetType.UnitSpeed:
-                    bonusType = effect.Type == EffectType.Buff ? BonusType.Booster : BonusType.TempSlowdown;
-                    break;
-            }
-
-            return bonusType;
         }
         
-        private void InitBonus(EffectType effectType, ref IBonusable bonus, Transform point)
-        {
-            var effect = GetRandomEffectByType(effectType);
-            var bonusType = GetBonusTypeByEffect(effect);
-            
-            bonus.Init(bonusType, effect, point);
-        }
-        
+        /// <summary>
+        /// Called when a bonus collision occurs. 
+        /// </summary>
+        /// <param name="bonus">Bonus that came across.</param>
+        /// <param name="tagElement">Tag of element that the bonus encountered.</param>
         private void OnBonusNotify(IBonusable bonus, string tagElement)
         {
-            if (!string.Equals(tagElement, GameData.PlayerTag)) return;
-            
-            bonusEvent.Notify(new BonusArgs(GameData.PlayerTag, bonus.Effect));
-
-            switch (bonus.Effect.Type)
+            if (string.Equals(tagElement, GameData.PlayerTag))
             {
-                case EffectType.Buff:
-                    _audioIsPlaying.PlaySound(SoundType.Positive);
-                    break;
-                case EffectType.Debuff:
-                    _audioIsPlaying.PlaySound(SoundType.Negative);
-                    break;
+                effectManager.ApplyEffectOnPlayer(bonus.Effect);
             }
-
-            StartCoroutine(RemoveBonusCoroutine(bonus));
+            
+            _audioIsPlaying.PlaySound(bonus.Effect.Type == EffectType.Buff ? 
+                SoundType.Positive : 
+                SoundType.Negative);
+            
+            _removeBonusCoroutine = StartCoroutine(RemoveBonusCoroutine(bonus));
         }
 
         private IEnumerator RemoveBonusCoroutine(IBonusable bonus)
         {
-            var isSoundPlayed = false;
-            _audioIsPlaying.AudioTriggerNotify += (played) =>
-            {
-                isSoundPlayed = played;
-            };
+            var collection = bonus.Effect.Type == EffectType.Buff ?_positiveBonuses : _negativeBonuses;
+            var existingBonus = collection!.FirstOrDefault(el => el == bonus);
             
-            List<BonusItem> collection = default;
-
-            switch (bonus.Effect.Type)
+            if (existingBonus != null) 
             {
-                case EffectType.Buff:
-                    collection = _positiveBonuses;
-                    break;
-                case EffectType.Debuff:
-                    collection = _negativeBonuses;
-                    break;
+                var existingBonusGameObject = existingBonus.Point.gameObject.transform.GetChild(0).gameObject;
+                existingBonusGameObject.SetActive(false);
+                
+                existingBonus.InteractiveNotify -= OnBonusNotify;
+                var isSoundPlayed = false;
+                _audioIsPlaying.AudioTriggerNotify += (played) =>
+                {
+                    isSoundPlayed = played;
+                };
+
+                yield return new WaitUntil(() => isSoundPlayed);
+
+                Destroy(existingBonusGameObject);
+                collection.Remove(existingBonus);
+                    
+                yield return new WaitForSeconds(stats.DelayAfterRemove);
             }
 
-            var existingElement = collection!.First(el => el.Bonus == bonus);
-            existingElement.Bonus.InteractiveNotify -= OnBonusNotify;
-
-            if (existingElement.Point.gameObject.transform.childCount <= 0) yield break;
-            var bonusGameObject = existingElement.Point.gameObject.transform.GetChild(0);
-
-            yield return new WaitWhile(() => isSoundPlayed);
-   
-            Destroy(bonusGameObject.gameObject);
-
-            yield return new WaitForSeconds(stats.DelayAfterRemove);
-            
-            collection.Remove(existingElement);
-            
-            yield return null;
+            _removeBonusCoroutine = null;
         }
         #endregion
     }

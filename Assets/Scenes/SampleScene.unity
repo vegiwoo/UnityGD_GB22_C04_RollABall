@@ -967,6 +967,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   stats: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
+  effectManager: {fileID: 142419225}
   bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
   bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   bonusPoints:
@@ -1969,7 +1970,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d85d851736046f896e1f281eac672b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <BonusManager>k__BackingField: {fileID: 479113080}
   <UIManager>k__BackingField: {fileID: 165096693}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
   playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}

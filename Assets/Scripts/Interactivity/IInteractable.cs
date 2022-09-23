@@ -14,11 +14,11 @@ namespace RollABall.Interactivity
         /// </summary>
         event InteractiveHandler InteractiveNotify;
 
-        /// <summary>
-        /// Interactive Event Trigger.
-        /// </summary>
-        /// <param name="element">Interaction element</param>
-        /// <param name="tag">Tag received from interaction element</param>
-        void OnGettingNotify(T element, string tag);
+        // /// <summary>
+        // /// Interactive Event Trigger.
+        // /// </summary>
+        // /// <param name="element">Interaction element</param>
+        // /// <param name="tag">Tag received from interaction element</param>
+        // void OnGettingNotify(T element, string tag);
     }
 }

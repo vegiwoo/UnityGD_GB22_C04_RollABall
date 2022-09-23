@@ -1,5 +1,4 @@
 using System;
-using RollABall.Interactivity.Effects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -8,9 +7,11 @@ namespace RollABall.Interactivity.Bonuses
     public interface IBonusable : IEquatable<IBonusable>, IInteractable<IBonusable>, IDisposable
     {
         #region Properties
-        Guid Id { get; }
-        Transform Point { get; }
-        public IEffectable Effect { get; }
+
+        Guid Id => new ();
+        Transform Point { get; set; }
+        IEffectable Effect { get; set; }
+        
         #endregion
         
         #region Functionality
@@ -24,7 +25,16 @@ namespace RollABall.Interactivity.Bonuses
             };
         }
 
-        void Init(BonusType bonusType, IEffectable effect, Transform point);
+        /// <summary>
+        /// Initializes bonus.
+        /// </summary>
+        /// <param name="effect">Bonus effect.</param>
+        /// <param name="point">Placement point.</param>
+        void Init(IEffectable effect, Transform point)
+        {
+            Effect = effect;
+            Point = point;
+        }
 
         #endregion
     }
