@@ -4,15 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using GameDevLib.Audio;
 using GameDevLib.Enums;
-using RollABall.Args;
-using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
-using RollABall.Interactivity.Effects;
 using RollABall.Stats;
-using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -61,18 +56,28 @@ namespace RollABall.Managers
 
         #region MonoBehaviour methods
 
+        private void Awake()
+        {
+            _audioIsPlaying = GetComponent<AudioIsPlaying>();
+        }
+
         private void Start()
+        {
+            MakeCollections();
+            StartCoroutine(BonusСheckСoroutine());
+        }
+
+        /// <summary>
+        /// Creates collections for storing bonuses on game board.
+        /// </summary>
+        private void MakeCollections()
         {
             var halfOff = Math.DivRem(bonusPoints.Length, 2, out var remainder);
             _requiredNumberPositiveBonuses = halfOff + remainder;
             _requiredNumberNegativeBonuses = halfOff;
-            
+
             _positiveBonuses = new List<IBonusable>(_requiredNumberPositiveBonuses);
             _negativeBonuses = new List<IBonusable>(_requiredNumberNegativeBonuses);
-
-            _audioIsPlaying = GetComponent<AudioIsPlaying>();
-            
-            StartCoroutine(BonusСheckСoroutine());
         }
 
         private void OnDisable()
@@ -197,6 +202,10 @@ namespace RollABall.Managers
             _removeBonusCoroutine = StartCoroutine(RemoveBonusCoroutine(bonus));
         }
 
+        /// <summary>
+        /// Removes a bonus from collection of placed bonuses and a game object from field. 
+        /// </summary>
+        /// <param name="bonus">Removal Bonus.</param>
         private IEnumerator RemoveBonusCoroutine(IBonusable bonus)
         {
             var collection = bonus.Effect.Type == EffectType.Buff ?_positiveBonuses : _negativeBonuses;
