@@ -14,17 +14,20 @@ namespace RollABall.Player
     public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>
     {
         #region Links
+        
         [Header("Stats")]
         [SerializeField] protected PlayerStats playerStats;
         [field: SerializeField] protected GameStats gameStats;
         [Header("Events")]
         [SerializeField] private InputManagerEvent inputEvent;
         [SerializeField] protected PlayerEvent playerEvent;
+        
         #endregion
         
-        #region Constants and variables
+        #region Fields
         
         protected Rigidbody playerRb;
+        
         #endregion
 
         #region Properties

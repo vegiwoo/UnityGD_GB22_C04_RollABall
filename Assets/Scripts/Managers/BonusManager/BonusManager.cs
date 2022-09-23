@@ -67,6 +67,15 @@ namespace RollABall.Managers
             StartCoroutine(BonusСheckСoroutine());
         }
 
+        private void OnDisable()
+        {
+            StopAllCoroutines();
+        }
+
+        #endregion
+
+        #region Functionality
+        
         /// <summary>
         /// Creates collections for storing bonuses on game board.
         /// </summary>
@@ -79,15 +88,6 @@ namespace RollABall.Managers
             _positiveBonuses = new List<IBonusable>(_requiredNumberPositiveBonuses);
             _negativeBonuses = new List<IBonusable>(_requiredNumberNegativeBonuses);
         }
-
-        private void OnDisable()
-        {
-            StopAllCoroutines();
-        }
-
-        #endregion
-
-        #region Functionality
 
         /// <summary>
         /// Finds free points without bonuses on playing field.
@@ -142,43 +142,25 @@ namespace RollABall.Managers
                 var randomIndex = Random.Range(0, freePoints.Count - 1);
                 var randomPoint = freePoints[randomIndex];
                 
-                List<IBonusable> collection = default;
+                var collection = effectType == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
                 IBonusable newBonus = default;
                 
                 var newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
                 newBonusObject.tag = GameData.BonusTag;
+                newBonus = newBonusObject.AddComponent<Bonus>();
+                
+                var effect = effectManager.GetRandomEffectByType(effectType);
 
-                switch (effectType)
-                {
-                    case EffectType.Buff:
-                        collection = _positiveBonuses;
-                        newBonus = newBonusObject.AddComponent<PositiveBonus>();
-                        break;
-                    case EffectType.Debuff:
-                        collection = _negativeBonuses;
-                        newBonus = newBonusObject.AddComponent<NegativeBonus>();
-                        break;
-                }
+                newBonus.Init(effect, randomPoint);
+                newBonus.InteractiveNotify += OnBonusNotify;
 
-                if (collection is not null && newBonus is not null)
-                { 
-                    var effect = effectManager.GetRandomEffectByType(effectType);
-                    
-                    newBonus.Init(effect, randomPoint);
-                    newBonus.InteractiveNotify += OnBonusNotify;
-                    
-                    collection.Add(newBonus);
-                    
-                    newBonusObject.transform.parent = randomPoint;
-                }
-                else
-                {
-                    Destroy(newBonusObject);
-                }
+                collection.Add(newBonus);
 
+                newBonusObject.transform.parent = randomPoint;
+                
                 freePoints.Remove(randomPoint);
                 --counter;
-                
+
                 yield return new WaitForSeconds(stats.DelayAppearance);
             }
         }

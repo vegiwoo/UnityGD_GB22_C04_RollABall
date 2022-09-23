@@ -409,8 +409,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cbdd9aa35d6345eab6a238487189ab1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <Stats>k__BackingField: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
   <Player>k__BackingField: {fileID: 1256983359}
-  <BonusEvent>k__BackingField: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
 --- !u!1 &162190893
 GameObject:
   m_ObjectHideFlags: 0
@@ -969,7 +969,6 @@ MonoBehaviour:
   stats: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
   effectManager: {fileID: 142419225}
   bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
-  bonusEvent: {fileID: 11400000, guid: bcb1559b9327d4cecb381f608ba9d6c6, type: 2}
   bonusPoints:
   - {fileID: 1053017601}
   - {fileID: 1678045484}
@@ -1855,7 +1854,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.9863945, y: 1}
+    m_SensorSize: {x: 2.2694302, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0

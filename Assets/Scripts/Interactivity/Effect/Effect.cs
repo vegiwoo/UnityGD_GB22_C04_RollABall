@@ -10,7 +10,6 @@ namespace RollABall.Managers
     public class Effect : IEffectable
     {
         #region Properties
-        public Guid Id => new ();
         [field: SerializeField] public EffectTargetType EffectTarget { get; set; }
         [field: SerializeField] public EffectType Type { get; set; }
         [field: SerializeField] public BonusType BonusType { get; set; }

@@ -21,18 +21,9 @@ namespace RollABall.Managers
         [field:SerializeField] private PlayerEvent playerEvent;
         
         #endregion
-        
-        #region Properties
-        private int GameCurrentScore { get; set; }
-        #endregion
-        
+
         #region MonoBehaviour methods
-
-        private void Start()
-        {
-            GameCurrentScore = 0;
-        }
-
+        
         private void OnEnable()
         {
             playerEvent.Attach(this);

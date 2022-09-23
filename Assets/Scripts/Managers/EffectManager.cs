@@ -2,9 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using GameDevLib.Interfaces;
-using RollABall.Args;
-using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
@@ -18,16 +15,19 @@ namespace RollABall.Managers
 {
     public class EffectManager : MonoBehaviour, IDisposable
     {
+        #region Fields
+        
+        private List<IEffectable> _buffs;
+        private List<IEffectable> _debuffs;
+        
+        #endregion
+        
         #region Properties
 
         [field: Header("Links")] 
         [field: SerializeField] public EffectStats Stats { get; set; }
         [field: SerializeField] public Player.Player Player { get; set; }
 
-        // Stored effects by type
-        private List<Effect> _buffs;
-        private List<Effect> _debuffs;
-        
         #endregion
         
         #region MonoBehaviour methods
@@ -42,8 +42,16 @@ namespace RollABall.Managers
             
             try
             {
-                _buffs = Stats.effects.Where(el => el.Type == EffectType.Buff).ToList();
-                _debuffs = Stats.effects.Where(el => el.Type == EffectType.Debuff).ToList();
+                _buffs = Stats.effects
+                    .Select(el => el as IEffectable)
+                    .Where(el => el.Type == EffectType.Buff)
+                    .ToList();
+                
+                _debuffs = Stats.effects
+                    .Select(el => el as IEffectable)
+                    .Where(el => el.Type == EffectType.Debuff)
+                    .ToList();
+         
             }
             catch (ArgumentNullException e)
             {
@@ -70,12 +78,7 @@ namespace RollABall.Managers
                 _ => default
             };
         }
-
-        public void Dispose()
-        {
-            // ??? 
-        }
-
+        
         public void ApplyEffectOnPlayer(IEffectable effect)
         {
             Log(effect.ToString());
@@ -153,6 +156,11 @@ namespace RollABall.Managers
             }
             
             yield return null;
+        }
+        
+        public void Dispose()
+        {
+            _buffs = _debuffs = null;
         }
         
         #endregion

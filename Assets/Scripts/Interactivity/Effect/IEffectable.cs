@@ -8,7 +8,7 @@ namespace RollABall.Interactivity.Bonuses
     public interface IEffectable : IEquatable<IEffectable>
     {
         #region Properties
-        Guid Id { get; }
+        Guid Id => new();
         BonusType BonusType { get; }
         EffectType Type { get; }
         EffectTargetType EffectTarget { get; }
