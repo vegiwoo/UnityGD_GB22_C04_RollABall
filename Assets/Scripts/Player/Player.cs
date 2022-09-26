@@ -63,11 +63,6 @@ namespace RollABall.Player
             SpeedMultiplier = SpeedMultiplierConst;
         }
         
-        protected virtual void Update()
-        {
-            SendNotify();
-        }
-        
         protected virtual void OnEnable()
         {
             inputEvent.Attach(this);
@@ -112,6 +107,8 @@ namespace RollABall.Player
                     SetSpeed(args.Power, args.Increase, args.CancelEffect);
                     break;
             }
+            
+           SendNotify();
         }
 
         /// <summary>
@@ -135,7 +132,5 @@ namespace RollABall.Player
         }
 
         #endregion
-
-
     }
 }

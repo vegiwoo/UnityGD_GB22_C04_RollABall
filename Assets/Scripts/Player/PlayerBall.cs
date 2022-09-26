@@ -15,10 +15,9 @@ namespace RollABall.Player
             transform.gameObject.tag = GameData.PlayerTag;
         }
 
-        protected override void Update()
+        private void Update()
         {
-            Velocity = playerRb.velocity.magnitude;
-            base.Update();
+            //Velocity = playerRb.velocity.magnitude;
         }
 
         private void FixedUpdate()
@@ -44,9 +43,6 @@ namespace RollABall.Player
                         : 0
                 };
             }
-            
-            
-       
         }
 
         protected override void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null)

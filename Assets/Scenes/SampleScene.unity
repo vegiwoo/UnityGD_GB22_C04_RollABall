@@ -410,7 +410,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <Stats>k__BackingField: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
-  <Player>k__BackingField: {fileID: 1256983359}
+  <EffectEvent>k__BackingField: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
 --- !u!1 &162190893
 GameObject:
   m_ObjectHideFlags: 0
@@ -501,9 +501,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
-  hpLabel: {fileID: 1256965137}
-  scoreLabel: {fileID: 632354802}
-  speedLabel: {fileID: 1831949398}
+  playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
   normalColor:
     serializedVersion: 2
     rgba: 4279622124
@@ -513,6 +511,51 @@ MonoBehaviour:
   buffColor:
     serializedVersion: 2
     rgba: 4294144934
+  hpLabelUpdateEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1256965139}
+        m_TargetAssemblyTypeName: RollABall.UI.UILabel, Assembly-CSharp
+        m_MethodName: UpdateLabel
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  scoreLabelUpdateEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 632354804}
+        m_TargetAssemblyTypeName: RollABall.UI.UILabel, Assembly-CSharp
+        m_MethodName: UpdateLabel
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  speedLabelUpdateEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1831949400}
+        m_TargetAssemblyTypeName: RollABall.UI.UILabel, Assembly-CSharp
+        m_MethodName: UpdateLabel
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!850595691 &174005602
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -970,16 +1013,36 @@ MonoBehaviour:
   effectManager: {fileID: 142419225}
   bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
   bonusPoints:
-  - {fileID: 1053017601}
-  - {fileID: 1678045484}
-  - {fileID: 403163007}
-  - {fileID: 1037917427}
-  - {fileID: 350871198}
-  - {fileID: 91169296}
-  - {fileID: 258298693}
-  - {fileID: 343661998}
-  - {fileID: 1866955714}
-  - {fileID: 1386223124}
+  - <Point>k__BackingField: {fileID: 1053017601}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 1678045484}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 403163007}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 1037917427}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 350871198}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 91169296}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 258298693}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 343661998}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 1866955714}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
+  - <Point>k__BackingField: {fileID: 1386223124}
+    <IsReserved>k__BackingField: 0
+    <IsBonusPlaced>k__BackingField: 0
 --- !u!114 &479113081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1098,6 +1161,7 @@ GameObject:
   - component: {fileID: 632354801}
   - component: {fileID: 632354803}
   - component: {fileID: 632354802}
+  - component: {fileID: 632354804}
   m_Layer: 5
   m_Name: ScoreLabel
   m_TagString: Untagged
@@ -1167,6 +1231,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 632354800}
   m_CullTransparentMesh: 1
+--- !u!114 &632354804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 632354800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f083d604a034aac95a1870abbd8f0a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Prefix>k__BackingField: score
+  <Suffix>k__BackingField: 0/0
 --- !u!1 &673699394
 GameObject:
   m_ObjectHideFlags: 0
@@ -1854,7 +1932,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 2.2694302, y: 1}
+    m_SensorSize: {x: 2.728972, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -1969,7 +2047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d85d851736046f896e1f281eac672b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <UIManager>k__BackingField: {fileID: 165096693}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
   playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
 --- !u!1 &1159815979
@@ -2154,6 +2231,7 @@ GameObject:
   - component: {fileID: 1256965136}
   - component: {fileID: 1256965138}
   - component: {fileID: 1256965137}
+  - component: {fileID: 1256965139}
   m_Layer: 5
   m_Name: HPLabel
   m_TagString: Untagged
@@ -2223,6 +2301,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1256965135}
   m_CullTransparentMesh: 1
+--- !u!114 &1256965139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1256965135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f083d604a034aac95a1870abbd8f0a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Prefix>k__BackingField: hp
+  <Suffix>k__BackingField: 0
 --- !u!1 &1256983355
 GameObject:
   m_ObjectHideFlags: 0
@@ -2302,6 +2394,7 @@ MonoBehaviour:
   playerStats: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
   gameStats: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
   inputEvent: {fileID: 11400000, guid: 2ff03efb4f4104ddc91e03f7e1730410, type: 2}
+  effectEvent: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
   playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
   <GamePoints>k__BackingField: 0
   <CurrentHp>k__BackingField: 0
@@ -32591,6 +32684,7 @@ GameObject:
   - component: {fileID: 1831949397}
   - component: {fileID: 1831949399}
   - component: {fileID: 1831949398}
+  - component: {fileID: 1831949400}
   m_Layer: 5
   m_Name: SpeedLabel
   m_TagString: Untagged
@@ -32660,6 +32754,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1831949396}
   m_CullTransparentMesh: 1
+--- !u!114 &1831949400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831949396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f083d604a034aac95a1870abbd8f0a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <Prefix>k__BackingField: speed
+  <Suffix>k__BackingField: normal
 --- !u!1 &1841391071
 GameObject:
   m_ObjectHideFlags: 0

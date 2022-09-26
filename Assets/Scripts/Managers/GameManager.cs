@@ -1,3 +1,4 @@
+using System;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
@@ -9,12 +10,10 @@ using static UnityEngine.Debug;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class GameManager : MonoBehaviour, IObserver<PlayerArgs>
+    public class GameManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<PlayerArgs>, IDisposable
     {
         #region Links
         
-        [field:Header("Links")]
-        [field: SerializeField] private UIManager UIManager { get; set; }
         [field:Header("Stats")]
         [field: SerializeField] private GameStats GameStats { get; set; }
         [field:Header("Events")]
@@ -31,17 +30,20 @@ namespace RollABall.Managers
 
         private void OnDisable()
         {
-            playerEvent.Detach(this);
+           Dispose();
         }
 
         #endregion
         
         #region Functionality
         
+        public void Dispose()
+        {
+            playerEvent.Detach(this);
+        }
+        
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
         {
-            UIManager.SetValues(args);
-
             var lost = args.CurrentHp <= 0;
             var win = args.GamePoints >= GameStats.GameHighScore;
             
@@ -56,5 +58,7 @@ namespace RollABall.Managers
         }
         
         #endregion
+
+  
     }
 }
