@@ -23,7 +23,7 @@ namespace RollABall.Managers
         [SerializeField] private GameObject bonusPrefab;
         [Header("Links")]
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
-        private Transform[] bonusPoints;
+        private BonusPoint[] bonusPoints;
         #endregion
         
         #region Fields
@@ -64,7 +64,8 @@ namespace RollABall.Managers
         private void Start()
         {
             MakeCollections();
-            StartCoroutine(BonusСheckСoroutine());
+            CheckNumberOfBonuses(EffectType.Buff);
+            CheckNumberOfBonuses(EffectType.Debuff);
         }
 
         private void OnDisable()
@@ -88,41 +89,43 @@ namespace RollABall.Managers
             _positiveBonuses = new List<IBonusable>(_requiredNumberPositiveBonuses);
             _negativeBonuses = new List<IBonusable>(_requiredNumberNegativeBonuses);
         }
-
-        /// <summary>
-        /// Finds free points without bonuses on playing field.
-        /// </summary>
-        /// <returns>Collection of points on playing field.</returns>
-        private List<Transform> FindFreePoints()
-        {
-            return bonusPoints
-                .Where(t => t.gameObject.transform.childCount == 0)
-                .ToList();
-        }
         
         /// <summary>
-        /// Controls number of bonuses on playing field.
+        /// Checks whether required number of bonuses is actually placed on playing field.
         /// </summary>
-        private IEnumerator BonusСheckСoroutine()
+        /// <param name="effectType">Effect type (buff or debuff).</param>
+        private void CheckNumberOfBonuses(EffectType effectType)
         {
-            while (true)
+            var numberOfAddition = effectType == EffectType.Buff ? 
+                _positiveBonuses.Capacity - _positiveBonuses.Count : 
+                _negativeBonuses.Capacity - _negativeBonuses.Count;
+            
+            if (numberOfAddition > 0)
             {
-                if (_requiredNumberPositiveBonuses != _positiveBonuses.Count)
-                {
-                    var numberOfAddition = _requiredNumberPositiveBonuses - _positiveBonuses.Count;
-                    yield return StartCoroutine(BonusPlacingСoroutine(EffectType.Buff, numberOfAddition));
-                }
-  
-                if (_negativeBonuses.Count != _requiredNumberNegativeBonuses)
-                {
-                    var numberOfAddition = _requiredNumberNegativeBonuses - _negativeBonuses.Count;
-                    yield return StartCoroutine(BonusPlacingСoroutine(EffectType.Debuff, numberOfAddition));
-                }
-
-                yield return null;
+                StartCoroutine(BonusPlacingСoroutine(effectType, numberOfAddition));
             }
         }
-        
+
+        /// <summary>
+        /// Reserves and returns free BonusPoints on playing field.
+        /// </summary>
+        /// <param name="count">Required number of free points.</param>
+        /// <returns>List with reserved free points.</returns>
+        private List<BonusPoint> GetFreeBonusPoints(int count)
+        {
+            var points = bonusPoints
+                .Where(p => p.IsReserved == false)
+                .Take(count)
+                .ToList();
+            
+            foreach (var point in points)
+            {
+                point.Reserve();
+            }
+            
+            return points;
+        }
+
         /// <summary>
         /// Places new bonuses on playing field.
         /// </summary>
@@ -134,7 +137,7 @@ namespace RollABall.Managers
         {
             yield return new WaitUntil(() => _removeBonusCoroutine == null);
             
-            var freePoints = FindFreePoints();
+            var freePoints = GetFreeBonusPoints(count);
             
             var counter = count;
             while (counter > 0 && freePoints.Count > 0)
@@ -145,7 +148,7 @@ namespace RollABall.Managers
                 var collection = effectType == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
                 IBonusable newBonus = default;
                 
-                var newBonusObject = Instantiate(bonusPrefab, randomPoint.position, randomPoint.rotation);
+                var newBonusObject = Instantiate(bonusPrefab, randomPoint.Point.position, randomPoint.Point.rotation);
                 newBonusObject.tag = GameData.BonusTag;
                 newBonus = newBonusObject.AddComponent<Bonus>();
                 
@@ -156,7 +159,7 @@ namespace RollABall.Managers
 
                 collection.Add(newBonus);
 
-                newBonusObject.transform.parent = randomPoint;
+                newBonusObject.transform.parent = randomPoint.Point;
                 
                 freePoints.Remove(randomPoint);
                 --counter;
@@ -195,7 +198,7 @@ namespace RollABall.Managers
             
             if (existingBonus != null) 
             {
-                var existingBonusGameObject = existingBonus.Point.gameObject.transform.GetChild(0).gameObject;
+                var existingBonusGameObject = existingBonus.Point.Point.gameObject.transform.GetChild(0).gameObject;
                 existingBonusGameObject.SetActive(false);
                 
                 existingBonus.InteractiveNotify -= OnBonusNotify;
@@ -208,13 +211,22 @@ namespace RollABall.Managers
                 yield return new WaitUntil(() => isSoundPlayed);
 
                 Destroy(existingBonusGameObject);
+                existingBonus.Point.Clear();
                 collection.Remove(existingBonus);
                     
                 yield return new WaitForSeconds(stats.DelayAfterRemove);
+                
+                _removeBonusCoroutine = null;
+                
+                CheckNumberOfBonuses(bonus.Effect.Type);
+            }
+            else
+            {
+                yield return null;
             }
 
-            _removeBonusCoroutine = null;
         }
+
         #endregion
     }
 }

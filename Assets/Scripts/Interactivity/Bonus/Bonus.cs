@@ -8,7 +8,7 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
         
         public event IInteractable<IBonusable>.InteractiveHandler InteractiveNotify;
-        public Transform Point { get; set; }
+        public BonusPoint Point { get; set; }
         public IEffectable Effect { get; set; }
         
         #endregion

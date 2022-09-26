@@ -9,7 +9,7 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
 
         Guid Id => new ();
-        Transform Point { get; set; }
+        BonusPoint Point { get; set; }
         IEffectable Effect { get; set; }
         
         #endregion
@@ -30,7 +30,7 @@ namespace RollABall.Interactivity.Bonuses
         /// </summary>
         /// <param name="effect">Bonus effect.</param>
         /// <param name="point">Placement point.</param>
-        void Init(IEffectable effect, Transform point)
+        void Init(IEffectable effect, BonusPoint point)
         {
             Effect = effect;
             Point = point;
