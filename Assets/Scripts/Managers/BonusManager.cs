@@ -7,6 +7,7 @@ using GameDevLib.Enums;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Stats;
 using UnityEngine;
+using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 // ReSharper disable once CheckNamespace
@@ -16,6 +17,7 @@ namespace RollABall.Managers
     public class BonusManager : MonoBehaviour
     {
         #region Links
+        
         [Header("Stats")]
         [SerializeField] private EffectStats stats;
         [SerializeField] private EffectManager effectManager;
@@ -24,6 +26,7 @@ namespace RollABall.Managers
         [Header("Links")]
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
         private BonusPoint[] bonusPoints;
+
         #endregion
         
         #region Fields

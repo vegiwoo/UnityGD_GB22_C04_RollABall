@@ -20,6 +20,8 @@ namespace RollABall.Managers
         private List<IEffectable> _buffs;
         private List<IEffectable> _debuffs;
         
+        private readonly Dictionary<EffectTargetType, Coroutine> _activeEffects = new ();
+
         #endregion
         
         #region Properties
@@ -86,40 +88,44 @@ namespace RollABall.Managers
             // Apply effects without duration
             if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
             {
-                switch (effect.EffectTarget)
-                {
-                    case EffectTargetType.GamePoints:
-                        Player.SetGamePoints(
-                            effect.Type == EffectType.Buff ? 
-                                effect.PositivePower : 
-                                effect.NegativePower,
-                            effect.Type == EffectType.Buff);
-
-                        break;
-                    case EffectTargetType.HitPoints:
-
-                        if (effect.Type == EffectType.Debuff)
-                        {
-                            Player.SetHitPoints(effect.NegativePower, false);
-                        }
-                        break;
-                }
+                ApplyEffectWithoutDuration(effect);
             }
             else
             {
+                // Stopping active effect with duration on same target
+                StopEffectByType(effect.EffectTarget); 
+                    
                 // Apply effects with duration
-                StartCoroutine(ApplyEffectCoroutine(effect));
+                var effectCoroutine = StartCoroutine(ApplyEffectWithDurationCoroutine(effect));
+                // Store effect Coroutine in dictionary
+                _activeEffects[effect.EffectTarget] = effectCoroutine;
             }
-
         }
 
-        private IEnumerator ApplyEffectCoroutine(IEffectable effect)
+        private void ApplyEffectWithoutDuration(IEffectable effect)
         {
-            if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
+            switch (effect.EffectTarget)
             {
-                yield break;
-            }
+                case EffectTargetType.GamePoints:
+                    Player.SetGamePoints(
+                        effect.Type == EffectType.Buff ? 
+                            effect.PositivePower : 
+                            effect.NegativePower,
+                        effect.Type == EffectType.Buff);
 
+                    break;
+                case EffectTargetType.HitPoints:
+
+                    if (effect.Type == EffectType.Debuff)
+                    {
+                        Player.SetHitPoints(effect.NegativePower, false);
+                    }
+                    break;
+            }
+        }
+        
+        private IEnumerator ApplyEffectWithDurationCoroutine(IEffectable effect)
+        {
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.HitPoints:
@@ -139,11 +145,20 @@ namespace RollABall.Managers
 
             // Apply effect
             yield return new WaitForSeconds(effect.Duration);
+
+            StopEffectByType(effect.EffectTarget);
             
-            switch (effect.EffectTarget)
+            yield return null;
+        }
+
+        private void StopEffectByType(EffectTargetType effectTargetType, EffectType? effectType = null)
+        {
+            if (!_activeEffects.ContainsKey(effectTargetType)) return;
+            
+            switch (effectTargetType)
             {
                 case EffectTargetType.HitPoints:
-                    if (effect.Type == EffectType.Buff)
+                    if (effectType is EffectType.Buff)
                     {
                         Player.SetHitPoints(null, null, false);
                     }
@@ -151,13 +166,14 @@ namespace RollABall.Managers
                 case EffectTargetType.UnitSpeed:
                     Player.SetSpeed(null, null, true);
                     break;
-                default:
-                    yield break;
             }
+
+            StopCoroutine(_activeEffects[effectTargetType]);
+            _activeEffects.Remove(effectTargetType);
             
-            yield return null;
+            Log($"Stop active effect on target {effectTargetType}");
         }
-        
+  
         public void Dispose()
         {
             _buffs = _debuffs = null;
