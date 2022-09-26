@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using RollABall.Args;
+using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
@@ -28,7 +30,7 @@ namespace RollABall.Managers
 
         [field: Header("Links")] 
         [field: SerializeField] public EffectStats Stats { get; set; }
-        [field: SerializeField] public Player.Player Player { get; set; }
+        [field: SerializeField] public EffectEvent EffectEvent { get; set; }
 
         #endregion
         
@@ -104,49 +106,56 @@ namespace RollABall.Managers
 
         private void ApplyEffectWithoutDuration(IEffectable effect)
         {
+            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+            
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.GamePoints:
-                    Player.SetGamePoints(
-                        effect.Type == EffectType.Buff ? 
-                            effect.PositivePower : 
-                            effect.NegativePower,
-                        effect.Type == EffectType.Buff);
-
+                    args.Init(effect.Type == EffectType.Buff ? 
+                        effect.PositivePower : 
+                        effect.NegativePower, effect.Type == EffectType.Buff);
                     break;
                 case EffectTargetType.HitPoints:
 
                     if (effect.Type == EffectType.Debuff)
                     {
-                        Player.SetHitPoints(effect.NegativePower, false);
+                        args.Init(effect.NegativePower, false);
                     }
                     break;
             }
+            
+            EffectEvent.Notify(args);
         }
         
         private IEnumerator ApplyEffectWithDurationCoroutine(IEffectable effect)
         {
+            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+            
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.HitPoints:
                     if (effect.Type == EffectType.Buff)
                     {
-                        Player.SetHitPoints(null, null, true);
+                        args.Init(null,null, true);
                     }
                     break;
                 case EffectTargetType.UnitSpeed:
-                    Player.SetSpeed(
-                        effect.Type == EffectType.Buff ? effect.PositivePower : effect.NegativePower, 
+                    args.Init(effect.Type == EffectType.Buff ? 
+                        effect.PositivePower : 
+                        effect.NegativePower, 
                         effect.Type == EffectType.Buff);
                     break;
                 default:
                     yield break;
             }
+            
+            // Apply effect notify
+            EffectEvent.Notify(args);
 
             // Apply effect
             yield return new WaitForSeconds(effect.Duration);
 
-            StopEffectByType(effect.EffectTarget);
+            StopEffectByType(effect.EffectTarget, effect.Type);
             
             yield return null;
         }
@@ -154,18 +163,30 @@ namespace RollABall.Managers
         private void StopEffectByType(EffectTargetType effectTargetType, EffectType? effectType = null)
         {
             if (!_activeEffects.ContainsKey(effectTargetType)) return;
+
+            EffectArgs args = default;
             
-            switch (effectTargetType)
+            if (effectType.HasValue)
             {
-                case EffectTargetType.HitPoints:
-                    if (effectType is EffectType.Buff)
-                    {
-                        Player.SetHitPoints(null, null, false);
-                    }
-                    break;
-                case EffectTargetType.UnitSpeed:
-                    Player.SetSpeed(null, null, true);
-                    break;
+                args = new EffectArgs(effectType.Value, effectTargetType);
+                
+                switch (effectTargetType)
+                {
+                    case EffectTargetType.HitPoints:
+                        if (effectType is EffectType.Buff)
+                        {
+                            args.Init(null, null, false);
+                        }
+                        break;
+                    case EffectTargetType.UnitSpeed:
+                        args.Init(null, null, null, true);
+                        break;
+                }
+            }
+            
+            if(args is not null)
+            {
+                EffectEvent.Notify(args);
             }
 
             StopCoroutine(_activeEffects[effectTargetType]);

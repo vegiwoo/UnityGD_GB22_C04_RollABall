@@ -3,7 +3,9 @@ using GameDevLib.Args;
 using GameDevLib.Events;
 using GameDevLib.Helpers;
 using GameDevLib.Interfaces;
+using RollABall.Args;
 using RollABall.Events;
+using RollABall.Interactivity.Effects;
 using RollABall.Stats;
 using UnityEngine;
 
@@ -11,7 +13,7 @@ using UnityEngine;
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>
+    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>, GameDevLib.Interfaces.IObserver<EffectArgs>
     {
         #region Links
         
@@ -20,6 +22,7 @@ namespace RollABall.Player
         [field: SerializeField] protected GameStats gameStats;
         [Header("Events")]
         [SerializeField] private InputManagerEvent inputEvent;
+        [SerializeField] private EffectEvent effectEvent;
         [SerializeField] protected PlayerEvent playerEvent;
         
         #endregion
@@ -68,11 +71,12 @@ namespace RollABall.Player
         protected virtual void OnEnable()
         {
             inputEvent.Attach(this);
+            effectEvent.Attach(this);
         }
 
         protected virtual void OnDisable()
         {
-            inputEvent.Detach(this);
+            Dispose();
         }
 
         #endregion
@@ -93,6 +97,22 @@ namespace RollABall.Player
         {
             MoveDirection = args.Moving;
         }
+        
+        public void OnEventRaised(ISubject<EffectArgs> subject, EffectArgs args)
+        {
+            switch (args.EffectTargetType)
+            {
+                case EffectTargetType.GamePoints:
+                    SetGamePoints(args.Power, args.Increase);
+                    break;
+                case EffectTargetType.HitPoints:
+                    SetHitPoints(args.Power, args.Increase, args.IsInvulnerable);
+                    break;
+                case EffectTargetType.UnitSpeed:
+                    SetSpeed(args.Power, args.Increase, args.CancelEffect);
+                    break;
+            }
+        }
 
         /// <summary>
         /// Sends an event about changes in stats of a unit.
@@ -102,17 +122,20 @@ namespace RollABall.Player
         /// </summary>
         protected abstract void SendNotify();
 
-        public abstract void SetGamePoints(float points, bool increase);
+        protected abstract void SetGamePoints(float? points, bool? increase);
 
-        public abstract void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null);
+        protected abstract void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null);
 
-        public abstract void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null);
+        protected abstract void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null);
 
         public virtual void Dispose()
         {
             inputEvent.Detach(this);
+            effectEvent.Detach(this);
         }
 
         #endregion
+
+
     }
 }
