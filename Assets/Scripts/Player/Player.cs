@@ -3,11 +3,12 @@ using GameDevLib.Args;
 using GameDevLib.Events;
 using GameDevLib.Helpers;
 using GameDevLib.Interfaces;
-using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
 using UnityEngine;
+using EffectArgs = RollABall.Args.EffectArgs;
+using EffectEvent = RollABall.Events.EffectEvent;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
@@ -20,8 +21,9 @@ namespace RollABall.Player
         [Header("Stats")]
         [SerializeField] protected PlayerStats playerStats;
         [field: SerializeField] protected GameStats gameStats;
+        
         [Header("Events")]
-        [SerializeField] private InputManagerEvent inputEvent;
+        [SerializeField] private InputEvent inputEvent;
         [SerializeField] private EffectEvent effectEvent;
         [SerializeField] protected PlayerEvent playerEvent;
         

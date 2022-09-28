@@ -4,7 +4,6 @@ using RollABall.Args;
 using RollABall.Events;
 using RollABall.Stats;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 // ReSharper disable once CheckNamespace
@@ -15,6 +14,7 @@ namespace RollABall.Managers
         #region Links
         [field:Header("Stats")]
         [field: SerializeField] private GameStats GameStats { get; set; }
+        [field: SerializeField] private PlayerStats PlayerStats { get; set; }
         
         [field:Header("Events")]
         [field:SerializeField] private PlayerEvent playerEvent;
@@ -27,10 +27,10 @@ namespace RollABall.Managers
         #endregion
         
         #region Properties
-        [field:Header("Unity events for UI")]
-        public UnityEvent<UILabelArgs> hpLabelUpdateEvent;
-        public UnityEvent<UILabelArgs> scoreLabelUpdateEvent;
-        public UnityEvent<UILabelArgs> speedLabelUpdateEvent;
+        [field:Header("UI elements")]
+        [field: SerializeField] public Text HpLabel { get; set; }
+        [field: SerializeField] public Text ScoreLabel { get; set; }
+        [field: SerializeField] public Text SpeedLabel { get; set; }
 
         #endregion
         
@@ -40,6 +40,9 @@ namespace RollABall.Managers
         private void OnEnable()
         {
             playerEvent.Attach(this);
+
+            HpLabel.color = ScoreLabel.color = SpeedLabel.color = normalColor;
+            SetValues(new PlayerArgs(PlayerStats.MaxHp, false, 0,false, false, 0 ));
         }
 
         private void OnDisable()
@@ -47,15 +50,7 @@ namespace RollABall.Managers
             Dispose();
         }
 
-        private void Start()
-        {
-            hpLabelUpdateEvent.Invoke(new UILabelArgs("hp", "100", normalColor));
-            scoreLabelUpdateEvent.Invoke(new UILabelArgs("score", $"0/{GameStats.GameHighScore}", normalColor));
-            speedLabelUpdateEvent.Invoke(new UILabelArgs("speed", "normal", normalColor));
-        }
-
-        #endregion
-
+        #endregion 
         #region Functionality
         
         public void Dispose()
@@ -70,21 +65,17 @@ namespace RollABall.Managers
 
         private void SetValues(PlayerArgs args)
         {
-            var hpLabelColor = args.CurrentHp < GameStats.CriticalThreshold ? dangerColor : args.IsUnitInvulnerable ? buffColor : normalColor;
-            var hpLabelArgs = new UILabelArgs("hp", $"{args.CurrentHp}", hpLabelColor);
-            hpLabelUpdateEvent.Invoke(hpLabelArgs);
+            HpLabel.color = args.CurrentHp < GameStats.CriticalThreshold ? dangerColor : args.IsUnitInvulnerable ? buffColor : normalColor;
+            HpLabel.text = $"hp: {args.CurrentHp}".ToUpper();
+
+            ScoreLabel.color = args.GamePoints < GameStats.CriticalThreshold  ? dangerColor : normalColor;
+            ScoreLabel.text = $"score: {args.GamePoints}/{GameStats.GameHighScore}".ToUpper();
             
-            var scoreLabelColor = args.GamePoints < GameStats.CriticalThreshold  ? dangerColor : normalColor;
-            var scoreLabelArgs =
-                new UILabelArgs("score", $"{args.GamePoints}/{GameStats.GameHighScore}", scoreLabelColor);
-            scoreLabelUpdateEvent.Invoke(scoreLabelArgs);
-            
-            var speedLabelColor = args.IsSpeedUp == false && args.IsSpeedDown == false ? normalColor :
+            SpeedLabel.color = args.IsSpeedUp == false && args.IsSpeedDown == false ? normalColor :
                 args.IsSpeedUp ? buffColor : dangerColor;
-            var speedMode = args.IsSpeedUp == false && args.IsSpeedDown == false ? "normal" :
+            var speedModeLabel = args.IsSpeedUp == false && args.IsSpeedDown == false ? "normal" :
                 args.IsSpeedUp ? "high" : "low";
-            var speedLabelArgs = new UILabelArgs("speed", speedMode, speedLabelColor);
-            speedLabelUpdateEvent.Invoke(speedLabelArgs);
+            SpeedLabel.text = $"speed: {speedModeLabel}".ToUpper();
         }
         #endregion
     }
