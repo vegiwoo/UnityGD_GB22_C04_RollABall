@@ -47,7 +47,6 @@ namespace RollABall.Player
         private Vector2? MoveDirection { get; set; } = null;
         protected const float SpeedMultiplierConst = 3f;
         [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
-        [field: SerializeField, ReadonlyField] protected float Velocity { get; set; }
 
         #endregion
 
@@ -60,9 +59,7 @@ namespace RollABall.Player
 
         protected virtual void Start()
         {
-            GamePoints = 0;
-            CurrentHp = playerStats.MaxHp;
-            SpeedMultiplier = SpeedMultiplierConst;
+            InitPlayer();
         }
         
         protected virtual void OnEnable()
@@ -80,6 +77,14 @@ namespace RollABall.Player
         
         #region Functionality
         
+        private void InitPlayer()
+        {
+            GamePoints = 0;
+            CurrentHp = playerStats.MaxHp;
+            IsUnitInvulnerable = false;
+            SpeedMultiplier = SpeedMultiplierConst;
+        }
+        
         protected void Move()
         {
             if (!MoveDirection.HasValue) return;
@@ -90,11 +95,13 @@ namespace RollABall.Player
             playerRb.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
         }
         
+        // Event handler for InputManagerEvent
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
         {
             MoveDirection = args.Moving;
         }
         
+        // Event handler for EffectEvent
         public void OnEventRaised(ISubject<EffectArgs> subject, EffectArgs args)
         {
             switch (args.EffectTargetType)
@@ -107,6 +114,10 @@ namespace RollABall.Player
                     break;
                 case EffectTargetType.UnitSpeed:
                     SetSpeed(args.Power, args.Increase, args.CancelEffect);
+                    break;
+                case EffectTargetType.Rebirth:
+                    transform.position = gameStats.PlayerSpawnPoint;
+                    InitPlayer();
                     break;
             }
             

@@ -4,21 +4,21 @@ using System.Collections.Generic;
 using System.Linq;
 using GameDevLib.Audio;
 using GameDevLib.Enums;
+using GameDevLib.Interfaces;
+using RollABall.Args;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Stats;
 using UnityEngine;
-using UnityEngine.Events;
 using Random = UnityEngine.Random;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
     [RequireComponent(typeof(AudioIsPlaying))]
-    public class BonusManager : MonoBehaviour
+    public class BonusManager : BaseManager
     {
         #region Links
         
-        [Header("Stats")]
         [SerializeField] private EffectStats stats;
         [SerializeField] private EffectManager effectManager;
         [Header("Prefabs")]
@@ -31,7 +31,6 @@ namespace RollABall.Managers
         
         #region Fields
         
-        // Placed bonuses on field
         private List<IBonusable> _positiveBonuses;
         private int _requiredNumberPositiveBonuses;
         private List<IBonusable> _negativeBonuses;
@@ -39,7 +38,11 @@ namespace RollABall.Managers
 
         private AudioIsPlaying _audioIsPlaying;
 
+        private Coroutine _clearBonusesByEffectTypeCoroutine;
+        private Coroutine _bonusPlacingBuffСoroutine;
+        private Coroutine _bonusPlacingDebuffСoroutine;
         private Coroutine _removeBonusCoroutine;
+        private Coroutine _removeOneBonusCoroutine;
         
         #endregion
         
@@ -66,20 +69,54 @@ namespace RollABall.Managers
 
         private void Start()
         {
-            MakeCollections();
-            CheckNumberOfBonuses(EffectType.Buff);
-            CheckNumberOfBonuses(EffectType.Debuff);
+            InitManager();
         }
-
-        private void OnDisable()
-        {
-            StopAllCoroutines();
-        }
-
+        
         #endregion
 
         #region Functionality
         
+        private void InitManager()
+        {   
+            _clearBonusesByEffectTypeCoroutine = _bonusPlacingBuffСoroutine = _bonusPlacingDebuffСoroutine =_removeBonusCoroutine = null;
+            StopAllCoroutines();
+
+            _clearBonusesByEffectTypeCoroutine = StartCoroutine(ClearBonusCollectionCoroutine());
+
+            MakeCollections();
+            CheckNumberOfBonuses();
+        }
+
+        private IEnumerator ClearBonusCollectionCoroutine()
+        {
+            yield return StartCoroutine(ClearBonusesByEffectType(EffectType.Buff));
+            Debug.Log($"BonusManager: Clear buff collection complete.");
+            yield return StartCoroutine(ClearBonusesByEffectType(EffectType.Debuff));
+            Debug.Log($"BonusManager: Clear de-buff collection complete.");
+            _clearBonusesByEffectTypeCoroutine = null;
+        }
+        
+        private IEnumerator ClearBonusesByEffectType(EffectType effectType)
+        {
+            var collection = effectType == EffectType.Buff ? 
+                _positiveBonuses : 
+                _negativeBonuses;
+            
+            if (collection is null || collection.Count == 0) yield break;
+
+            var counter = collection.Count;
+            while (counter != 0)
+            {
+                var item = collection[counter - 1];
+                yield return StartCoroutine(RemoveBonus(item, collection));
+                --counter;
+            }
+
+            Debug.Assert(collection.Count == 0);
+
+            yield return null;
+        }
+
         /// <summary>
         /// Creates collections for storing bonuses on game board.
         /// </summary>
@@ -96,16 +133,19 @@ namespace RollABall.Managers
         /// <summary>
         /// Checks whether required number of bonuses is actually placed on playing field.
         /// </summary>
-        /// <param name="effectType">Effect type (buff or debuff).</param>
-        private void CheckNumberOfBonuses(EffectType effectType)
+        private void CheckNumberOfBonuses()
         {
-            var numberOfAddition = effectType == EffectType.Buff ? 
-                _positiveBonuses.Capacity - _positiveBonuses.Count : 
-                _negativeBonuses.Capacity - _negativeBonuses.Count;
+            var numberBuffsAdded = _requiredNumberPositiveBonuses - _positiveBonuses.Count;
+            var numberDebuffsAdded = _requiredNumberNegativeBonuses - _negativeBonuses.Count;
             
-            if (numberOfAddition > 0)
+            if (numberBuffsAdded > 0)
             {
-                StartCoroutine(BonusPlacingСoroutine(effectType, numberOfAddition));
+                _bonusPlacingBuffСoroutine = StartCoroutine(BonusPlacingСoroutine(EffectType.Buff, numberBuffsAdded));
+            }
+            
+            if (numberDebuffsAdded > 0)
+            {
+                _bonusPlacingDebuffСoroutine = StartCoroutine(BonusPlacingСoroutine(EffectType.Debuff, numberDebuffsAdded));
             }
         }
 
@@ -116,17 +156,13 @@ namespace RollABall.Managers
         /// <returns>List with reserved free points.</returns>
         private List<BonusPoint> GetFreeBonusPoints(int count)
         {
-            var points = bonusPoints
+            var selectedPoints = bonusPoints
                 .Where(p => p.IsReserved == false)
                 .Take(count)
+                .Select(p => { p.Reserve(); return p; })
                 .ToList();
-            
-            foreach (var point in points)
-            {
-                point.Reserve();
-            }
-            
-            return points;
+
+            return selectedPoints;
         }
 
         /// <summary>
@@ -138,8 +174,12 @@ namespace RollABall.Managers
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         private IEnumerator BonusPlacingСoroutine(EffectType effectType, int count)
         {
+            yield return new WaitUntil(() => effectType == EffectType.Buff ? 
+                _bonusPlacingDebuffСoroutine == null :
+                _bonusPlacingBuffСoroutine == null);
+
             yield return new WaitUntil(() => _removeBonusCoroutine == null);
-            
+
             var freePoints = GetFreeBonusPoints(count);
             
             var counter = count;
@@ -149,25 +189,33 @@ namespace RollABall.Managers
                 var randomPoint = freePoints[randomIndex];
                 
                 var collection = effectType == EffectType.Buff ? _positiveBonuses : _negativeBonuses;
-                IBonusable newBonus = default;
+                IBonusable newBonus;
                 
+                var effect = effectManager.GetRandomEffectByType(effectType);
                 var newBonusObject = Instantiate(bonusPrefab, randomPoint.Point.position, randomPoint.Point.rotation);
                 newBonusObject.tag = GameData.BonusTag;
                 newBonus = newBonusObject.AddComponent<Bonus>();
-                
-                var effect = effectManager.GetRandomEffectByType(effectType);
-
                 newBonus.Init(effect, randomPoint);
                 newBonus.InteractiveNotify += OnBonusNotify;
 
                 collection.Add(newBonus);
 
                 newBonusObject.transform.parent = randomPoint.Point;
-                
-                freePoints.Remove(randomPoint);
-                --counter;
 
+                freePoints.Remove(randomPoint);
+
+                --counter;
+                
                 yield return new WaitForSeconds(stats.DelayAppearance);
+            }
+            
+            if (effectType == EffectType.Buff)
+            {
+                _bonusPlacingBuffСoroutine = null;
+            }
+            else
+            {
+                _bonusPlacingDebuffСoroutine = null;
             }
         }
         
@@ -199,35 +247,83 @@ namespace RollABall.Managers
             var collection = bonus.Effect.Type == EffectType.Buff ?_positiveBonuses : _negativeBonuses;
             var existingBonus = collection!.FirstOrDefault(el => el == bonus);
             
-            if (existingBonus != null) 
+            if (existingBonus != null)
             {
-                var existingBonusGameObject = existingBonus.Point.Point.gameObject.transform.GetChild(0).gameObject;
-                existingBonusGameObject.SetActive(false);
-                
-                existingBonus.InteractiveNotify -= OnBonusNotify;
-                var isSoundPlayed = false;
-                _audioIsPlaying.AudioTriggerNotify += (played) =>
+                yield return StartCoroutine(RemoveBonus(existingBonus, collection, true));
+            }
+            
+            _removeBonusCoroutine = null;
+            CheckNumberOfBonuses();
+
+            yield return null;
+        }
+
+        private IEnumerator RemoveBonus(IBonusable bonusable, ICollection<IBonusable> collection, bool delay = false)
+        {
+            // Unsubscribing from a bonus event
+            bonusable.InteractiveNotify -= OnBonusNotify;
+            
+            // Clear bonus point
+            var bonusPoint = bonusPoints.First(p => p == bonusable.Point);
+            bonusPoint.Clear();
+            
+            // Remove bonus game object
+            var childrenCount = bonusable.GetChildrenCount();
+            if (childrenCount > 0)
+            {
+                // Find and disable all children
+                var gameObjects = new List<GameObject>();
+                for (var i = 0; i < childrenCount; ++i)
                 {
-                    isSoundPlayed = played;
-                };
+                    var obj = bonusable.Point.Point.transform.GetChild(i).gameObject;
+                    obj.SetActive(false);
+                    gameObjects.Add(obj);
+                }
+                
+                //Wait until play audio
+                if (delay)
+                {
+                    var isSoundPlayed = false;
+                    _audioIsPlaying.AudioTriggerNotify += (played) =>
+                    {
+                        isSoundPlayed = played;
+                    };
+                
+                    yield return new WaitUntil(() => isSoundPlayed);
+                }
 
-                yield return new WaitUntil(() => isSoundPlayed);
+                foreach (var go in gameObjects)
+                {
+                    Destroy(go); 
+                }
+            }
+            
+            collection.Remove(bonusable);
 
-                Destroy(existingBonusGameObject);
-                existingBonus.Point.Clear();
-                collection.Remove(existingBonus);
-                    
+            if (delay)
+            {
                 yield return new WaitForSeconds(stats.DelayAfterRemove);
-                
-                _removeBonusCoroutine = null;
-                
-                CheckNumberOfBonuses(bonus.Effect.Type);
             }
             else
             {
                 yield return null;
             }
+            
+        }
+        
+        // Event handler for CurrentGameEvent
+        public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
+        {
+            if (args.IsRestartGame)
+            {
+                InitManager();
+            }
+        }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+            StopAllCoroutines();
         }
 
         #endregion

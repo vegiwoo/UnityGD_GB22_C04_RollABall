@@ -2,7 +2,6 @@ using System;
 using RollABall.Args;
 
 // ReSharper disable once CheckNamespace
-
 namespace RollABall.Player
 {
     public class PlayerBall : Player
@@ -13,11 +12,6 @@ namespace RollABall.Player
         {
             base.Start();
             transform.gameObject.tag = GameData.PlayerTag;
-        }
-
-        private void Update()
-        {
-            //Velocity = playerRb.velocity.magnitude;
         }
 
         private void FixedUpdate()
@@ -98,8 +92,7 @@ namespace RollABall.Player
 
             var args = new PlayerArgs(
                 CurrentHp, 
-                IsUnitInvulnerable, 
-                Velocity, 
+                IsUnitInvulnerable,
                 isSpeedUp, 
                 isSpeedDown,
                 (int)GamePoints

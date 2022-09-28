@@ -1,5 +1,3 @@
-using UnityEngine;
-
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {

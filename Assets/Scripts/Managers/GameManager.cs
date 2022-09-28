@@ -1,8 +1,6 @@
-using System;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
-using RollABall.Stats;
 using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Debug;
@@ -10,38 +8,33 @@ using static UnityEngine.Debug;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class GameManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<PlayerArgs>, IDisposable
+    public class GameManager : BaseManager, IObserver<PlayerArgs>
     {
         #region Links
         
-        [field:Header("Stats")]
-        [field: SerializeField] private GameStats GameStats { get; set; }
-        [field:Header("Events")]
-        [field:SerializeField] private PlayerEvent playerEvent;
-        
+        [field:SerializeField] private PlayerEvent PlayerEvent { get; set; }
+
         #endregion
 
         #region MonoBehaviour methods
         
-        private void OnEnable()
+        protected override void OnEnable()
         {
-            playerEvent.Attach(this);
+            base.OnEnable();
+            PlayerEvent.Attach(this);
         }
-
-        private void OnDisable()
-        {
-           Dispose();
-        }
-
+        
         #endregion
         
         #region Functionality
         
-        public void Dispose()
+        public override void Dispose()
         {
-            playerEvent.Detach(this);
+            base.Dispose();
+            PlayerEvent.Detach(this);
         }
         
+        // Event handler for PlayerEvent 
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
         {
             var lost = args.CurrentHp <= 0;
@@ -57,8 +50,12 @@ namespace RollABall.Managers
             }
         }
         
+        // Event handler for CurrentGameEvent 
+        public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
+        {
+            // Do something...
+        }
+        
         #endregion
-
-  
     }
 }

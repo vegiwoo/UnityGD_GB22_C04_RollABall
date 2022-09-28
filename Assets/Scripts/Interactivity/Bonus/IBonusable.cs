@@ -36,6 +36,20 @@ namespace RollABall.Interactivity.Bonuses
             Point = point;
         }
 
+        /// <summary>
+        /// Returns game object (prefab) of bonus.
+        /// </summary>
+        /// <returns></returns>
+        GameObject? GetBonusGameObject()
+        {
+            return Point.Point.gameObject.transform.GetChild(0).gameObject;
+        }
+
+        int GetChildrenCount()
+        {
+            return Point.Point.transform.childCount;
+        }
+        
         #endregion
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
@@ -15,7 +16,7 @@ using Random = UnityEngine.Random;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class EffectManager : MonoBehaviour, IDisposable
+    public class EffectManager : BaseManager
     {
         #region Fields
         
@@ -38,24 +39,34 @@ namespace RollABall.Managers
 
         private void Start()
         {
+            InitManager();
+        }
+
+        #endregion
+
+        #region Funtionality
+        
+        private void InitManager()
+        {
+            StopAllCoroutines();
+            
             // Thrown Exception Implementation
             if (Stats == null)
             {
                 throw new ArgumentNullException(Stats.effects.ToString());
             }
-            
+
             try
             {
                 _buffs = Stats.effects
                     .Select(el => el as IEffectable)
                     .Where(el => el.Type == EffectType.Buff)
                     .ToList();
-                
+
                 _debuffs = Stats.effects
                     .Select(el => el as IEffectable)
                     .Where(el => el.Type == EffectType.Debuff)
                     .ToList();
-         
             }
             catch (ArgumentNullException e)
             {
@@ -63,10 +74,6 @@ namespace RollABall.Managers
                 EditorApplication.isPlaying = false;
             }
         }
-
-        #endregion
-
-        #region Funtionality
         
         /// <summary>
         /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
@@ -194,12 +201,19 @@ namespace RollABall.Managers
             
             Log($"Stop active effect on target {effectTargetType}");
         }
-  
-        public void Dispose()
+
+        // Event handler for CurrentGameEvent
+        public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            _buffs = _debuffs = null;
+            if (args.IsRestartGame)
+            {
+                InitManager();
+                
+                // Send Rebirth Effect
+                EffectEvent.Notify(new EffectArgs(EffectType.Buff, EffectTargetType.Rebirth));
+            }
         }
-        
+
         #endregion
     }
 }
