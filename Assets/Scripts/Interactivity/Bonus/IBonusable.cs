@@ -35,13 +35,7 @@ namespace RollABall.Interactivity.Bonuses
             Effect = effect;
             Point = point;
         }
-        
 
-        int GetChildrenCount()
-        {
-            return Point.transform.childCount;
-        }
-        
         #endregion
     }
 }

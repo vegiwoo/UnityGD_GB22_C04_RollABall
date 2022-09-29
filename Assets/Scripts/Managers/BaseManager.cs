@@ -22,6 +22,12 @@ namespace RollABall.Managers
         
         #region MonoBehaviour methods
 
+        protected void Start()
+        {
+            InitManager();
+        }
+
+
         protected virtual void OnEnable()
         {
             GameEvent.Attach(this);
@@ -35,6 +41,11 @@ namespace RollABall.Managers
         #endregion
 
         #region Functionality
+
+        /// <summary>
+        /// Initializes manager at start or restart of game.
+        /// </summary>
+        protected abstract void InitManager();
         
         // Event handler for CurrentGameEvent
         public abstract void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args);

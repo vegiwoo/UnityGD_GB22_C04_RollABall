@@ -2,8 +2,10 @@ using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Stats;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -29,23 +31,62 @@ namespace RollABall.Managers
         [field: SerializeField] public Text SpeedLabel { get; set; }
         [field: SerializeField] public Button RestartButton { get; set; }
 
+        private (bool isLost, string message)? IsLostGame { get; set; }
+        private (bool isWin, string message)? IsWinGame { get; set; }
+        
+        private Rect _windowRect = new (Screen.width / 2 - 90, Screen.height / 2 - 100, 180, 120);
         #endregion
         
         #region MonoBehaviour methods
 
         protected override void OnEnable()
         {
+            base.OnEnable();
             PlayerEvent.Attach(this);
             RestartButton.onClick.AddListener(OnRestartButtonClick);
-            
-            InitManager();
+        }
+        
+        private void OnGUI()
+        {
+            if (IsLostGame.HasValue)
+            {
+                _windowRect = GUI.Window(0, _windowRect, WindowMakeFunction, "You lose");
+            }
+            else if (IsWinGame.HasValue)
+            {
+                _windowRect = GUI.Window(0, _windowRect, WindowMakeFunction, "You win");
+            }
+        }
+
+        private void WindowMakeFunction(int windowId)
+        {
+            string message;
+            if (IsLostGame.HasValue)
+            {
+                message = IsLostGame.Value.message;
+            } 
+            else if(IsWinGame.HasValue)
+            {
+                message = IsWinGame.Value.message;
+            }
+            else
+            {
+                return;
+            }
+
+            GUI.Label(new Rect(_windowRect.width/2 - 80, 30, 160, 60), message);
+            if (GUI.Button(new Rect(_windowRect.width / 2 - 80, 65, 160, 30), "Exit"))
+            {
+                Log("Exit game");
+                EditorApplication.isPlaying = false;
+            }
         }
         
         #endregion 
         
         #region Functionality
         
-        private void InitManager()
+        protected override void InitManager()
         {
             var colors = RestartButton.colors;
             colors.normalColor = colors.pressedColor = colors.selectedColor = normalColor;
@@ -70,7 +111,19 @@ namespace RollABall.Managers
         // Event handler for CurrentGameEvent
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-           // Do something ...
+            Log("Yep!");
+            
+            // Lost game
+            if (args.IsLostGame is { isLost: true })
+            {
+                Log(args.IsLostGame.Value.message);
+                IsLostGame = args.IsLostGame.Value;
+            }
+            else if (args.IsWinGame is { isWin: true })
+            {
+                Log(args.IsWinGame.Value.message);
+                IsWinGame = args.IsWinGame.Value;
+            }
         }
 
         private void SetValues(PlayerArgs args)

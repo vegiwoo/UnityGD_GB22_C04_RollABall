@@ -34,19 +34,10 @@ namespace RollABall.Managers
         [field: SerializeField] public EffectEvent EffectEvent { get; set; }
 
         #endregion
-        
-        #region MonoBehaviour methods
-
-        private void Start()
-        {
-            InitManager();
-        }
-
-        #endregion
 
         #region Funtionality
         
-        private void InitManager()
+        protected override void InitManager()
         {
             StopAllCoroutines();
             

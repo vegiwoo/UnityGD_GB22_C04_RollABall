@@ -7,7 +7,6 @@ using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Stats;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -31,39 +30,23 @@ namespace RollABall.Managers
         
         #region Fields
         
+        private Dictionary<Transform, (IBonusable bonus, GameObject bonusGO)[]> _bonusPool;
         private AudioIsPlaying _audioIsPlaying;
 
         #endregion
-        
-        #region Properties 
-        // ... 
+
+        #region MonoBehaviour methods
+
+        private void Awake()
+        {
+            _audioIsPlaying = GetComponent<AudioIsPlaying>();
+        }
+
         #endregion
 
-        // New solution 
-        private Dictionary<Transform, (IBonusable bonus, GameObject bonusGO)[]> _bonusPool;
-
-        // New solution 
-        private (IBonusable bonus, GameObject bonusGameObject) CreateBonusObject(EffectType effectType, Transform point)
-        {
-            // Create effect 
-            var effect = effectManager.GetRandomEffectByType(effectType);
-            
-            // Create game object
-            var o = Instantiate(bonusPrefab, point.position, point.rotation);
-            o.tag = GameData.BonusTag;
-            o.SetActive(false);
-            
-            // Add and init bonus 
-            IBonusable bonus = o.AddComponent<Bonus>();
-            bonus.Init(effect, point);
-
-            // Set parent for new object
-            o.transform.parent = point;
-            
-            return (bonus, o);
-        }
+        #region Functionality
         
-        private void InitManager()
+        protected override void InitManager()
         {
             StopAllCoroutines();
             
@@ -96,8 +79,8 @@ namespace RollABall.Managers
                 {
                     var point = bonusPoints[counter];
                     
-                    var buffBonusItem = CreateBonusObject(EffectType.Buff, point);
-                    var debuffBonusItem = CreateBonusObject(EffectType.Debuff, point);
+                    var buffBonusItem = CreateBonusAndObject(EffectType.Buff, point);
+                    var debuffBonusItem = CreateBonusAndObject(EffectType.Debuff, point);
                     
                     _bonusPool.Add(point, new [] { buffBonusItem, debuffBonusItem });
 
@@ -113,22 +96,26 @@ namespace RollABall.Managers
                 items[randomIndex].bonus.InteractiveNotify += OnBonusNotify;
             }
         }
-
-        #region MonoBehaviour methods
-
-        private void Awake()
-        {
-            _audioIsPlaying = GetComponent<AudioIsPlaying>();
-        }
-
-        private void Start()
-        {
-            InitManager();
-        }
         
-        #endregion
+        private (IBonusable bonus, GameObject bonusGameObject) CreateBonusAndObject(EffectType effectType, Transform point)
+        {
+            // Create effect 
+            var effect = effectManager.GetRandomEffectByType(effectType);
+            
+            // Create game object
+            var o = Instantiate(bonusPrefab, point.position, point.rotation);
+            o.tag = GameData.BonusTag;
+            o.SetActive(false);
+            
+            // Add and init bonus 
+            IBonusable bonus = o.AddComponent<Bonus>();
+            bonus.Init(effect, point);
 
-        #region Functionality
+            // Set parent for new object
+            o.transform.parent = point;
+            
+            return (bonus, o);
+        }
         
         /// <summary>
         /// Called when a bonus collision occurs. 
