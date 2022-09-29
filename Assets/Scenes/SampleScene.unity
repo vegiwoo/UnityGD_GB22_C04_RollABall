@@ -1105,26 +1105,16 @@ MonoBehaviour:
   effectManager: {fileID: 142419225}
   bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
   bonusPoints:
-  - <Point>k__BackingField: {fileID: 1053017601}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 1678045484}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 403163007}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 1037917427}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 350871198}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 91169296}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 258298693}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 343661998}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 1866955714}
-    <IsReserved>k__BackingField: 0
-  - <Point>k__BackingField: {fileID: 1386223124}
-    <IsReserved>k__BackingField: 0
+  - {fileID: 1053017601}
+  - {fileID: 1678045484}
+  - {fileID: 403163007}
+  - {fileID: 1037917427}
+  - {fileID: 350871198}
+  - {fileID: 91169296}
+  - {fileID: 258298693}
+  - {fileID: 343661998}
+  - {fileID: 1866955714}
+  - {fileID: 1386223124}
 --- !u!114 &479113081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1999,7 +1989,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 3.65, y: 1}
+    m_SensorSize: {x: 2.8134556, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2213,7 +2203,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh26354
+  m_Name: pb_Mesh47736
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
