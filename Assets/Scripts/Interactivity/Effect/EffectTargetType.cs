@@ -7,6 +7,6 @@ namespace RollABall.Interactivity.Effects
     /// </summary>
     public enum EffectTargetType
     {
-        GamePoints, HitPoints, UnitSpeed 
+        GamePoints, HitPoints, UnitSpeed, Rebirth
     }
 }

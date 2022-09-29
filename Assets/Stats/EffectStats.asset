@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf1e2ca839dc4455e8aeabdcb7f551fa, type: 3}
   m_Name: EffectStats
   m_EditorClassIdentifier: 
-  <DelayAppearance>k__BackingField: 0.5
+  <DelayAppearance>k__BackingField: 0.25
   <DelayAfterRemove>k__BackingField: 5
   effects:
   - <EffectTarget>k__BackingField: 0

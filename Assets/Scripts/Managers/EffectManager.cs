@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using GameDevLib.Interfaces;
+using RollABall.Args;
+using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using RollABall.Stats;
@@ -13,45 +16,48 @@ using Random = UnityEngine.Random;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class EffectManager : MonoBehaviour, IDisposable
+    public class EffectManager : BaseManager
     {
         #region Fields
         
         private List<IEffectable> _buffs;
         private List<IEffectable> _debuffs;
         
+        private readonly Dictionary<EffectTargetType, Coroutine> _activeEffects = new ();
+
         #endregion
         
         #region Properties
 
         [field: Header("Links")] 
         [field: SerializeField] public EffectStats Stats { get; set; }
-        [field: SerializeField] public Player.Player Player { get; set; }
+        [field: SerializeField] public EffectEvent EffectEvent { get; set; }
 
         #endregion
-        
-        #region MonoBehaviour methods
 
-        private void Start()
+        #region Funtionality
+        
+        protected override void InitManager()
         {
+            StopAllCoroutines();
+            
             // Thrown Exception Implementation
             if (Stats == null)
             {
                 throw new ArgumentNullException(Stats.effects.ToString());
             }
-            
+
             try
             {
                 _buffs = Stats.effects
                     .Select(el => el as IEffectable)
                     .Where(el => el.Type == EffectType.Buff)
                     .ToList();
-                
+
                 _debuffs = Stats.effects
                     .Select(el => el as IEffectable)
                     .Where(el => el.Type == EffectType.Debuff)
                     .ToList();
-         
             }
             catch (ArgumentNullException e)
             {
@@ -59,10 +65,6 @@ namespace RollABall.Managers
                 EditorApplication.isPlaying = false;
             }
         }
-
-        #endregion
-
-        #region Funtionality
         
         /// <summary>
         /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
@@ -86,83 +88,123 @@ namespace RollABall.Managers
             // Apply effects without duration
             if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
             {
-                switch (effect.EffectTarget)
-                {
-                    case EffectTargetType.GamePoints:
-                        Player.SetGamePoints(
-                            effect.Type == EffectType.Buff ? 
-                                effect.PositivePower : 
-                                effect.NegativePower,
-                            effect.Type == EffectType.Buff);
-
-                        break;
-                    case EffectTargetType.HitPoints:
-
-                        if (effect.Type == EffectType.Debuff)
-                        {
-                            Player.SetHitPoints(effect.NegativePower, false);
-                        }
-                        break;
-                }
+                ApplyEffectWithoutDuration(effect);
             }
             else
             {
+                // Stopping active effect with duration on same target
+                StopEffectByType(effect.EffectTarget); 
+                    
                 // Apply effects with duration
-                StartCoroutine(ApplyEffectCoroutine(effect));
+                var effectCoroutine = StartCoroutine(ApplyEffectWithDurationCoroutine(effect));
+                // Store effect Coroutine in dictionary
+                _activeEffects[effect.EffectTarget] = effectCoroutine;
             }
-
         }
 
-        private IEnumerator ApplyEffectCoroutine(IEffectable effect)
+        private void ApplyEffectWithoutDuration(IEffectable effect)
         {
-            if (effect.Duration is 0 && effect.BoosterType is BoosterType.None)
+            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+            
+            switch (effect.EffectTarget)
             {
-                yield break;
-            }
+                case EffectTargetType.GamePoints:
+                    args.Init(effect.Type == EffectType.Buff ? 
+                        effect.PositivePower : 
+                        effect.NegativePower, effect.Type == EffectType.Buff);
+                    break;
+                case EffectTargetType.HitPoints:
 
+                    if (effect.Type == EffectType.Debuff)
+                    {
+                        args.Init(effect.NegativePower, false);
+                    }
+                    break;
+            }
+            
+            EffectEvent.Notify(args);
+        }
+        
+        private IEnumerator ApplyEffectWithDurationCoroutine(IEffectable effect)
+        {
+            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+            
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.HitPoints:
                     if (effect.Type == EffectType.Buff)
                     {
-                        Player.SetHitPoints(null, null, true);
+                        args.Init(null,null, true);
                     }
                     break;
                 case EffectTargetType.UnitSpeed:
-                    Player.SetSpeed(
-                        effect.Type == EffectType.Buff ? effect.PositivePower : effect.NegativePower, 
+                    args.Init(effect.Type == EffectType.Buff ? 
+                        effect.PositivePower : 
+                        effect.NegativePower, 
                         effect.Type == EffectType.Buff);
                     break;
                 default:
                     yield break;
             }
+            
+            // Apply effect notify
+            EffectEvent.Notify(args);
 
             // Apply effect
             yield return new WaitForSeconds(effect.Duration);
-            
-            switch (effect.EffectTarget)
-            {
-                case EffectTargetType.HitPoints:
-                    if (effect.Type == EffectType.Buff)
-                    {
-                        Player.SetHitPoints(null, null, false);
-                    }
-                    break;
-                case EffectTargetType.UnitSpeed:
-                    Player.SetSpeed(null, null, true);
-                    break;
-                default:
-                    yield break;
-            }
+
+            StopEffectByType(effect.EffectTarget, effect.Type);
             
             yield return null;
         }
-        
-        public void Dispose()
+
+        private void StopEffectByType(EffectTargetType effectTargetType, EffectType? effectType = null)
         {
-            _buffs = _debuffs = null;
+            if (!_activeEffects.ContainsKey(effectTargetType)) return;
+
+            EffectArgs args = default;
+            
+            if (effectType.HasValue)
+            {
+                args = new EffectArgs(effectType.Value, effectTargetType);
+                
+                switch (effectTargetType)
+                {
+                    case EffectTargetType.HitPoints:
+                        if (effectType is EffectType.Buff)
+                        {
+                            args.Init(null, null, false);
+                        }
+                        break;
+                    case EffectTargetType.UnitSpeed:
+                        args.Init(null, null, null, true);
+                        break;
+                }
+            }
+            
+            if(args is not null)
+            {
+                EffectEvent.Notify(args);
+            }
+
+            StopCoroutine(_activeEffects[effectTargetType]);
+            _activeEffects.Remove(effectTargetType);
+            
+            Log($"Stop active effect on target {effectTargetType}");
         }
-        
+
+        // Event handler for CurrentGameEvent
+        public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
+        {
+            if (args.IsRestartGame)
+            {
+                InitManager();
+                
+                // Send Rebirth Effect
+                EffectEvent.Notify(new EffectArgs(EffectType.Buff, EffectTargetType.Rebirth));
+            }
+        }
+
         #endregion
     }
 }

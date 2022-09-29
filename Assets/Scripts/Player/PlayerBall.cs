@@ -2,7 +2,6 @@ using System;
 using RollABall.Args;
 
 // ReSharper disable once CheckNamespace
-
 namespace RollABall.Player
 {
     public class PlayerBall : Player
@@ -15,12 +14,6 @@ namespace RollABall.Player
             transform.gameObject.tag = GameData.PlayerTag;
         }
 
-        protected override void Update()
-        {
-            Velocity = playerRb.velocity.magnitude;
-            base.Update();
-        }
-
         private void FixedUpdate()
         {
             Move();
@@ -30,20 +23,23 @@ namespace RollABall.Player
         
         #region Functionality
 
-        public override void SetGamePoints(float points, bool increase)
+        protected override void SetGamePoints(float? points, bool? increase)
         {
-            GamePoints = increase switch
+            if (points.HasValue && increase.HasValue)
             {
-                true => GamePoints + points >= gameStats.GameHighScore
-                    ? gameStats.GameHighScore
-                    : GamePoints += points,
-                false => GamePoints - points > 0
-                    ? GamePoints -= points
-                    : 0
-            };
+                GamePoints = increase.Value switch
+                {
+                    true => GamePoints + points >= gameStats.GameHighScore
+                        ? gameStats.GameHighScore
+                        : GamePoints += points.Value,
+                    false => GamePoints - points > 0
+                        ? GamePoints -= points.Value
+                        : 0
+                };
+            }
         }
 
-        public override void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null)
+        protected override void SetHitPoints(float? hp, bool? increase, bool? isInvulnerable = null)
         {
             // Set Invulnerable
             if (isInvulnerable.HasValue)
@@ -60,7 +56,7 @@ namespace RollABall.Player
             }
         }
 
-        public override void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null)
+        protected override void SetSpeed(float? multiplier, bool? increase, bool? cancelEffect = null)
         {
             // Cancel effect
             if (cancelEffect.HasValue && cancelEffect.Value)
@@ -96,8 +92,7 @@ namespace RollABall.Player
 
             var args = new PlayerArgs(
                 CurrentHp, 
-                IsUnitInvulnerable, 
-                Velocity, 
+                IsUnitInvulnerable,
                 isSpeedUp, 
                 isSpeedDown,
                 (int)GamePoints

@@ -9,9 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 469a518c191ba45e3977d4acd0799154, type: 3}
-  m_Name: GameStats
+  m_Script: {fileID: 11500000, guid: a6c0ee78d5124adc9a87bf85bd0d87d7, type: 3}
+  m_Name: GameEvent
   m_EditorClassIdentifier: 
-  <PlayerSpawnPoint>k__BackingField: {x: -11.55, y: 2.826199, z: -18.45}
-  <GameHighScore>k__BackingField: 100
-  <CriticalThreshold>k__BackingField: 15
