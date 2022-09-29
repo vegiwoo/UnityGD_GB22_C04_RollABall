@@ -9,7 +9,7 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
 
         Guid Id => new ();
-        BonusPoint Point { get; set; }
+        Transform Point { get; set; }
         IEffectable Effect { get; set; }
         
         #endregion
@@ -30,24 +30,16 @@ namespace RollABall.Interactivity.Bonuses
         /// </summary>
         /// <param name="effect">Bonus effect.</param>
         /// <param name="point">Placement point.</param>
-        void Init(IEffectable effect, BonusPoint point)
+        void Init(IEffectable effect, Transform point)
         {
             Effect = effect;
             Point = point;
         }
-
-        /// <summary>
-        /// Returns game object (prefab) of bonus.
-        /// </summary>
-        /// <returns></returns>
-        GameObject? GetBonusGameObject()
-        {
-            return Point.Point.gameObject.transform.GetChild(0).gameObject;
-        }
+        
 
         int GetChildrenCount()
         {
-            return Point.Point.transform.childCount;
+            return Point.transform.childCount;
         }
         
         #endregion

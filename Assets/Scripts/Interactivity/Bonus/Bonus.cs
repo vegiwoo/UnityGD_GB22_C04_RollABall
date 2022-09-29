@@ -1,3 +1,5 @@
+using UnityEngine;
+
 // ReSharper disable once CheckNamespace
 namespace RollABall.Interactivity.Bonuses
 {
@@ -6,7 +8,7 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
         
         public event IInteractable<IBonusable>.InteractiveHandler InteractiveNotify;
-        public BonusPoint Point { get; set; }
+        public Transform Point { get; set; }
         public IEffectable Effect { get; set; }
         
         #endregion
