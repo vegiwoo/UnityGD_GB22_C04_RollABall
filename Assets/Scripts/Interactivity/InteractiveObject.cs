@@ -26,7 +26,7 @@ namespace RollABall.Interactivity
         protected virtual void OnCollisionEnter(Collision collision)
         {
             if(!CompareTags.Contains(collision.gameObject.tag)) return;
-            
+
             Interaction(collision.gameObject.tag);
         }
         

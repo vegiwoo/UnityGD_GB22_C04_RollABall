@@ -10,6 +10,7 @@ namespace RollABall.Args
         public bool IsRestartGame { get; }
         public (bool isLost, string message)? IsLostGame { get; }
         public (bool isWin, string message)? IsWinGame { get; }
+        
         #endregion
         
         #region Constructors
