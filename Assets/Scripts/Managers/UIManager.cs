@@ -43,6 +43,8 @@ namespace RollABall.Managers
         {
             base.OnEnable();
             PlayerEvent.Attach(this);
+            
+            // UI Elements
             RestartButton.onClick.AddListener(OnRestartButtonClick);
         }
         

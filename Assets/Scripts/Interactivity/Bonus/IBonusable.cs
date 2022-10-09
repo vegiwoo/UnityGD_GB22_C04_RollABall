@@ -9,6 +9,9 @@ namespace RollABall.Interactivity.Bonuses
         #region Properties
 
         Guid Id => new ();
+        /// <summary>
+        /// Point of physical placement of bonus object on scene.
+        /// </summary>
         Transform Point { get; set; }
         IEffectable Effect { get; set; }
         

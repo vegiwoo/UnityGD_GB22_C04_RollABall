@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,14 @@ using GameDevLib.Enums;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Interactivity.Bonuses;
+using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
-using Random = UnityEngine.Random;
+using static UnityEngine.Debug;
+
+// Сохранение состония 
+// - сохраниие размещения бонусов из _bonusPool
+// - загрузка размещения бонусов из _bonusPool
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -26,11 +32,14 @@ namespace RollABall.Managers
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
         private Transform[] bonusPoints;
 
+        [field: SerializeField] 
+        private BonusRepository BonusRepository { get; set; }
+
         #endregion
         
         #region Fields
         
-        private Dictionary<Transform, (IBonusable bonus, GameObject bonusGO)[]> _bonusPool;
+        //private Dictionary<Transform, BonusItem[]> _bonusPool;
         private AudioIsPlaying _audioIsPlaying;
 
         #endregion
@@ -49,31 +58,14 @@ namespace RollABall.Managers
         protected override void InitManager()
         {
             StopAllCoroutines();
-            
-            if (_bonusPool is not null)
-            {
-                foreach (var (p, b) in _bonusPool)
-                {
-                    // Unsubscribing from collision events with a bonus
-                    foreach (var item in b)
-                    {
-                        item.bonus.InteractiveNotify -= OnBonusNotify;
-                    }
-                    
-                    // Deactivation of all game objects
-                    var bonusGameObjectsInPointCount = p.childCount;
-                    for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
-                    {
-                        var bonusGameObject = p.GetChild(i);
-                        bonusGameObject.gameObject.SetActive(false);
-                    }
-                }
-            }
-            else 
-            {
-                // Creating a dictionary for storing bonuses.
-                _bonusPool = new Dictionary<Transform, (IBonusable bonus, GameObject bonusGO)[]>(bonusPoints.Length);
 
+            if (BonusRepository.Count > 0)
+            {
+                BonusRepository.UpdateAllWithAction(UnactivateAndUnsubscribeAction);
+            }
+            else
+            {
+                // Filling collection of bonuses
                 var counter = 0;
                 while (counter < bonusPoints.Length)
                 {
@@ -82,22 +74,29 @@ namespace RollABall.Managers
                     var buffBonusItem = CreateBonusAndObject(EffectType.Buff, point);
                     var debuffBonusItem = CreateBonusAndObject(EffectType.Debuff, point);
                     
-                    _bonusPool.Add(point, new [] { buffBonusItem, debuffBonusItem });
+                    try
+                    {
+                        BonusRepository.Insert(point,new [] { buffBonusItem, debuffBonusItem });
+                    }
+                    catch (Exception e)
+                    {
+                        LogException(e);
+                    }
 
                     ++counter;
                 }
             }
             
-            // Activating one random bonus at each point.
-            foreach (var (p, items) in _bonusPool)
-            {
-                var randomIndex = Random.Range(0, items.Length);
-                items[randomIndex].bonusGO.SetActive(true);
-                items[randomIndex].bonus.InteractiveNotify += OnBonusNotify;
-            }
+            BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
         }
         
-        private (IBonusable bonus, GameObject bonusGameObject) CreateBonusAndObject(EffectType effectType, Transform point)
+        /// <summary>
+        /// Creates a new bonus and a game object for it.
+        /// </summary>
+        /// <param name="effectType">Type of effect for bonus.</param>
+        /// <param name="point">Bonus point.</param>
+        /// <returns></returns>
+        private BonusItem CreateBonusAndObject(EffectType effectType, Transform point)
         {
             // Create effect 
             var effect = effectManager.GetRandomEffectByType(effectType);
@@ -111,12 +110,46 @@ namespace RollABall.Managers
             IBonusable bonus = o.AddComponent<Bonus>();
             bonus.Init(effect, point);
 
-            // Set parent for new object
+            // Set point as parent for new object
             o.transform.parent = point;
             
-            return (bonus, o);
+            return new BonusItem(bonus, o);
         }
         
+        /// <summary>
+        /// Unsubscribes from events of all objects.
+        /// </summary>
+        /// <param name="value">Value to update.</param>
+        private void UnactivateAndUnsubscribeAction(KeyValuePair<Transform, BonusItem[]> value)
+        {
+            // Unsubscribing from collision events with a bonus in pair
+            foreach (var item in value.Value)
+            {
+                item.Bonus.InteractiveNotify -= OnBonusNotify;
+            }
+
+            // Deactivation of all game objects in pair
+            var bonusGameObjectsInPointCount = value.Key.childCount;
+            for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
+            {
+                var bonusGameObject = value.Key.GetChild(i);
+                bonusGameObject.gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// Randomly activates one of bonuses on point.
+        /// </summary>
+        /// <param name="value">Value to update.</param>
+        private void RandomActivateAndSubscribeAction(KeyValuePair<Transform, BonusItem[]> value)
+        {
+            var random = new System.Random();
+            var element = value.Value[random.Next(0, value.Value.Length)];
+            
+            element.BonusGo.SetActive(true);
+            element.Bonus.InteractiveNotify += OnBonusNotify;
+        }
+
         /// <summary>
         /// Called when a bonus collision occurs. 
         /// </summary>
@@ -138,32 +171,34 @@ namespace RollABall.Managers
 
         private IEnumerator ToggleBonusCoroutine(IBonusable bonusable)
         {
-            // Unsubscribing from collision events with a bonus
-            bonusable.InteractiveNotify -= OnBonusNotify;
-            
-            var poolElement = 
-                _bonusPool.First(el => el.Key == bonusable.Point);
-            
-            // Deactivation of all game objects in pool element
-            var bonusGameObjectsInPointCount = poolElement.Key.childCount;
-            for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
+            bool IsMatch(IEnumerable<BonusItem> items)
             {
-                var bonusGameObject = poolElement.Key.GetChild(i);
-                bonusGameObject.gameObject.SetActive(false);
+                return items.Any(el => el.Bonus == bonusable);
             }
 
+            var existingPair = BonusRepository.FindOnceByFilter(IsMatch);
+            
+            BonusRepository.UpdateOnceWithAction(existingPair.Key, UnactivateAndUnsubscribeAction);
+            
             // Audio Completion Waiting
             var isSoundPlayed = false;
             _audioIsPlaying.AudioTriggerNotify += (played) => { isSoundPlayed = played; };
-
-            yield return new WaitUntil(() => isSoundPlayed);
             
+            // Delay 
+            yield return new WaitUntil(() => isSoundPlayed); 
             yield return new WaitForSeconds(stats.DelayAfterRemove);
             
-            // Find and activate new bonus in pool element
-            var otherBonusesInPoolElement = poolElement.Value.First(b => b .bonus != bonusable);
-            otherBonusesInPoolElement.bonusGO.SetActive(true);
-            otherBonusesInPoolElement.bonus.InteractiveNotify += OnBonusNotify;
+            // Toggle bonus in pair
+            void ToggleAction(KeyValuePair<Transform, BonusItem[]> pair)
+            {
+                if (pair.Value.Length != 2) return;
+
+                var otherBonus = existingPair.Value.First(el => el.Bonus != bonusable);
+                otherBonus.Bonus.InteractiveNotify += OnBonusNotify;
+                otherBonus.BonusGo.SetActive(true);
+            }
+
+            BonusRepository.UpdateOnceWithAction(existingPair.Key, ToggleAction);
         }
 
         // Event handler for CurrentGameEvent
