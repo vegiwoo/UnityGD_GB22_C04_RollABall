@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RollABall.Infrastructure.Repository;
 using RollABall.Interactivity.Bonuses;
-using RollABall.Test;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -11,7 +11,6 @@ namespace RollABall.ScriptableObjects
     [CreateAssetMenu(fileName = "BonusRepository", menuName = "RollABall/Objects/BonusRepository", order = 0)]
     public class BonusRepository : ScriptableObject, IRepositoryUpdatable<Transform,BonusItem[]>, IRepositoryFindable<Transform,BonusItem[]>
     {
-       
         // TODO: Переписать на SortedDictionary<>, для этого BonusItem[] обернуть в класс и реализовать IComparable<>
         private readonly Dictionary<Transform, BonusItem[]> _storage = new ();
         
@@ -43,11 +42,16 @@ namespace RollABall.ScriptableObjects
         {
             var relevantItems = 
                 from el in _storage
-                
                 where isMatch(el.Value)
                 select el;
 
             return relevantItems.First();
+        }
+
+        public KeyValuePair<Transform, BonusItem[]> FindOnceByFilter(Func<IDictionary<Transform, BonusItem[]>, 
+            KeyValuePair<Transform, BonusItem[]>> isMatch)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -395,7 +395,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1188741620}
-  m_RootOrder: 4
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &142419225
 MonoBehaviour:
@@ -412,7 +412,9 @@ MonoBehaviour:
   <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
   <Stats>k__BackingField: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
+  <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
   <EffectEvent>k__BackingField: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
+  <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
 --- !u!1 &162190893
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,7 +492,7 @@ Transform:
   - {fileID: 1301782630}
   - {fileID: 1682228727}
   m_Father: {fileID: 1188741620}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &165096693
 MonoBehaviour:
@@ -1085,7 +1087,7 @@ Transform:
   m_Children:
   - {fileID: 448165248}
   m_Father: {fileID: 1188741620}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &479113080
 MonoBehaviour:
@@ -1102,7 +1104,6 @@ MonoBehaviour:
   <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
   stats: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
-  effectManager: {fileID: 142419225}
   bonusPrefab: {fileID: 5351344503270608234, guid: 2f78e2afbe2de4d80a73b28b25394944, type: 3}
   bonusPoints:
   - {fileID: 1053017601}
@@ -1115,6 +1116,9 @@ MonoBehaviour:
   - {fileID: 343661998}
   - {fileID: 1866955714}
   - {fileID: 1386223124}
+  <BonusRepository>k__BackingField: {fileID: 11400000, guid: 344901e2dbf694471baf61508ef770af, type: 2}
+  <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
+  <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
 --- !u!114 &479113081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1989,7 +1993,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 2.8134556, y: 1}
+    m_SensorSize: {x: 2.4200542, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2090,7 +2094,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1188741620}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1127134592
 MonoBehaviour:
@@ -2390,10 +2394,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1666005406}
+  - {fileID: 142419224}
   - {fileID: 479113079}
   - {fileID: 1127134591}
   - {fileID: 165096692}
-  - {fileID: 142419224}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

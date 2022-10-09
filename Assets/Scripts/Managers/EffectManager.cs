@@ -1,86 +1,61 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
+using RollABall.ScriptableObjects;
 using RollABall.Stats;
-using UnityEditor;
 using UnityEngine;
 using static UnityEngine.Debug;
-using Random = UnityEngine.Random;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class EffectManager : BaseManager
+    public class EffectManager : BaseManager, IObserver<IEffectable>
     {
         #region Fields
         
-        private List<IEffectable> _buffs;
-        private List<IEffectable> _debuffs;
-        
         private readonly Dictionary<EffectTargetType, Coroutine> _activeEffects = new ();
-
+        
         #endregion
         
         #region Properties
 
         [field: Header("Links")] 
         [field: SerializeField] public EffectStats Stats { get; set; }
+        [field: SerializeField] public EffectRepository EffectRepository { get; set;}
         [field: SerializeField] public EffectEvent EffectEvent { get; set; }
+        [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
 
         #endregion
+        
+        #region Monobehavior metods
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            
+            EffectRepository.Init(Stats);
+            ApplyEffectEvent.Attach(this);
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+            ApplyEffectEvent.Detach(this);
+        }
+
+        #endregion
+        
         #region Funtionality
         
         protected override void InitManager()
         {
             StopAllCoroutines();
-            
-            // Thrown Exception Implementation
-            if (Stats == null)
-            {
-                throw new ArgumentNullException(Stats.effects.ToString());
-            }
-
-            try
-            {
-                _buffs = Stats.effects
-                    .Select(el => el as IEffectable)
-                    .Where(el => el.Type == EffectType.Buff)
-                    .ToList();
-
-                _debuffs = Stats.effects
-                    .Select(el => el as IEffectable)
-                    .Where(el => el.Type == EffectType.Debuff)
-                    .ToList();
-            }
-            catch (ArgumentNullException e)
-            {
-                LogError("Link to effect stats cannot be empty");
-                EditorApplication.isPlaying = false;
-            }
         }
-        
-        /// <summary>
-        /// Finds a random EffectFactoryKey according to EffectType, a factory and generates an effect.
-        /// </summary>
-        /// <param name="effectType">Type of effect to generate.</param>
-        /// <returns>Random effect.</returns>
-        public IEffectable GetRandomEffectByType(EffectType effectType)
-        {
-            return effectType switch
-            {
-                EffectType.Buff => _buffs[Random.Range(0, _buffs.Count)],
-                EffectType.Debuff => _debuffs[Random.Range(0, _debuffs.Count)],
-                _ => default
-            };
-        }
-        
+
         public void ApplyEffectOnPlayer(IEffectable effect)
         {
             Log(effect.ToString());
@@ -206,5 +181,10 @@ namespace RollABall.Managers
         }
 
         #endregion
+
+        public void OnEventRaised(ISubject<IEffectable> subject, IEffectable args)
+        {
+            ApplyEffectOnPlayer(args);
+        }
     }
 }

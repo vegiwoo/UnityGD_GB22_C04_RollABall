@@ -20,6 +20,12 @@ namespace RollABall.Managers
         
         #endregion
         
+        #region Filds
+        
+        protected readonly System.Random systemRandom = new ();
+        
+        #endregion
+        
         #region MonoBehaviour methods
 
         protected void Start()

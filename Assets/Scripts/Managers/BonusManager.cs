@@ -6,6 +6,7 @@ using GameDevLib.Audio;
 using GameDevLib.Enums;
 using GameDevLib.Interfaces;
 using RollABall.Args;
+using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
@@ -25,15 +26,15 @@ namespace RollABall.Managers
         #region Links
         
         [SerializeField] private EffectStats stats;
-        [SerializeField] private EffectManager effectManager;
         [Header("Prefabs")]
         [SerializeField] private GameObject bonusPrefab;
         [Header("Links")]
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
         private Transform[] bonusPoints;
 
-        [field: SerializeField] 
-        private BonusRepository BonusRepository { get; set; }
+        [field: SerializeField] private BonusRepository BonusRepository { get; set; }
+        [field: SerializeField] private EffectRepository EffectRepository { get; set; }
+        [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
 
         #endregion
         
@@ -99,7 +100,18 @@ namespace RollABall.Managers
         private BonusItem CreateBonusAndObject(EffectType effectType, Transform point)
         {
             // Create effect 
-            var effect = effectManager.GetRandomEffectByType(effectType);
+            KeyValuePair<Guid, IEffectable> RandomEffectByType(IDictionary<Guid, IEffectable> collection)
+            {
+                var effectsByType = collection
+                    .Where(el => el.Value.Type == effectType)
+                    .ToList();
+                
+                var randomIndex = systemRandom.Next(0, effectsByType.Count);
+                
+                return effectsByType[randomIndex];
+            }
+            
+            var effect = EffectRepository.FindOnceByFilter(RandomEffectByType).Value;
             
             // Create game object
             var o = Instantiate(bonusPrefab, point.position, point.rotation);
@@ -143,8 +155,7 @@ namespace RollABall.Managers
         /// <param name="value">Value to update.</param>
         private void RandomActivateAndSubscribeAction(KeyValuePair<Transform, BonusItem[]> value)
         {
-            var random = new System.Random();
-            var element = value.Value[random.Next(0, value.Value.Length)];
+            var element = value.Value[systemRandom.Next(0, value.Value.Length)];
             
             element.BonusGo.SetActive(true);
             element.Bonus.InteractiveNotify += OnBonusNotify;
@@ -159,7 +170,7 @@ namespace RollABall.Managers
         {
             if (string.Equals(tagElement, GameData.PlayerTag))
             {
-                effectManager.ApplyEffectOnPlayer(bonus.Effect);
+                ApplyEffectEvent.Notify(bonus.Effect);
             }
             
             _audioIsPlaying.PlaySound(bonus.Effect.Type == EffectType.Buff ? 

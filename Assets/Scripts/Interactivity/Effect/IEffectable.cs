@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 using RollABall.Interactivity.Effects;
 
@@ -8,8 +9,7 @@ namespace RollABall.Interactivity.Bonuses
     public interface IEffectable : IEquatable<IEffectable>
     {
         #region Properties
-        Guid Id => new();
-        BonusType BonusType { get; }
+        Guid Id => Guid.NewGuid();
         EffectType Type { get; }
         EffectTargetType EffectTarget { get; }
         BoosterType BoosterType { get; }

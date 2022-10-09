@@ -7,8 +7,7 @@ namespace RollABall.Interactivity.Bonuses
     public interface IBonusable : IEquatable<IBonusable>, IInteractable<IBonusable>, IDisposable
     {
         #region Properties
-
-        Guid Id => new ();
+        Guid Id => Guid.NewGuid();
         /// <summary>
         /// Point of physical placement of bonus object on scene.
         /// </summary>
