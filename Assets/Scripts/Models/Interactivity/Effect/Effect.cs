@@ -20,6 +20,20 @@ namespace RollABall.Managers
         
         #endregion
 
+        #region Constructors
+        
+        public Effect(EffectTargetType effectTarget, EffectType type, BoosterType boosterType, float negativePower, float positivePower, float duration)
+        {
+            EffectTarget = effectTarget;
+            Type = type;
+            BoosterType = boosterType;
+            NegativePower = negativePower;
+            PositivePower = positivePower;
+            Duration = duration;
+        }
+        
+        #endregion
+
         #region Functionality
 
         public override string ToString()

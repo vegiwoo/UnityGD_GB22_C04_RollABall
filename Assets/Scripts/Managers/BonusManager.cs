@@ -13,10 +13,6 @@ using RollABall.Stats;
 using UnityEngine;
 using static UnityEngine.Debug;
 
-// Сохранение состония 
-// - сохраниие размещения бонусов из _bonusPool
-// - загрузка размещения бонусов из _bonusPool
-
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
@@ -235,3 +231,4 @@ namespace RollABall.Managers
         #endregion
     }
 }
+
