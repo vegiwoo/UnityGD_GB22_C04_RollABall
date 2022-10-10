@@ -7,6 +7,7 @@ using GameDevLib.Enums;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Infrastructure.Memento;
 using RollABall.Interactivity.Bonuses;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
@@ -17,7 +18,7 @@ using static UnityEngine.Debug;
 namespace RollABall.Managers
 {
     [RequireComponent(typeof(AudioIsPlaying))]
-    public class BonusManager : BaseManager
+    public class BonusManager : BaseManager, IMementoOrganizer<BonusManagerStateItems>
     {
         #region Links
         
@@ -27,18 +28,34 @@ namespace RollABall.Managers
         [Header("Links")]
         [SerializeField, Tooltip("Points on playing field for placing bonuses")] 
         private Transform[] bonusPoints;
-
+        [field:SerializeField] public BonusManagerCaretaker Caretaker { get; set; }
         [field: SerializeField] private BonusRepository BonusRepository { get; set; }
         [field: SerializeField] private EffectRepository EffectRepository { get; set; }
         [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
 
         #endregion
         
+        #region Properties
+        public BonusManagerStateItems State { get; set; }
+        
+        #endregion
+        
         #region Fields
         
-        //private Dictionary<Transform, BonusItem[]> _bonusPool;
         private AudioIsPlaying _audioIsPlaying;
 
+        #endregion
+        
+        #region Nested types
+
+        private class BonusManagerMemento : Memento<BonusManagerStateItems>
+        {
+            public BonusManagerMemento(BonusManagerStateItems state)
+            {
+                State = state;
+            }
+        }
+        
         #endregion
 
         #region MonoBehaviour methods
@@ -46,6 +63,14 @@ namespace RollABall.Managers
         private void Awake()
         {
             _audioIsPlaying = GetComponent<AudioIsPlaying>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            
+            // Memento pattern - caretaker for organizer.
+            Caretaker.Init(this, Application.persistentDataPath);
         }
 
         #endregion
@@ -218,8 +243,36 @@ namespace RollABall.Managers
 
             if (args.IsSaveGame)
             {
-                Log("Hello darling!");
+                Caretaker.Save();
             }
+        }
+
+        // Memento pattern methods
+        public BonusManagerStateItems MakeState()
+        {
+            var items =
+                from bonusPair in BonusRepository.FindAll()
+                from bonus in bonusPair
+                select new BonusManagerStateItem(bonus.Bonus.Point.position, bonus.Bonus.Effect as Effect,
+                    bonus.BonusGo.activeInHierarchy);
+            
+            return new BonusManagerStateItems(items);;
+        }
+
+        public IMemento<BonusManagerStateItems> Save()
+        {
+            State = MakeState();
+            return new BonusManagerMemento(State);
+        }
+
+        public void Load(IMemento<BonusManagerStateItems> memento)
+        {
+            if (memento is not BonusManagerMemento)
+            {
+                throw new Exception("Unknown memento class " + memento.ToString());
+            }
+
+            State = memento.GetState();
         }
 
         public override void Dispose()

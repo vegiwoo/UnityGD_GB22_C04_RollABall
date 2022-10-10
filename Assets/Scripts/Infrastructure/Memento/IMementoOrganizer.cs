@@ -14,6 +14,12 @@ namespace RollABall.Infrastructure.Memento
         S State { get; set; }
 
         /// <summary>
+        /// Creates/updates Organizer state.
+        /// </summary>
+        /// <returns>New state.</returns>
+        S MakeState();
+        
+        /// <summary>
         /// Stores current state of organizer inside the snapshot.
         /// </summary>
         /// <returns></returns>

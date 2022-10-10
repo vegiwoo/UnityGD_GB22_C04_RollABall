@@ -4,7 +4,7 @@ using System;
 namespace RollABall.Infrastructure.Memento
 {
     /// <summary>
-    /// Organizer snapshot interface.
+    /// Represents interface for a snapshot in 'Memento' pattern.
     /// </summary>
     /// <remarks>Used in 'Memento' pattern.</remarks>>
     public interface IMemento<T>

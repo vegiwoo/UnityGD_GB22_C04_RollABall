@@ -14,7 +14,5 @@ namespace RollABall.Interactivity.Bonuses
         {
             Bonuses = bonuses;
         }
-
-        public string SaveToString() => JsonConvert.SerializeObject(this);
     }
 }
