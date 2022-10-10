@@ -219,6 +219,11 @@ namespace RollABall.Managers
             {
                 InitManager();
             }
+
+            if (args.IsSaveGame)
+            {
+                Log("Hello darling!");
+            }
         }
 
         public override void Dispose()

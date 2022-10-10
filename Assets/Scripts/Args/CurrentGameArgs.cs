@@ -8,6 +8,8 @@ namespace RollABall.Args
         #region Properties
 
         public bool IsRestartGame { get; }
+        public bool IsSaveGame { get; }
+        public bool IsLoadGame { get; }
         public (bool isLost, string message)? IsLostGame { get; }
         public (bool isWin, string message)? IsWinGame { get; }
         
@@ -15,11 +17,13 @@ namespace RollABall.Args
         
         #region Constructors
         
-        public CurrentGameArgs(bool isRestartGame, 
+        public CurrentGameArgs(bool isRestartGame, bool isSaveGame, bool isLoadGame,
             (bool isLost, string message)? isLostGame = null, 
             (bool isWin, string message)? isWinGame = null)
         {
             IsRestartGame = isRestartGame;
+            IsSaveGame = isSaveGame;
+            IsLoadGame = isLoadGame;
             IsLostGame = isLostGame;
             IsWinGame = isWinGame;
         }

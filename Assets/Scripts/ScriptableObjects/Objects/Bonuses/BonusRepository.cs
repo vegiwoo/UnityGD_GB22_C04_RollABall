@@ -53,5 +53,12 @@ namespace RollABall.ScriptableObjects
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<BonusItem[]> FindAll()
+        {
+            return _storage
+                .Select(el => el.Value)
+                .ToList();
+        }
     }
 }

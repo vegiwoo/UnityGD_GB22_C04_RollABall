@@ -36,10 +36,10 @@ namespace RollABall.Managers
         {
             if (args.CurrentHp <= 0)
             {
-                GameEvent.Notify(new CurrentGameArgs(false, (true, "You have spent all your hit points :("), null));
+                GameEvent.Notify(new CurrentGameArgs(false, false, false, (true, "You have spent all your hit points :("), null));
             } else if (args.GamePoints >= GameStats.GameHighScore)
             {
-                GameEvent.Notify(new CurrentGameArgs(false,  null, (true, "You have reached required number of points :)")));
+                GameEvent.Notify(new CurrentGameArgs(false, false, false,  null, (true, "You have reached required number of points :)")));
             }
         }
         

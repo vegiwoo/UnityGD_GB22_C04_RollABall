@@ -30,6 +30,8 @@ namespace RollABall.Managers
         [field: SerializeField] public Text ScoreLabel { get; set; }
         [field: SerializeField] public Text SpeedLabel { get; set; }
         [field: SerializeField] public Button RestartButton { get; set; }
+        [field: SerializeField] public Button SaveButton { get; set; }
+        [field: SerializeField] public Button LoadButton { get; set; }
 
         private (bool isLost, string message)? IsLostGame { get; set; }
         private (bool isWin, string message)? IsWinGame { get; set; }
@@ -46,6 +48,8 @@ namespace RollABall.Managers
             
             // UI Elements
             RestartButton.onClick.AddListener(OnRestartButtonClick);
+            SaveButton.onClick.AddListener(OnSaveButtonClick);
+            LoadButton.onClick.AddListener(OnLoadButtonClick);
         }
         
         private void OnGUI()
@@ -90,19 +94,24 @@ namespace RollABall.Managers
         
         protected override void InitManager()
         {
-            var colors = RestartButton.colors;
-            colors.normalColor = colors.pressedColor = colors.selectedColor = normalColor;
-            colors.highlightedColor = dangerColor;
-            RestartButton.colors = colors;
-
+            var buttons = new[] { RestartButton, SaveButton, LoadButton };
+            foreach (var button in buttons)
+            {
+                var colors = button.colors;
+                colors.normalColor = colors.pressedColor = colors.selectedColor = normalColor;
+                colors.highlightedColor = dangerColor;
+                button.colors = colors;
+            }
+            
             HpLabel.color = ScoreLabel.color = SpeedLabel.color = normalColor;
             SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, 0));
         }
 
-        private void OnRestartButtonClick()
-        {
-            GameEvent.Notify(new CurrentGameArgs(true));
-        }
+        private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(true, false, false));
+        
+        private void OnSaveButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, true, false));
+        
+        private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, false, true));
         
         // Event handler for PlayerEvent
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
@@ -113,8 +122,6 @@ namespace RollABall.Managers
         // Event handler for CurrentGameEvent
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            Log("Yep!");
-            
             // Lost game
             if (args.IsLostGame is { isLost: true })
             {
@@ -147,7 +154,11 @@ namespace RollABall.Managers
         {
             base.Dispose();
             PlayerEvent.Detach(this);
-            RestartButton.onClick.RemoveAllListeners();
+            
+            // UI Elements
+            RestartButton.onClick.RemoveListener(OnRestartButtonClick);
+            SaveButton.onClick.RemoveListener(OnSaveButtonClick);
+            LoadButton.onClick.RemoveListener(OnLoadButtonClick);
         }
         
         #endregion
