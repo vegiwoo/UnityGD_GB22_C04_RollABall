@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -17,6 +18,7 @@ namespace RollABall.Models
 
         #region Constructors
 
+        [JsonConstructor]
         public Point(float posX, float posY, float posZ)
         {
             PosX = posX;

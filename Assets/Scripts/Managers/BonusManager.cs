@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using GameDevLib.Audio;
 using GameDevLib.Enums;
@@ -38,25 +39,17 @@ namespace RollABall.Managers
         
         #region Properties
         public List<BonusManagerStateItem> State { get; set; }
-        
+
         #endregion
         
         #region Fields
         
         private AudioIsPlaying _audioIsPlaying;
-
+        
         #endregion
         
         #region Nested types
-
-        private class BonusManagerMemento : Memento<List<BonusManagerStateItem>>
-        {
-            public override string Name => $"BonusesMemento_{Date}";
-            public BonusManagerMemento(List<BonusManagerStateItem> state)
-            {
-                State = state;
-            }
-        }
+        
         
         #endregion
 
@@ -71,8 +64,8 @@ namespace RollABall.Managers
         {
             base.OnEnable();
             
-            // Memento pattern - caretaker for organizer.
-            Caretaker.Init(this, Application.persistentDataPath);
+            // Memento pattern - init caretaker for organizer.
+            Caretaker.Init(this, "Bonuses", "BonusMemento");
         }
 
         #endregion
@@ -245,9 +238,28 @@ namespace RollABall.Managers
 
             if (args.IsSaveGame)
             {
-                Caretaker.Save();
+                try
+                {
+                    Caretaker.Save();
+                }
+                catch (Exception e)
+                {
+                    LogException(e);
+                }
             }
-        }
+
+            if (args.IsLoadGame)
+            {
+                try
+                {
+                    Caretaker.Load();
+                }
+                catch (Exception e)
+                {
+                    LogException(e);
+                }
+            }
+        }   
 
         // Memento pattern methods
         public List<BonusManagerStateItem> MakeState()
@@ -264,11 +276,6 @@ namespace RollABall.Managers
         public IMemento<List<BonusManagerStateItem>> Save()
         {
             State = MakeState();
-
-            // var json = JsonConvert.SerializeObject(State);
-            //
-            // Log(json);
-
             return new BonusManagerMemento(State);
         }
 
@@ -278,8 +285,10 @@ namespace RollABall.Managers
             {
                 throw new Exception("Unknown memento class " + memento.ToString());
             }
-
+            
             State = memento.State;
+
+            // TODO: Все переопределить !!! 
         }
 
         public override void Dispose()

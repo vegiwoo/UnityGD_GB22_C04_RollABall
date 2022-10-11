@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using RollABall.Managers;
 using RollABall.Models;
 using UnityEngine;
@@ -19,6 +20,7 @@ namespace RollABall.Interactivity.Bonuses
     
         #region Constructors
 
+        [JsonConstructor]
         public BonusManagerStateItem(Point point, Effect effect, bool isActive)
         {
             Point = point;

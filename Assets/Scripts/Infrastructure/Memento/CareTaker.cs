@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -8,8 +7,12 @@ namespace RollABall.Infrastructure.Memento
     public abstract class Caretaker<T> : ScriptableObject
     {
         #region Field
-        protected List<IMemento<T>> mementos = new ();
+        // When saving multiple snapshots, a collection is used:
+        //protected readonly List<(IMemento<T> memento, string path)> mementos = new ();
+        protected (IMemento<T> memento, string path)? savedMemento;
         protected string SavedPath { get; set; }
+        protected string NamePrefix { get; set; }
+        private static string SavedDir => "Saved";
         
         #endregion
     
@@ -19,24 +22,20 @@ namespace RollABall.Infrastructure.Memento
         #endregion
     
         #region Funstionality
-        public virtual void Init(IMementoOrganizer<T> originator, string rootPath)
+        public void Init(IMementoOrganizer<T> originator, string dirName, string namePrefix)
         {
             Originator = originator;
-            SavedPath = Path.Combine(rootPath, "Saved/Bonuses") ;
+            SavedPath = Path.Combine(Application.persistentDataPath, $"{SavedDir}/{dirName}/");
+            NamePrefix = namePrefix;
+
+            savedMemento = null;
+            Preload();
         }
 
         public abstract void Save();
-        public abstract void Load();
 
-        //public void ShowHistory()
-        //{
-            // Console.WriteLine("Caretaker: Here's the list of mementos:");
-            //
-            // foreach (var memento in this._mementos)
-            // {
-            //     Console.WriteLine(memento.GetName());
-            // }
-        //}
+        protected abstract void Preload();
+        public abstract void Load();
 
         #endregion
     }

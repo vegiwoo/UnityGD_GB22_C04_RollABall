@@ -10,12 +10,12 @@ namespace RollABall.Infrastructure.Memento
     public interface IMemento<T>
     {
         /// <remarks>Organizer uses this method to restore its state.</remarks>>
-        T State { get; }
+        T State { get; set; }
         
         /// <returns>Used by Caretaker to display metadata.</returns>
-        string Name { get; }
+        string Name { get; set; }
 
         /// <returns>Used by Caretaker to display metadata.</returns>
-        string Date { get; }
+        string Date { get; set; }
     }
 }

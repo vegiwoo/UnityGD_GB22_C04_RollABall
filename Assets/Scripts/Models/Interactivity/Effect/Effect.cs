@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace RollABall.Managers
 
         #region Constructors
         
+        [JsonConstructor]
         public Effect(EffectTargetType effectTarget, EffectType type, BoosterType boosterType, float negativePower, float positivePower, float duration)
         {
             EffectTarget = effectTarget;
