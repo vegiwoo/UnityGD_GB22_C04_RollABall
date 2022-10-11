@@ -87,8 +87,6 @@ namespace RollABall.Managers
                                Math.Abs(it.Point.PosZ - position.z) < pointTolerance;
                     }).ToList();
 
-                    LogAssertion(entities.Count() == BonusInPoint);
-
                     var pair = new KeyValuePair<Transform, BonusItem[]>(bonusPoint, new BonusItem[2]);
 
                     for (var i = 0; i < entities.Count(); i++)
@@ -248,9 +246,6 @@ namespace RollABall.Managers
 
             // Deactivation of all game objects in pair
             var bonusGameObjectsInPointCount = value.Key.childCount;
-            
-            Log($"{bonusGameObjectsInPointCount}");
-
             for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
             {
                 var bonusGameObject = value.Key.GetChild(i);
