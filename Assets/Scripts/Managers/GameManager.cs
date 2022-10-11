@@ -26,7 +26,7 @@ namespace RollABall.Managers
         
         #region Functionality
 
-        protected override void InitManager()
+        protected override void InitManager(bool fromLoad = false)
         {
             // Do something ...
         }

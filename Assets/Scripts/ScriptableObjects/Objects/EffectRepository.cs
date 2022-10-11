@@ -10,7 +10,8 @@ using UnityEngine;
 namespace RollABall.ScriptableObjects 
 {
     [CreateAssetMenu(fileName = "EffectRepository", menuName = "RollABall/Objects/EffectRepository", order = 1)]
-    public class EffectRepository : ScriptableObject, IRepositoryFindable<Guid, IEffectable>, IRepositoryUpdatable<Guid, IEffectable>
+    public class EffectRepository : ScriptableObject, IRepositoryFindable<Guid, IEffectable>, 
+        IRepositoryUpdatable<Guid, IEffectable>
     {
         public int Count => _effects.Count();
         
@@ -32,12 +33,17 @@ namespace RollABall.ScriptableObjects
             }
         }
         
-        // Finding
+        // Inserting and Finding
         public void Insert(Guid key, IEffectable value)
         {
             _effects.Add(key, value);
         }
-        
+
+        public void Insert(IEnumerable<KeyValuePair<Guid, IEffectable>> items)
+        {
+            throw new NotImplementedException();
+        }
+
         public KeyValuePair<Guid, IEffectable> FindOnceByFilter(Func<IDictionary<Guid, IEffectable>, KeyValuePair<Guid, IEffectable>> func)
         {
             return func(_effects);

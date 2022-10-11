@@ -51,7 +51,7 @@ namespace RollABall.Managers
         
         #region Funtionality
         
-        protected override void InitManager()
+        protected override void InitManager(bool fromLoad = false)
         {
             StopAllCoroutines();
         }
@@ -180,11 +180,11 @@ namespace RollABall.Managers
             }
         }
 
-        #endregion
-
         public void OnEventRaised(ISubject<IEffectable> subject, IEffectable args)
         {
             ApplyEffectOnPlayer(args);
         }
+        
+        #endregion
     }
 }

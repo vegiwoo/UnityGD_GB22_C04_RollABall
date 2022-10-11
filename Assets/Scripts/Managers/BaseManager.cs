@@ -51,7 +51,7 @@ namespace RollABall.Managers
         /// <summary>
         /// Initializes manager at start or restart of game.
         /// </summary>
-        protected abstract void InitManager();
+        protected abstract void InitManager(bool fromLoad = false);
         
         // Event handler for CurrentGameEvent
         public abstract void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args);

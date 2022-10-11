@@ -9,7 +9,8 @@ using UnityEngine;
 namespace RollABall.ScriptableObjects
 {
     [CreateAssetMenu(fileName = "BonusRepository", menuName = "RollABall/Objects/BonusRepository", order = 0)]
-    public class BonusRepository : ScriptableObject, IRepositoryUpdatable<Transform,BonusItem[]>, IRepositoryFindable<Transform,BonusItem[]>
+    public class BonusRepository : ScriptableObject, IRepositoryUpdatable<Transform,BonusItem[]>, 
+        IRepositoryFindable<Transform,BonusItem[]>, IRepositoryRemovable
     {
         // TODO: Переписать на SortedDictionary<>, для этого BonusItem[] обернуть в класс и реализовать IComparable<>
         private readonly Dictionary<Transform, BonusItem[]> _storage = new ();
@@ -20,6 +21,14 @@ namespace RollABall.ScriptableObjects
         public void Insert(Transform key, BonusItem[] value)
         {
             _storage.Add(key, value);
+        }
+
+        public void Insert(IEnumerable<KeyValuePair<Transform, BonusItem[]>> items)
+        {
+            foreach (var pair in items)
+            {
+                Insert(pair.Key, pair.Value);
+            }
         }
 
         public void UpdateAllWithAction(Action<KeyValuePair<Transform, BonusItem []>> action)
@@ -59,6 +68,12 @@ namespace RollABall.ScriptableObjects
             return _storage
                 .Select(el => el.Value)
                 .ToList();
+        }
+        
+        // Remove 
+        public void RemoveAll()
+        {
+            _storage.Clear();
         }
     }
 }

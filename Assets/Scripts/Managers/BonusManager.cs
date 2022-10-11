@@ -1,12 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using GameDevLib.Audio;
 using GameDevLib.Enums;
 using GameDevLib.Interfaces;
-using Newtonsoft.Json;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Infrastructure.Memento;
@@ -43,13 +41,8 @@ namespace RollABall.Managers
         #endregion
         
         #region Fields
-        
+        private const int BonusInPoint = 2;
         private AudioIsPlaying _audioIsPlaying;
-        
-        #endregion
-        
-        #region Nested types
-        
         
         #endregion
 
@@ -72,83 +65,180 @@ namespace RollABall.Managers
 
         #region Functionality
         
-        protected override void InitManager()
+        protected override void InitManager(bool fromLoad = false)
         {
             StopAllCoroutines();
 
-            if (BonusRepository.Count > 0)
+            if (fromLoad && State != null)
             {
-                BonusRepository.UpdateAllWithAction(UnactivateAndUnsubscribeAction);
-            }
-            else
-            {
-                // Filling collection of bonuses
-                var counter = 0;
-                while (counter < bonusPoints.Length)
+                // Clear repo
+                BonusRepository.UpdateAllWithAction(UnsubscribeAndDestroyAction);
+                BonusRepository.RemoveAll();
+
+                // Make items from loading file
+                const float pointTolerance = 0.05f;
+                
+                foreach (var bonusPoint in bonusPoints)
                 {
-                    var point = bonusPoints[counter];
-                    
-                    var buffBonusItem = CreateBonusAndObject(EffectType.Buff, point);
-                    var debuffBonusItem = CreateBonusAndObject(EffectType.Debuff, point);
-                    
+                    var entities = State.Where(it =>
+                    {
+                        Vector3 position;
+                        return Math.Abs(it.Point.PosX - (position = bonusPoint.position).x) < pointTolerance &&
+                               Math.Abs(it.Point.PosZ - position.z) < pointTolerance;
+                    }).ToList();
+
+                    LogAssertion(entities.Count() == BonusInPoint);
+
+                    var pair = new KeyValuePair<Transform, BonusItem[]>(bonusPoint, new BonusItem[2]);
+
+                    for (var i = 0; i < entities.Count(); i++)
+                    {
+                        var bonusItem = CreateBonusAndObject(null, entities[i].Effect, bonusPoint, entities[i].IsActive);
+                        pair.Value[i] = bonusItem;
+                    }
+
                     try
                     {
-                        BonusRepository.Insert(point,new [] { buffBonusItem, debuffBonusItem });
+                        BonusRepository.Insert(pair.Key, pair.Value);
                     }
                     catch (Exception e)
                     {
                         LogException(e);
                     }
-
-                    ++counter;
                 }
             }
-            
-            BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
+            else
+            {
+                if (BonusRepository.Count > 0)
+                {
+                    BonusRepository.UpdateAllWithAction(UnsubscribeAndUnactivateAction);
+                }
+                else
+                {
+                    // Filling collection of bonuses
+                    var counter = 0;
+                    while (counter < bonusPoints.Length)
+                    {
+                        var point = bonusPoints[counter];
+                    
+                        var buffBonusItem = CreateBonusAndObject(EffectType.Buff, null, point);
+                        var debuffBonusItem = CreateBonusAndObject(EffectType.Debuff, null, point);
+                    
+                        try
+                        {
+                            BonusRepository.Insert(point,new [] { buffBonusItem, debuffBonusItem });
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+
+                        ++counter;
+                    }
+                }
+                
+                BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
+            }
         }
-        
+
         /// <summary>
         /// Creates a new bonus and a game object for it.
         /// </summary>
         /// <param name="effectType">Type of effect for bonus.</param>
         /// <param name="point">Bonus point.</param>
+        /// <param name="isActive">Whether the item being created is active.</param>
+        /// <param name="effect">Ready effect to assign to the bonus (optional).</param>
         /// <returns></returns>
-        private BonusItem CreateBonusAndObject(EffectType effectType, Transform point)
+        private BonusItem CreateBonusAndObject(EffectType? effectType, Effect? effect, Transform point, bool isActive = false)
         {
-            // Create effect 
-            KeyValuePair<Guid, IEffectable> RandomEffectByType(IDictionary<Guid, IEffectable> collection)
+            IEffectable createdEffect;
+            if (effect == null && effectType.HasValue)
             {
-                var effectsByType = collection
-                    .Where(el => el.Value.Type == effectType)
-                    .ToList();
+                // Create effect 
+                KeyValuePair<Guid, IEffectable> RandomEffectByType(IDictionary<Guid, IEffectable> collection)
+                {
+                    var effectsByType = collection
+                        .Where(el => el.Value.Type == effectType)
+                        .ToList();
                 
-                var randomIndex = systemRandom.Next(0, effectsByType.Count);
+                    var randomIndex = systemRandom.Next(0, effectsByType.Count);
                 
-                return effectsByType[randomIndex];
+                    return effectsByType[randomIndex];
+                }
+            
+                createdEffect = EffectRepository.FindOnceByFilter(RandomEffectByType).Value;
             }
-            
-            var effect = EffectRepository.FindOnceByFilter(RandomEffectByType).Value;
-            
+            else
+            {
+                createdEffect = effect;
+            }
+
             // Create game object
             var o = Instantiate(bonusPrefab, point.position, point.rotation);
             o.tag = GameData.BonusTag;
-            o.SetActive(false);
+            o.SetActive(isActive);
             
             // Add and init bonus 
             IBonusable bonus = o.AddComponent<Bonus>();
-            bonus.Init(effect, point);
+            bonus.Init(createdEffect, point);
+
+            if (isActive)
+            {
+                bonus.InteractiveNotify += OnBonusNotify;
+            }
 
             // Set point as parent for new object
             o.transform.parent = point;
             
             return new BonusItem(bonus, o);
         }
+
+        // private BonusItem CreateBonusAndObject(BonusManagerStateItem item)
+        // {
+        //     const float pointTolerance = 0.05f;
+        //     var itemPoint = item.Point;
+        //     var point = bonusPoints.First(p =>
+        //     {
+        //         Vector3 position;
+        //         return Math.Abs((position = p.transform.position).x - itemPoint.PosX) < pointTolerance &&
+        //                Math.Abs(position.z - itemPoint.PosZ) < pointTolerance;
+        //     });
+        //
+        //     if (point != null)
+        //     {
+        //         // Create game object
+        //         var o = Instantiate(bonusPrefab, point.position, point.rotation);
+        //         o.tag = GameData.BonusTag;
+        //         o.SetActive(item.IsActive);
+        //         
+        //         // Add and init bonus 
+        //         IBonusable bonus = o.AddComponent<Bonus>();
+        //         bonus.Init(item.Effect, point);
+        //         
+        //         // Subscribe
+        //         if (item.IsActive)
+        //         {
+        //             bonus.InteractiveNotify += OnBonusNotify;
+        //         } 
+        //
+        //         // Set point as parent for new object
+        //         o.transform.parent = point;
+        //         
+        //         return new BonusItem(bonus, o);
+        //     }
+        //     else
+        //     {
+        //         var error = new ArgumentException("Point matching error");
+        //         LogException(error);
+        //         throw error;
+        //     }
+        // }
         
         /// <summary>
         /// Unsubscribes from events of all objects.
         /// </summary>
         /// <param name="value">Value to update.</param>
-        private void UnactivateAndUnsubscribeAction(KeyValuePair<Transform, BonusItem[]> value)
+        private void UnsubscribeAndUnactivateAction(KeyValuePair<Transform, BonusItem[]> value)
         {
             // Unsubscribing from collision events with a bonus in pair
             foreach (var item in value.Value)
@@ -158,6 +248,9 @@ namespace RollABall.Managers
 
             // Deactivation of all game objects in pair
             var bonusGameObjectsInPointCount = value.Key.childCount;
+            
+            Log($"{bonusGameObjectsInPointCount}");
+
             for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
             {
                 var bonusGameObject = value.Key.GetChild(i);
@@ -165,6 +258,26 @@ namespace RollABall.Managers
             }
         }
 
+        private void UnsubscribeAndDestroyAction(KeyValuePair<Transform, BonusItem[]> value)
+        {
+            // Unsubscribing from collision events with a bonus in pair
+            foreach (var item in value.Value)
+            {
+                item.Bonus.InteractiveNotify -= OnBonusNotify;
+            }
+            
+            // Remove of all game objects in pair
+            var bonusGameObjectsInPointCount = value.Key.childCount;
+            for (var i = 0; i < bonusGameObjectsInPointCount; ++i)
+            {
+                var bonusGoTransform = value.Key.GetChild(i);
+                if (bonusGoTransform != null && bonusGoTransform.gameObject != null)
+                {
+                    Destroy(bonusGoTransform.gameObject);
+                }
+            }
+        }
+        
         /// <summary>
         /// Randomly activates one of bonuses on point.
         /// </summary>
@@ -204,8 +317,8 @@ namespace RollABall.Managers
             }
 
             var existingPair = BonusRepository.FindOnceByFilter(IsMatch);
-            
-            BonusRepository.UpdateOnceWithAction(existingPair.Key, UnactivateAndUnsubscribeAction);
+
+            BonusRepository.UpdateOnceWithAction(existingPair.Key, UnsubscribeAndUnactivateAction);
             
             // Audio Completion Waiting
             var isSoundPlayed = false;
@@ -229,6 +342,7 @@ namespace RollABall.Managers
         }
 
         // Event handler for CurrentGameEvent
+
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
             if (args.IsRestartGame)
@@ -287,8 +401,7 @@ namespace RollABall.Managers
             }
             
             State = memento.State;
-
-            // TODO: Все переопределить !!! 
+            InitManager(true);
         }
 
         public override void Dispose()
