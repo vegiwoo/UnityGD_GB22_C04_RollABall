@@ -5,13 +5,13 @@ using UnityEngine;
 namespace RollABall.Models
 {
     [Serializable]
-    public struct Point
+    public class Point
     {
         #region Properties
 
-        public float PosX { get; }
-        public float PosY { get; }
-        public float PosZ { get; }
+        public float PosX { get; set; }
+        public float PosY { get; set; }
+        public float PosZ { get; set; }
 
         #endregion
 
@@ -29,6 +29,11 @@ namespace RollABall.Models
             PosX = position.x;
             PosY = position.y;
             PosZ = position.z;
+        }
+
+        public override string ToString()
+        {
+            return $"\"PosX\":{PosX}, \"PosY\":{PosY}, \"PosZ\":{PosZ}";
         }
 
         #endregion

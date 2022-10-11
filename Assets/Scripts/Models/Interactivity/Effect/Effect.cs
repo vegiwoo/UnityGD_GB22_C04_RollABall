@@ -1,5 +1,4 @@
 using System;
-using GameDevLib.Helpers;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
 using UnityEngine;
@@ -38,7 +37,9 @@ namespace RollABall.Managers
 
         public override string ToString()
         {
-            return $"Effect: type {Type.ToString()} (target {EffectTarget.ToString()}), power: - { NegativePower} | + {PositivePower}, duration: {Duration}";
+            return
+                $"EffectTarget: {EffectTarget.ToString()}, Type:{Type.ToString()}, BoosterType:{BoosterType.ToString()}, " +
+                $"NegativePower:{NegativePower} ,PositivePower:{PositivePower} ,Duration:{Duration}";
         }
         
         #endregion

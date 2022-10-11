@@ -11,9 +11,9 @@ namespace RollABall.Interactivity.Bonuses
     {
         #region Properties
     
-        public Point Point { get; }
-        public Effect Effect { get; }
-        public bool IsActive { get; }
+        public Point Point { get; set; }
+        public Effect Effect { get; set; }
+        public bool IsActive { get; set; }
     
         #endregion
     
@@ -32,7 +32,12 @@ namespace RollABall.Interactivity.Bonuses
             Point = new Point(position);
             IsActive = isActive;
         }
-        
+
+        public override string ToString()
+        {
+            return $"Point:{Point}, Effect:{Effect}, IsActive:{IsActive}";
+        }
+
         #endregion
     }
 }

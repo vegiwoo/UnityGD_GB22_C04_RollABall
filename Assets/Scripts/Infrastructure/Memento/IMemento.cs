@@ -9,13 +9,13 @@ namespace RollABall.Infrastructure.Memento
     /// <remarks>Used in 'Memento' pattern.</remarks>>
     public interface IMemento<T>
     {
-        /// <returns>Used by Caretaker to display metadata.</returns>
-        string GetName();
-
         /// <remarks>Organizer uses this method to restore its state.</remarks>>
-        T GetState();
+        T State { get; }
+        
+        /// <returns>Used by Caretaker to display metadata.</returns>
+        string Name { get; }
 
         /// <returns>Used by Caretaker to display metadata.</returns>
-        DateTime GetDate();
+        string Date { get; }
     }
 }

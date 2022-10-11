@@ -5,6 +5,7 @@ using System.Linq;
 using GameDevLib.Audio;
 using GameDevLib.Enums;
 using GameDevLib.Interfaces;
+using Newtonsoft.Json;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Infrastructure.Memento;
@@ -18,7 +19,7 @@ using static UnityEngine.Debug;
 namespace RollABall.Managers
 {
     [RequireComponent(typeof(AudioIsPlaying))]
-    public class BonusManager : BaseManager, IMementoOrganizer<BonusManagerStateItems>
+    public class BonusManager : BaseManager, IMementoOrganizer<List<BonusManagerStateItem>>
     {
         #region Links
         
@@ -36,7 +37,7 @@ namespace RollABall.Managers
         #endregion
         
         #region Properties
-        public BonusManagerStateItems State { get; set; }
+        public List<BonusManagerStateItem> State { get; set; }
         
         #endregion
         
@@ -48,9 +49,10 @@ namespace RollABall.Managers
         
         #region Nested types
 
-        private class BonusManagerMemento : Memento<BonusManagerStateItems>
+        private class BonusManagerMemento : Memento<List<BonusManagerStateItem>>
         {
-            public BonusManagerMemento(BonusManagerStateItems state)
+            public override string Name => $"BonusesMemento_{Date}";
+            public BonusManagerMemento(List<BonusManagerStateItem> state)
             {
                 State = state;
             }
@@ -248,7 +250,7 @@ namespace RollABall.Managers
         }
 
         // Memento pattern methods
-        public BonusManagerStateItems MakeState()
+        public List<BonusManagerStateItem> MakeState()
         {
             var items =
                 from bonusPair in BonusRepository.FindAll()
@@ -256,23 +258,28 @@ namespace RollABall.Managers
                 select new BonusManagerStateItem(bonus.Bonus.Point.position, bonus.Bonus.Effect as Effect,
                     bonus.BonusGo.activeInHierarchy);
             
-            return new BonusManagerStateItems(items);;
+            return items.ToList();;
         }
 
-        public IMemento<BonusManagerStateItems> Save()
+        public IMemento<List<BonusManagerStateItem>> Save()
         {
             State = MakeState();
+
+            // var json = JsonConvert.SerializeObject(State);
+            //
+            // Log(json);
+
             return new BonusManagerMemento(State);
         }
 
-        public void Load(IMemento<BonusManagerStateItems> memento)
+        public void Load(IMemento<List<BonusManagerStateItem>> memento)
         {
             if (memento is not BonusManagerMemento)
             {
                 throw new Exception("Unknown memento class " + memento.ToString());
             }
 
-            State = memento.GetState();
+            State = memento.State;
         }
 
         public override void Dispose()
@@ -284,4 +291,3 @@ namespace RollABall.Managers
         #endregion
     }
 }
-
