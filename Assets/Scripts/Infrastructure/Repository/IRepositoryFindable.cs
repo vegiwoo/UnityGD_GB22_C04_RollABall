@@ -8,5 +8,7 @@ namespace RollABall.Infrastructure.Repository
     {
         KeyValuePair<K,V> FindOnceByFilter(Func<V, bool> isMatch);
         KeyValuePair<K,V> FindOnceByFilter(Func<IDictionary<K,V>,  KeyValuePair<K,V>> func);
+        IDictionary<K, V> FindAll();
+        IEnumerable<V> FindAllValues();
     }
 }

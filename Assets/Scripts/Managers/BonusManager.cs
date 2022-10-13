@@ -32,6 +32,7 @@ namespace RollABall.Managers
         [field: SerializeField] private BonusRepository BonusRepository { get; set; }
         [field: SerializeField] private EffectRepository EffectRepository { get; set; }
         [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
+        [field: SerializeField] private BonusManagerEvent BonusManagerEvent { get; set; }
 
         #endregion
         
@@ -62,7 +63,7 @@ namespace RollABall.Managers
         }
 
         #endregion
-
+        
         #region Functionality
         
         protected override void InitManager(bool fromLoad = false)
@@ -74,7 +75,10 @@ namespace RollABall.Managers
                 // Clear repo
                 BonusRepository.UpdateAllWithAction(UnsubscribeAndDestroyAction);
                 BonusRepository.RemoveAll();
-
+                
+                // Cleanup notify
+                BonusManagerEvent.Notify(new BonusManagerArgs(null,null,null,true));
+                
                 // Make items from loading file
                 const float pointTolerance = 0.05f;
                 
@@ -107,13 +111,14 @@ namespace RollABall.Managers
             }
             else
             {
+                // Restart game
                 if (BonusRepository.Count > 0)
                 {
                     BonusRepository.UpdateAllWithAction(UnsubscribeAndUnactivateAction);
                 }
                 else
                 {
-                    // Filling collection of bonuses
+                    // New game 
                     var counter = 0;
                     while (counter < bonusPoints.Length)
                     {
@@ -137,6 +142,9 @@ namespace RollABall.Managers
                 
                 BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
             }
+            
+            // Placement notify
+            BonusManagerEvent.Notify(new BonusManagerArgs(bonusPoints,null,null,false));
         }
 
         /// <summary>
@@ -191,49 +199,8 @@ namespace RollABall.Managers
             return new BonusItem(bonus, o);
         }
 
-        // private BonusItem CreateBonusAndObject(BonusManagerStateItem item)
-        // {
-        //     const float pointTolerance = 0.05f;
-        //     var itemPoint = item.Point;
-        //     var point = bonusPoints.First(p =>
-        //     {
-        //         Vector3 position;
-        //         return Math.Abs((position = p.transform.position).x - itemPoint.PosX) < pointTolerance &&
-        //                Math.Abs(position.z - itemPoint.PosZ) < pointTolerance;
-        //     });
-        //
-        //     if (point != null)
-        //     {
-        //         // Create game object
-        //         var o = Instantiate(bonusPrefab, point.position, point.rotation);
-        //         o.tag = GameData.BonusTag;
-        //         o.SetActive(item.IsActive);
-        //         
-        //         // Add and init bonus 
-        //         IBonusable bonus = o.AddComponent<Bonus>();
-        //         bonus.Init(item.Effect, point);
-        //         
-        //         // Subscribe
-        //         if (item.IsActive)
-        //         {
-        //             bonus.InteractiveNotify += OnBonusNotify;
-        //         } 
-        //
-        //         // Set point as parent for new object
-        //         o.transform.parent = point;
-        //         
-        //         return new BonusItem(bonus, o);
-        //     }
-        //     else
-        //     {
-        //         var error = new ArgumentException("Point matching error");
-        //         LogException(error);
-        //         throw error;
-        //     }
-        // }
-        
         /// <summary>
-        /// Unsubscribes from events of all objects.
+        /// Unsubscribes from events and unactivate of all objects on point.
         /// </summary>
         /// <param name="value">Value to update.</param>
         private void UnsubscribeAndUnactivateAction(KeyValuePair<Transform, BonusItem[]> value)
@@ -253,6 +220,10 @@ namespace RollABall.Managers
             }
         }
 
+        /// <summary>
+        /// Unsubscribes from events and destroy all objects on point.
+        /// </summary>
+        /// <param name="value">Value to update.</param>
         private void UnsubscribeAndDestroyAction(KeyValuePair<Transform, BonusItem[]> value)
         {
             // Unsubscribing from collision events with a bonus in pair
@@ -312,9 +283,13 @@ namespace RollABall.Managers
             }
 
             var existingPair = BonusRepository.FindOnceByFilter(IsMatch);
-
-            BonusRepository.UpdateOnceWithAction(existingPair.Key, UnsubscribeAndUnactivateAction);
             
+            // Unsubscribe and deactivation bonus
+            BonusRepository.UpdateOnceWithAction(existingPair.Key, UnsubscribeAndUnactivateAction);
+
+            // Deactivation bonus point notify
+            BonusManagerEvent.Notify(new BonusManagerArgs(null,existingPair.Key,null,false));
+
             // Audio Completion Waiting
             var isSoundPlayed = false;
             _audioIsPlaying.AudioTriggerNotify += (played) => { isSoundPlayed = played; };
@@ -334,6 +309,9 @@ namespace RollABall.Managers
             }
 
             BonusRepository.UpdateOnceWithAction(existingPair.Key, ToggleAction);
+            
+            // Activation point notify
+            BonusManagerEvent.Notify(new BonusManagerArgs(null,null,existingPair.Key,false));
         }
 
         // Event handler for CurrentGameEvent
@@ -374,7 +352,7 @@ namespace RollABall.Managers
         public List<BonusManagerStateItem> MakeState()
         {
             var items =
-                from bonusPair in BonusRepository.FindAll()
+                from bonusPair in BonusRepository.FindAllValues()
                 from bonus in bonusPair
                 select new BonusManagerStateItem(bonus.Bonus.Point.position, bonus.Bonus.Effect as Effect,
                     bonus.BonusGo.activeInHierarchy);

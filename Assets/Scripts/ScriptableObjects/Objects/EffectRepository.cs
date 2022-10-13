@@ -39,16 +39,23 @@ namespace RollABall.ScriptableObjects
             _effects.Add(key, value);
         }
 
-        public void Insert(IEnumerable<KeyValuePair<Guid, IEffectable>> items)
-        {
-            throw new NotImplementedException();
-        }
-
         public KeyValuePair<Guid, IEffectable> FindOnceByFilter(Func<IDictionary<Guid, IEffectable>, KeyValuePair<Guid, IEffectable>> func)
         {
             return func(_effects);
         }
-        
+
+        public IDictionary<Guid, IEffectable> FindAll()
+        {
+            return new Dictionary<Guid, IEffectable>(_effects);
+        }
+
+        public IEnumerable<IEffectable> FindAllValues()
+        {
+            return _effects
+                .Select(el => el.Value)
+                .ToList();
+        }
+
         public KeyValuePair<Guid, IEffectable> FindOnceByFilter(Func<IEffectable, bool> isMatch)
         {
             throw new NotImplementedException();

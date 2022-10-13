@@ -28,7 +28,7 @@ namespace RollABall.Managers
         
         #region MonoBehaviour methods
 
-        protected void Start()
+        protected virtual void Start()
         {
             InitManager();
         }

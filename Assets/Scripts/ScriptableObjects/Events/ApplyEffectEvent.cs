@@ -5,6 +5,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Events
 {
-    [CreateAssetMenu(fileName = "ApplyEffectEvent", menuName = "RollABall/Events/ApplyEffectEvent", order = 3)]
+    [CreateAssetMenu(fileName = "ApplyEffectEvent", menuName = "RollABall/Events/ApplyEffectEvent", order = 4)]
     public class ApplyEffectEvent : GameEvent<IEffectable> { }
 }

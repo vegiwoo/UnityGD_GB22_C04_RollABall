@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 // https://catlikecoding.com/unity/tutorials/movement/orbit-camera/
@@ -11,7 +10,7 @@ namespace RollABall.Controllers
     {
         #region Links
 
-        [SerializeField] private Transform focus = default;
+        [SerializeField] private Transform focus;
         [SerializeField, Range(1f, 20f)] private float distance = 12f;
         [SerializeField, Min(0f)] private float focusRadius = 1f;
         [SerializeField, Range(0f, 1f)] private float focusCentering = 0.5f;

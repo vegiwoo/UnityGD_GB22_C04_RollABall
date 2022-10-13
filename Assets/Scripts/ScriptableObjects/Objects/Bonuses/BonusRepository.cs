@@ -23,14 +23,6 @@ namespace RollABall.ScriptableObjects
             _storage.Add(key, value);
         }
 
-        public void Insert(IEnumerable<KeyValuePair<Transform, BonusItem[]>> items)
-        {
-            foreach (var pair in items)
-            {
-                Insert(pair.Key, pair.Value);
-            }
-        }
-
         public void UpdateAllWithAction(Action<KeyValuePair<Transform, BonusItem []>> action)
         {
             foreach (var items in _storage)
@@ -63,7 +55,12 @@ namespace RollABall.ScriptableObjects
             throw new NotImplementedException();
         }
 
-        public IEnumerable<BonusItem[]> FindAll()
+        public IDictionary<Transform, BonusItem[]> FindAll()
+        {
+            return new Dictionary<Transform, BonusItem[]>(_storage);
+        }
+
+        public IEnumerable<BonusItem[]> FindAllValues()
         {
             return _storage
                 .Select(el => el.Value)

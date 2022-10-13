@@ -18,11 +18,11 @@ namespace RollABall.Infrastructure.Repository
         /// <param name="value">Inserting value.</param>
         void Insert(K key, V value);
 
-        /// <summary>
-        /// Inserts a new enumerable into collection.
-        /// </summary>
-        /// <param name="items">IEnumerable of pair key/value.</param>
-        void Insert(IEnumerable<KeyValuePair<K, V>> items);
+        // /// <summary>
+        // /// Inserts a new enumerable into collection.
+        // /// </summary>
+        // /// <param name="items">IEnumerable of pair key/value.</param>
+        // void Insert(IEnumerable<KeyValuePair<K, V>> items);
 
         /// <summary>
         /// Updates all elements by executing an Action.
