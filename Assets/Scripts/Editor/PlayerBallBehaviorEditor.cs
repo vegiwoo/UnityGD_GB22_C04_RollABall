@@ -10,13 +10,11 @@ namespace RollABall.Editor
     public class PlayerBallBehaviorEditor : UnityEditor.Editor
     {
         private PlayerBall _playerBallTarget;
-        //private Rigidbody _playerBallRb;
         private float _playerBallScale;
 
         private void OnEnable()
         {
             _playerBallTarget =  (PlayerBall)target;
-            //_playerBallRb = _playerBallTarget.GetComponent<Rigidbody>();
             _playerBallScale = _playerBallTarget.transform.localScale.x;
         }
 

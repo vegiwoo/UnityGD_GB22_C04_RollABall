@@ -6,8 +6,6 @@ using UnityEngine;
 namespace RollABall.Events
 {
     [CreateAssetMenu(fileName = "BonusManagerEvent", menuName = "RollABall/Events/BonusManagerEvent", order = 5)]
-    public class BonusManagerEvent : GameEvent<BonusManagerArgs>
-    {
-    }
+    public class BonusManagerEvent : GameEvent<BonusManagerArgs> { }
 }
 
