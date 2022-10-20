@@ -139,7 +139,6 @@ namespace RollABall.Managers
                         ++counter;
                     }
                 }
-                
                 BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
             }
             
@@ -363,12 +362,12 @@ namespace RollABall.Managers
         public IMemento<List<BonusManagerStateItem>> Save()
         {
             State = MakeState();
-            return new BonusManagerMemento(State);
+            return new Memento<List<BonusManagerStateItem>>(State, "Bonuses");
         }
 
         public void Load(IMemento<List<BonusManagerStateItem>> memento)
         {
-            if (memento is not BonusManagerMemento)
+            if (memento is not Memento<List<BonusManagerStateItem>>)
             {
                 throw new Exception("Unknown memento class " + memento.ToString());
             }

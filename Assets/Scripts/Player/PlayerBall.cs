@@ -1,11 +1,26 @@
 using System;
 using RollABall.Args;
+using RollABall.Infrastructure.Memento;
+using RollABall.ScriptableObjects;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
-    public class PlayerBall : Player
+    public class PlayerBall : Player, IMementoOrganizer<PlayerArgs>
     {
+        #region Links 
+        
+        [field:SerializeField] public PlayerCaretaker Caretaker { get; set; }
+        
+        #endregion
+        
+        #region Properties
+        
+        public PlayerArgs State { get; set; }
+        
+        #endregion
+
         #region MonoBehavior methods
 
         protected override void Start()
@@ -14,6 +29,14 @@ namespace RollABall.Player
             transform.gameObject.tag = GameData.PlayerTag;
         }
 
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            
+            // Memento pattern - init caretaker for organizer.
+            Caretaker.Init(this, "Player", "PlayerMemento");
+        }
+        
         private void FixedUpdate()
         {
             Move();
@@ -87,20 +110,44 @@ namespace RollABall.Player
         
         protected override void SendNotify()
         {
+            State = MakeState();
+            playerEvent.Notify(State);
+        }
+        
+        // Memento pattern methods
+        
+        public PlayerArgs MakeState()
+        {
             var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;
             var isSpeedDown = SpeedMultiplier < SpeedMultiplierConst;
 
-            var args = new PlayerArgs(
-                CurrentHp, 
+            return new PlayerArgs(
+                CurrentHp,
                 IsUnitInvulnerable,
-                isSpeedUp, 
+                isSpeedUp,
                 isSpeedDown,
+                transform.position,
                 (int)GamePoints
             );
-            
-            playerEvent.Notify(args);
+        }
+        
+        public IMemento<PlayerArgs> Save()
+        {
+            State = MakeState();
+            return new Memento<PlayerArgs>(State, "Player");
         }
 
+        public void Load(IMemento<PlayerArgs> memento)
+        {
+            if (memento is not Memento<PlayerArgs>)
+            {
+                throw new Exception("Unknown memento class " + memento.ToString());
+            }
+            
+            State = memento.State;
+            InitPlayer(true);
+        }
+        
         #endregion
     }
 }

@@ -1,14 +1,15 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace RollABall.Test.TempTypes;
-
-public class SoldierArgs : EventArgs
+namespace RollABall.Test.TempTypes
 {
-    private float Speed { get; }
-
-    public SoldierArgs(float speed)
+    public class SoldierArgs : EventArgs
     {
-        Speed = speed;
+        private float Speed { get; }
+
+        public SoldierArgs(float speed)
+        {
+            Speed = speed;
+        }
     }
 }

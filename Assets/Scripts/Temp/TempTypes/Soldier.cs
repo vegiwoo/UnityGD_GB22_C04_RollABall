@@ -1,20 +1,21 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace RollABall.Test.TempTypes;
-
-public sealed class Soldier
+namespace RollABall.Test.TempTypes
 {
-    public event EventHandler<SoldierArgs>? SoldierNotify;
-
-    public Soldier()
+    public sealed class Soldier
     {
-        var args = new SoldierArgs(0.5f);
-        OnSoldierNotify(args);
-    }
+        public event EventHandler<SoldierArgs>? SoldierNotify;
 
-    private void OnSoldierNotify(SoldierArgs e)
-    {
-        SoldierNotify?.Invoke(this, e);
+        public Soldier()
+        {
+            var args = new SoldierArgs(0.5f);
+            OnSoldierNotify(args);
+        }
+
+        private void OnSoldierNotify(SoldierArgs e)
+        {
+            SoldierNotify?.Invoke(this, e);
+        }
     }
 }

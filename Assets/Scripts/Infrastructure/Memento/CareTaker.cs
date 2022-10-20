@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -7,38 +9,46 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Infrastructure.Memento
 {
-    public abstract class Caretaker<T,D> : ScriptableObject
+    /// <summary>
+    /// Caretaker to save, store and download mementos.
+    /// </summary>
+    /// <typeparam name="TState">Type of State parameter in IMemento<T>.</typeparam>
+    public abstract class Caretaker<TState> : ScriptableObject
     {
         #region Field
-        // When saving multiple snapshots, a collection is used:
-        //protected readonly List<(IMemento<T> memento, string path)> mementos = new ();
-        protected (IMemento<T> memento, string path)? savedMemento;
 
-        protected readonly JsonSerializerSettings jsonFormatSetting = new ()
+        // When saving multiple snapshots, a collection is used:
+        // protected readonly List<(IMemento<T> memento, string path)> mementos = new ();
+        private (IMemento<TState> memento, string path)? _savedMemento;
+
+        private readonly JsonSerializerSettings _jsonFormatSetting = new ()
         {
             Formatting = Formatting.Indented,
             DateFormatHandling = DateFormatHandling.IsoDateFormat
         };
         
+        private string SavedEntityName { get; set; }
+        
         #endregion
     
         #region Properties
 
-        protected IMementoOrganizer<T> Originator { get; set;}
-        protected string SavedPath { get; set; }
-        protected string NamePrefix { get; set; }
+        private IMementoOrganizer<TState> Originator { get; set;}
+        private string SavedPath { get; set; }
+        private string NamePrefix { get; set; }
         private static string SavedDir => "Saved";
         
         #endregion
-    
+
         #region Functionality
-        public void Init(IMementoOrganizer<T> originator, string dirName, string namePrefix)
+        public void Init(IMementoOrganizer<TState> originator, string dirName, string namePrefix)
         {
             Originator = originator;
             SavedPath = Path.Combine(Application.persistentDataPath, $"{SavedDir}/{dirName}/");
             NamePrefix = namePrefix;
-
-            savedMemento = null;
+            SavedEntityName = dirName;
+            
+            _savedMemento = null;
             Preload();
         }
 
@@ -58,23 +68,73 @@ namespace RollABall.Infrastructure.Memento
 
             // Writing 
             using var writer = new StreamWriter(savedPath, false, Encoding.Default);
-            var json = JsonConvert.SerializeObject(memento, jsonFormatSetting);
+            var json = JsonConvert.SerializeObject(memento, _jsonFormatSetting);
             writer.Write(json);
             
             // Save memento and path
-            savedMemento = (memento, savedPath);
+            _savedMemento = (memento, savedPath);
                 
-            Debug.Log($"Bonuses Saved ({memento.Name})");
+            Debug.Log($"{SavedEntityName} saved ({memento.Name})");
         }
-        
-        protected abstract void Preload();
+
+        private void Preload()
+        {
+            Action<string> debugLogMessage = Debug.Log;
+            
+            var dir = CheckExistenceDirectory(SavedPath, false);
+            if (dir is null)
+            {
+                debugLogMessage($"No saved ({SavedEntityName}) games.");
+                return;
+            }
+            
+            var files = Directory.GetFiles(dir).Where(n => n.Contains(NamePrefix)).ToArray();
+            if (files.Length > 0)
+            {
+                var oneFilePath = "";
+                    
+                // Cleaning a directory from other files
+                var filterFiles = files.Where(n => n.Contains(NamePrefix)).ToArray();
+                foreach (var filePath in filterFiles)
+                {
+                    if (filePath == filterFiles.First())
+                    {
+                        oneFilePath = filePath;
+                    }
+                    else
+                    {
+                        File.Delete(filePath); 
+                    }
+                }  
+                    
+                // Reading 
+                using var reader = new StreamReader(oneFilePath);
+                var jsonString = reader.ReadToEnd();
+                var memento = JsonConvert.DeserializeObject<Memento<TState>>(jsonString, _jsonFormatSetting);
+
+                // Saved in savedMemento
+                if (memento is not null)
+                {
+                    _savedMemento = (memento, oneFilePath);
+                    debugLogMessage($"Game save ({SavedEntityName}) preloaded.");
+                }
+                else
+                {
+                    debugLogMessage($"No saved ({SavedEntityName}) games.");
+                }
+            }
+            else
+            {
+                debugLogMessage($"No saved ({SavedEntityName}) games.");
+            }
+        }
         
         public void Load()
         {
-            if(savedMemento is not null)
+            if(_savedMemento is not null)
             {
-                Originator.Load(savedMemento.Value.memento);
-                Debug.Log($"Bonuses Loaded ({savedMemento.Value.memento.Name})");
+                Originator.Load(_savedMemento.Value.memento);
+                Debug.Log($"{SavedEntityName} Loaded ({_savedMemento.Value.memento.Name})");
             }
             else
             {
@@ -88,7 +148,7 @@ namespace RollABall.Infrastructure.Memento
         /// <param name="savedPath">Path to check directory.</param>
         /// <param name="create">Flag for creating a directory if it is not found.</param>
         /// <returns>Path to an existing directory (optional).</returns>
-        protected static string? CheckExistenceDirectory(string savedPath, bool create)
+        private static string? CheckExistenceDirectory(string savedPath, bool create)
         {
             while (true)
             {
@@ -108,6 +168,21 @@ namespace RollABall.Infrastructure.Memento
                     return savedPath;
                 }
             }
+        }
+        
+        /// <summary>
+        /// Gets collection of types that generic interface is typed with. 
+        /// </summary>
+        /// <param name="typeImplements">Type that implements interface.</param>
+        /// <param name="typeGenericInterface">Type of generic interface.</param>
+        /// <returns></returns>
+        private static IEnumerable<Type> GetGenericInterfaceTypes(Type typeImplements, Type typeGenericInterface)
+        {
+            return typeImplements
+                .GetInterfaces()
+                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeGenericInterface)
+                .SelectMany(i => i.GetGenericArguments())
+                .ToArray();
         }
 
         #endregion

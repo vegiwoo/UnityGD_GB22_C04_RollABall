@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace RollABall.Test
 {
-    // Класс расширений
+    // Extension class
     public static class RollABallExtensions
     {
         private static readonly char[] Separators = new [] {' ', '.', ',', '!', '?', ':', ';', '\n', '\t'};

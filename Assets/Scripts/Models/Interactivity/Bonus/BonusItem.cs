@@ -6,15 +6,25 @@ namespace RollABall.Interactivity.Bonuses
 {
     public class BonusItem : IComparable<BonusItem>
     {
+        #region Properties
+        
         public IBonusable Bonus { get; }
         public GameObject BonusGo { get; }
+        
+        #endregion
+        
+        #region Constructor
         
         public BonusItem(IBonusable bonus, GameObject bonusGo)
         {
             Bonus = bonus;
             BonusGo = bonusGo;
         }
+        
+        #endregion
 
+        #region Functionality
+        
         public int CompareTo(BonusItem other)
         {
             var selfPosition = BonusGo.transform.position;
@@ -26,5 +36,7 @@ namespace RollABall.Interactivity.Bonuses
                     -1 : 
                     1;
         }
+        
+        #endregion
     }
 }

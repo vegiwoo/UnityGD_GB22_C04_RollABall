@@ -212,7 +212,7 @@ namespace RollABall.Managers
             }
             
             HpLabel.color = ScoreLabel.color = SpeedLabel.color = normalColor;
-            SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, 0));
+            SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, Vector3.one, 0));
         }
 
         private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(true, false, false));

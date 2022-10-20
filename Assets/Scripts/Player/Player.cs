@@ -77,12 +77,19 @@ namespace RollABall.Player
         
         #region Functionality
         
-        private void InitPlayer()
+        protected void InitPlayer(bool fromLoad = false)
         {
-            GamePoints = 0;
-            CurrentHp = playerStats.MaxHp;
-            IsUnitInvulnerable = false;
-            SpeedMultiplier = SpeedMultiplierConst;
+            if (!fromLoad)
+            {
+                GamePoints = 0;
+                CurrentHp = playerStats.MaxHp;
+                IsUnitInvulnerable = false;
+                SpeedMultiplier = SpeedMultiplierConst;
+            }
+            else
+            {
+                //GamePoints = Sta
+            }
         }
         
         protected void Move()
