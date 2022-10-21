@@ -42,7 +42,7 @@ namespace RollABall.Managers
         #endregion
         
         #region Fields
-        private const int BonusInPoint = 2;
+        //private const int BonusInPoint = 2;
         private AudioIsPlaying _audioIsPlaying;
         
         #endregion

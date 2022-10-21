@@ -65,7 +65,8 @@ namespace RollABall.Infrastructure.Memento
             }
             
             var savedPath = Path.Combine(path, $"{memento.Name}.json");
-
+            Debug.Log(savedPath);
+            
             // Writing 
             using var writer = new StreamWriter(savedPath, false, Encoding.Default);
             var json = JsonConvert.SerializeObject(memento, _jsonFormatSetting);

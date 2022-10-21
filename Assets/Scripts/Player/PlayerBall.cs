@@ -1,26 +1,12 @@
 using System;
 using RollABall.Args;
 using RollABall.Infrastructure.Memento;
-using RollABall.ScriptableObjects;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
     public class PlayerBall : Player, IMementoOrganizer<PlayerArgs>
     {
-        #region Links 
-        
-        [field:SerializeField] public PlayerCaretaker Caretaker { get; set; }
-        
-        #endregion
-        
-        #region Properties
-        
-        public PlayerArgs State { get; set; }
-        
-        #endregion
-
         #region MonoBehavior methods
 
         protected override void Start()
@@ -115,7 +101,7 @@ namespace RollABall.Player
         }
         
         // Memento pattern methods
-        
+
         public PlayerArgs MakeState()
         {
             var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;

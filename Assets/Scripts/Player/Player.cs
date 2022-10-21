@@ -3,18 +3,23 @@ using GameDevLib.Args;
 using GameDevLib.Events;
 using GameDevLib.Helpers;
 using GameDevLib.Interfaces;
+using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Effects;
+using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
+using UnityEngine.Serialization;
 using EffectArgs = RollABall.Args.EffectArgs;
 using EffectEvent = RollABall.Events.EffectEvent;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>, GameDevLib.Interfaces.IObserver<EffectArgs>
+    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>, 
+        GameDevLib.Interfaces.IObserver<CurrentGameArgs>,  GameDevLib.Interfaces.IObserver<EffectArgs>
     {
         #region Links
         
@@ -26,7 +31,11 @@ namespace RollABall.Player
         [SerializeField] private InputEvent inputEvent;
         [SerializeField] private EffectEvent effectEvent;
         [SerializeField] protected PlayerEvent playerEvent;
+        [SerializeField] protected CurrentGameEvent gameEvent;
         
+        [field:Header("Memento")]
+        [field:SerializeField] protected PlayerCaretaker Caretaker { get; set; }
+
         #endregion
         
         #region Fields
@@ -47,6 +56,9 @@ namespace RollABall.Player
         private Vector2? MoveDirection { get; set; } = null;
         protected const float SpeedMultiplierConst = 3f;
         [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
+        
+        // Memento - State 
+        public PlayerArgs State { get; set; }
 
         #endregion
 
@@ -64,6 +76,7 @@ namespace RollABall.Player
         
         protected virtual void OnEnable()
         {
+            gameEvent.Attach(this);
             inputEvent.Attach(this);
             effectEvent.Attach(this);
         }
@@ -88,8 +101,16 @@ namespace RollABall.Player
             }
             else
             {
-                //GamePoints = Sta
+                GamePoints = State.GamePoints;
+                CurrentHp = State.CurrentHp;
+                IsUnitInvulnerable = State.IsUnitInvulnerable;
+                SpeedMultiplier = SpeedMultiplierConst;
+
+                transform.position = new Vector3(State.Point.PosX, State.Point.PosY, State.Point.PosZ);
             }
+
+            // Stop physical move on reboot
+            playerRb.velocity = new Vector3(0, playerRb.velocity.y, 0);
         }
         
         protected void Move()
@@ -130,6 +151,40 @@ namespace RollABall.Player
             
            SendNotify();
         }
+        
+        public void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
+        { 
+            if (args.IsRestartGame)
+            {
+                InitPlayer();
+                SendNotify();
+            }
+
+            if (args.IsSaveGame)
+            {
+                try
+                {
+                    Caretaker.Save();
+                }
+                catch (Exception e)
+                {
+                    LogException(e);
+                }
+            }
+
+            if (args.IsLoadGame)
+            {
+                try
+                {
+                    Caretaker.Load();
+                    SendNotify();
+                }
+                catch (Exception e)
+                {
+                    LogException(e);
+                }
+            }
+        }
 
         /// <summary>
         /// Sends an event about changes in stats of a unit.
@@ -147,6 +202,7 @@ namespace RollABall.Player
 
         public virtual void Dispose()
         {
+            gameEvent.Detach(this);
             inputEvent.Detach(this);
             effectEvent.Detach(this);
         }

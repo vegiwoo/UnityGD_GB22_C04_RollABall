@@ -1,7 +1,6 @@
 using System;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
-using UnityEngine.PlayerLoop;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Args

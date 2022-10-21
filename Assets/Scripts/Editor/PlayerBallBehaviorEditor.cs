@@ -20,6 +20,8 @@ namespace RollABall.Editor
 
         public override void OnInspectorGUI()
         {
+            base.DrawDefaultInspector();
+            
             EditorGUILayout.LabelField("Editor Extension", EditorStyles.boldLabel);
             
             _playerBallScale = EditorGUILayout.Slider("Ball scale", _playerBallScale, 0.3f, 1.3f);
