@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
@@ -15,8 +16,19 @@ namespace RollABall.Managers
     {
         #region Links
 
+        [field: Header("Main Links")]
         [field: SerializeField] protected CurrentGameEvent GameEvent { get; set; }
+        [field: SerializeField] protected PassStateEvent PassStateEvent { get; set; }
         [field: SerializeField] protected GameStats GameStats { get; set; }
+        
+        #endregion
+        
+        #region Properties
+        
+        /// <summary>
+        /// Manager state required to save and load game. 
+        /// </summary>
+        protected List<ISavableArgs> State { get; set; }
         
         #endregion
         
@@ -30,7 +42,7 @@ namespace RollABall.Managers
 
         protected virtual void Start()
         {
-            InitManager();
+            InitManager(InitItemMode.NewGame);
         }
 
 
@@ -51,8 +63,8 @@ namespace RollABall.Managers
         /// <summary>
         /// Initializes manager at start or restart of game.
         /// </summary>
-        protected abstract void InitManager(bool fromLoad = false);
-        
+        protected abstract void InitManager(InitItemMode mode);
+
         // Event handler for CurrentGameEvent
         public abstract void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args);
 

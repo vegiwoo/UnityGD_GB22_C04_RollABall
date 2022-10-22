@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using GameDevLib.Args;
 using GameDevLib.Events;
 using GameDevLib.Helpers;
@@ -6,6 +7,7 @@ using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Effects;
+using RollABall.Managers;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
@@ -32,15 +34,13 @@ namespace RollABall.Player
         [SerializeField] private EffectEvent effectEvent;
         [SerializeField] protected PlayerEvent playerEvent;
         [SerializeField] protected CurrentGameEvent gameEvent;
-        
-        [field:Header("Memento")]
-        [field:SerializeField] protected PlayerCaretaker Caretaker { get; set; }
+        [SerializeField] protected PassStateEvent passStateEvent;
 
         #endregion
         
         #region Fields
-        
-        protected Rigidbody playerRb;
+
+        private Rigidbody _playerRb;
         
         #endregion
 
@@ -66,12 +66,12 @@ namespace RollABall.Player
 
         private void Awake()
         {
-            playerRb = GetComponent<Rigidbody>();
+            _playerRb = GetComponent<Rigidbody>();
         }
 
         protected virtual void Start()
         {
-            InitPlayer();
+            InitPlayer(InitItemMode.NewGame);
         }
         
         protected virtual void OnEnable()
@@ -90,27 +90,34 @@ namespace RollABall.Player
         
         #region Functionality
         
-        protected void InitPlayer(bool fromLoad = false)
+        protected void InitPlayer(InitItemMode mode)
         {
-            if (!fromLoad)
+            switch (mode)
             {
-                GamePoints = 0;
-                CurrentHp = playerStats.MaxHp;
-                IsUnitInvulnerable = false;
-                SpeedMultiplier = SpeedMultiplierConst;
-            }
-            else
-            {
-                GamePoints = State.GamePoints;
-                CurrentHp = State.CurrentHp;
-                IsUnitInvulnerable = State.IsUnitInvulnerable;
-                SpeedMultiplier = SpeedMultiplierConst;
+                case InitItemMode.LoadGame:
 
-                transform.position = new Vector3(State.Point.PosX, State.Point.PosY, State.Point.PosZ);
-            }
+                    GamePoints = State.GamePoints;
+                    CurrentHp = State.CurrentHp;
+                    IsUnitInvulnerable = State.IsUnitInvulnerable;
+                    SpeedMultiplier = SpeedMultiplierConst;
 
+                    transform.position = new Vector3(State.Point.PosX, State.Point.PosY, State.Point.PosZ);
+                    
+                    break;
+                default:
+
+                    GamePoints = 0;
+                    CurrentHp = playerStats.MaxHp;
+                    IsUnitInvulnerable = false;
+                    SpeedMultiplier = SpeedMultiplierConst;
+                    
+                    transform.position = gameStats.PlayerSpawnPoint;
+
+                    break;
+            }
+            
             // Stop physical move on reboot
-            playerRb.velocity = new Vector3(0, playerRb.velocity.y, 0);
+            _playerRb.velocity = new Vector3(0, _playerRb.velocity.y, 0);
         }
         
         protected void Move()
@@ -120,16 +127,17 @@ namespace RollABall.Player
             var value = MoveDirection.Value;
             var movement = new Vector3(value.x, 0, value.y);
 
-            playerRb.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
+            _playerRb.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
         }
+
+        public abstract PlayerArgs MakeState();
         
-        // Event handler for InputManagerEvent
+        // Event handlers
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
         {
             MoveDirection = args.Moving;
         }
         
-        // Event handler for EffectEvent
         public void OnEventRaised(ISubject<EffectArgs> subject, EffectArgs args)
         {
             switch (args.EffectTargetType)
@@ -144,8 +152,7 @@ namespace RollABall.Player
                     SetSpeed(args.Power, args.Increase, args.CancelEffect);
                     break;
                 case EffectTargetType.Rebirth:
-                    transform.position = gameStats.PlayerSpawnPoint;
-                    InitPlayer();
+                    // ... 
                     break;
             }
             
@@ -156,33 +163,21 @@ namespace RollABall.Player
         { 
             if (args.IsRestartGame)
             {
-                InitPlayer();
+                InitPlayer(InitItemMode.RestartGame);
                 SendNotify();
             }
-
+            
             if (args.IsSaveGame)
             {
-                try
-                {
-                    Caretaker.Save();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
+                State = MakeState();
+                passStateEvent.Notify(new List<ISavableArgs>(1){State});
             }
-
-            if (args.IsLoadGame)
+            
+            // Load game
+            if (args.SaveGameArgs != null)
             {
-                try
-                {
-                    Caretaker.Load();
-                    SendNotify();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
+                State = args.SaveGameArgs.PlayerArgs;
+                InitPlayer(InitItemMode.LoadGame);
             }
         }
 

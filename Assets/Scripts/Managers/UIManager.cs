@@ -59,7 +59,7 @@ namespace RollABall.Managers
         public bool usePlayerDirection = true;
         public Transform player;
 
-        private float radarWidth, radarHeight, blipWidth, blipHeight;
+        private float _radarWidth, _radarHeight, _blipWidth, _blipHeight;
         
         #endregion
 
@@ -68,10 +68,10 @@ namespace RollABall.Managers
         protected override void Start()
         {
             base.Start();
-            radarWidth  = RadarMapImage.rectTransform.rect.width;
-            radarHeight = RadarMapImage.rectTransform.rect.height;
-            blipHeight  = radarHeight * blipSize / 100;
-            blipWidth   = radarWidth * blipSize / 100;
+            
+            var rect = RadarMapImage.rectTransform.rect;
+            _blipHeight  = rect.height * blipSize / 100;
+            _blipWidth   = rect.width * blipSize / 100;
         }
 
         private void Update()
@@ -99,8 +99,8 @@ namespace RollABall.Managers
                 var bonusPointPosition = CalculateBonusPointPosition(normalisedTargetPosition);
 
                 var rt = target.Value.GetComponent<RectTransform>();
-                rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left,bonusPointPosition.x, blipWidth);
-                rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top,bonusPointPosition.y, blipHeight);
+                rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left,bonusPointPosition.x, _blipWidth);
+                rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top,bonusPointPosition.y, _blipHeight);
             }
         }
     
@@ -129,12 +129,12 @@ namespace RollABall.Managers
             var blipY = normalisedDistanceToTarget * Mathf.Sin(angleRadians);
  
             // Scale the blip position according to the radar size.
-            blipX *= radarWidth * .5f;
-            blipY *= radarHeight * .5f;
+            blipX *= _radarWidth * .5f;
+            blipY *= _radarHeight * .5f;
  
             // Offset the blip position relative to the radar center
-            blipX += (radarWidth * .5f) - blipWidth * .5f;
-            blipY += (radarHeight * .5f) - blipHeight * .5f;
+            blipX += (_radarWidth * .5f) - _blipWidth * .5f;
+            blipY += (_radarHeight * .5f) - _blipHeight * .5f;
  
             return new Vector2(blipX, blipY);
         }
@@ -144,8 +144,8 @@ namespace RollABall.Managers
             var point = Instantiate(bonusImage).gameObject;
             point.transform.SetParent(RadarMapImage.gameObject.transform);
             var rt = point.GetComponent<RectTransform>();
-            rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left,pos.x, blipWidth);
-            rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top,pos.y, blipHeight);
+            rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left,pos.x, _blipWidth);
+            rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top,pos.y, _blipHeight);
         }
 
         protected override void OnEnable()
@@ -200,7 +200,7 @@ namespace RollABall.Managers
         
         #region Functionality
         
-        protected override void InitManager(bool fromLoad = false)
+        protected override void InitManager(InitItemMode mode)
         {
             var buttons = new[] { RestartButton, SaveButton, LoadButton };
             foreach (var button in buttons)
@@ -215,11 +215,11 @@ namespace RollABall.Managers
             SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, Vector3.one, 0));
         }
 
-        private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(true, false, false));
+        private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(true, false, false, false));
         
-        private void OnSaveButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, true, false));
+        private void OnSaveButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, true, false, false));
         
-        private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, false, true));
+        private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, false, true, false));
         
         // Event handler for PlayerEvent
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)

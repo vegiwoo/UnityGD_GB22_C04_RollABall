@@ -6,11 +6,18 @@ using RollABall.Managers;
 namespace RollABall.Args
 {
     [Serializable]
-    public class EffectSaveArgs : EventArgs
+    public class EffectSaveArgs : ISavableArgs
     {
         #region Properties 
     
+        /// <summary>
+        /// An effect applied on the player that has a duration.
+        /// </summary>
         public Effect AppliedEffect { get; }
+        
+        /// <summary>
+        /// Remaining duration of applied effect.
+        /// </summary>
         public float RemainingDuration { get; set; }
 
         #endregion

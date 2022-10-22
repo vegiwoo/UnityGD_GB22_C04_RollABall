@@ -1,6 +1,5 @@
 using System;
 using RollABall.Interactivity.Bonuses;
-using RollABall.Interactivity.Effects;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Args
@@ -14,11 +13,13 @@ namespace RollABall.Args
         #endregion
         
         #region Constructors
+        
         public BonusArgs(string tag, IEffectable effect)
         {
             Tag = tag;
             Effect = effect;
         }
+        
         #endregion
     }
 }

@@ -5,7 +5,7 @@ using RollABall.Infrastructure.Memento;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
-    public class PlayerBall : Player, IMementoOrganizer<PlayerArgs>
+    public class PlayerBall : Player
     {
         #region MonoBehavior methods
 
@@ -19,8 +19,8 @@ namespace RollABall.Player
         {
             base.OnEnable();
             
-            // Memento pattern - init caretaker for organizer.
-            Caretaker.Init(this, "Player", "PlayerMemento");
+            // // Memento pattern - init caretaker for organizer.
+            // Caretaker.Init(this, "Player", "PlayerMemento");
         }
         
         private void FixedUpdate()
@@ -102,7 +102,7 @@ namespace RollABall.Player
         
         // Memento pattern methods
 
-        public PlayerArgs MakeState()
+        public override PlayerArgs MakeState()
         {
             var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;
             var isSpeedDown = SpeedMultiplier < SpeedMultiplierConst;
@@ -117,22 +117,22 @@ namespace RollABall.Player
             );
         }
         
-        public IMemento<PlayerArgs> Save()
-        {
-            State = MakeState();
-            return new Memento<PlayerArgs>(State, "Player");
-        }
-
-        public void Load(IMemento<PlayerArgs> memento)
-        {
-            if (memento is not Memento<PlayerArgs>)
-            {
-                throw new Exception("Unknown memento class " + memento.ToString());
-            }
-            
-            State = memento.State;
-            InitPlayer(true);
-        }
+        // public IMemento<PlayerArgs> Save()
+        // {
+        //     State = MakeState();
+        //     return new Memento<PlayerArgs>(State, "Player");
+        // }
+        //
+        // public void Load(IMemento<PlayerArgs> memento)
+        // {
+        //     if (memento is not Memento<PlayerArgs>)
+        //     {
+        //         throw new Exception("Unknown memento class " + memento.ToString());
+        //     }
+        //     
+        //     State = memento.State;
+        //     InitPlayer(true);
+        // }
         
         #endregion
     }

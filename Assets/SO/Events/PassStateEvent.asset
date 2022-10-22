@@ -9,6 +9,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cc307e3e0604fb5a7177fe29779619e, type: 3}
-  m_Name: EffectManagerCaretaker
+  m_Script: {fileID: 11500000, guid: 46c8e9a862a44bb9a080e745e6477f7a, type: 3}
+  m_Name: PassStateEvent
   m_EditorClassIdentifier: 

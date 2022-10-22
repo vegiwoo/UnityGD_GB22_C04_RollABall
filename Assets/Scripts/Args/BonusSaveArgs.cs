@@ -5,10 +5,11 @@ using RollABall.Models;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace RollABall.Interactivity.Bonuses
+namespace RollABall.Args
 {
+
     [Serializable]
-    public class BonusManagerStateItem
+    public class BonusSaveArgs : ISavableArgs
     {
         #region Properties
     
@@ -21,14 +22,14 @@ namespace RollABall.Interactivity.Bonuses
         #region Constructors
 
         [JsonConstructor]
-        public BonusManagerStateItem(Point point, Effect effect, bool isActive)
+        public BonusSaveArgs(Point point, Effect effect, bool isActive)
         {
             Point = point;
             Effect = effect;
             IsActive = isActive;
         }
     
-        public BonusManagerStateItem(Vector3 position, Effect effect, bool isActive)
+        public BonusSaveArgs(Vector3 position, Effect effect, bool isActive)
         {
             Effect = effect;
             Point = new Point(position);
