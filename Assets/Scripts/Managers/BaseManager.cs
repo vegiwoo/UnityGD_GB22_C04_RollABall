@@ -28,7 +28,7 @@ namespace RollABall.Managers
         /// <summary>
         /// Manager state required to save and load game. 
         /// </summary>
-        protected List<ISavableArgs> State { get; set; }
+        public List<ISavableArgs> State { get; set; }
         
         #endregion
         
@@ -44,7 +44,6 @@ namespace RollABall.Managers
         {
             InitManager(InitItemMode.NewGame);
         }
-
 
         protected virtual void OnEnable()
         {

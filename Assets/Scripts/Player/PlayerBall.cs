@@ -14,14 +14,6 @@ namespace RollABall.Player
             base.Start();
             transform.gameObject.tag = GameData.PlayerTag;
         }
-
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            
-            // // Memento pattern - init caretaker for organizer.
-            // Caretaker.Init(this, "Player", "PlayerMemento");
-        }
         
         private void FixedUpdate()
         {
@@ -116,24 +108,7 @@ namespace RollABall.Player
                 (int)GamePoints
             );
         }
-        
-        // public IMemento<PlayerArgs> Save()
-        // {
-        //     State = MakeState();
-        //     return new Memento<PlayerArgs>(State, "Player");
-        // }
-        //
-        // public void Load(IMemento<PlayerArgs> memento)
-        // {
-        //     if (memento is not Memento<PlayerArgs>)
-        //     {
-        //         throw new Exception("Unknown memento class " + memento.ToString());
-        //     }
-        //     
-        //     State = memento.State;
-        //     InitPlayer(true);
-        // }
-        
+
         #endregion
     }
 }

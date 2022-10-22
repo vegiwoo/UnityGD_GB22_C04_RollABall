@@ -4,24 +4,20 @@ using System.Linq;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Infrastructure.Memento;
+using RollABall.ScriptableObjects;
 using UnityEngine;
-using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-
-
-
-    // Форматы хранения данных - Json 
-    // Количество хранимых сохранений
-    
-    
-    public class GameManager : BaseManager, GameDevLib.Interfaces.IObserver<PlayerArgs>, GameDevLib.Interfaces.IObserver<List<ISavableArgs>>
+    public class GameManager : BaseManager, GameDevLib.Interfaces.IObserver<PlayerArgs>, 
+        GameDevLib.Interfaces.IObserver<List<ISavableArgs>>, IMementoOrganizer<List<ISavableArgs>>
     {
         #region Links
         
         [field:SerializeField] private PlayerEvent PlayerEvent { get; set; }
+        [field: SerializeField] private GameCaretaker GameCaretaker { get; set; }
 
         #endregion
 
@@ -41,6 +37,7 @@ namespace RollABall.Managers
 
         protected override void InitManager(InitItemMode mode)
         {
+            GameCaretaker.Init(this, "SavedGames", "SavedGame_");
             State = new List<ISavableArgs>(new List<SaveGameArgs>()) { new SaveGameArgs() };
         }
 
@@ -49,16 +46,19 @@ namespace RollABall.Managers
         {
             if (args.CurrentHp <= 0)
             {
-                GameEvent.Notify(new CurrentGameArgs(false, false, false,  false, (true, "You have spent all your hit points :("), null));
+                GameEvent.Notify(new CurrentGameArgs(false, false, false, (true, "You have spent all your hit points :("), null));
             } else if (args.GamePoints >= GameStats.GameHighScore)
             {
-                GameEvent.Notify(new CurrentGameArgs(false, false, false,  false, (true, "You have reached required number of points :)")));
+                GameEvent.Notify(new CurrentGameArgs(false, false,  false, (true, "You have reached required number of points :)")));
             }
         }
         
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            // Do something...
+            // if (args.IsLoadGame)
+            // {
+            //     GameCaretaker.Load();
+            // }
         }
         
         public void OnEventRaised(ISubject<List<ISavableArgs>> subject, List<ISavableArgs> args)
@@ -67,7 +67,6 @@ namespace RollABall.Managers
             {
                 var playerSaveArgs = args.Cast<PlayerArgs>().First();
                 ((SaveGameArgs)State[0]).PlayerArgs = playerSaveArgs;
-                Log("Player save");
             }
             catch (Exception e)
             {
@@ -78,7 +77,6 @@ namespace RollABall.Managers
             {
                 var effectSaveArgs = args.Cast<EffectSaveArgs>().ToList();
                 ((SaveGameArgs)State[0]).EffectSaveArgs = effectSaveArgs;
-                Log("Effects save");
             }
             catch (Exception e)
             {
@@ -89,15 +87,34 @@ namespace RollABall.Managers
             {
                 var bonusSaveArgs = args.Cast<BonusSaveArgs>().ToList();
                 ((SaveGameArgs)State[0]).BonusSaveArgs = bonusSaveArgs;
-                Log("Bonuses save");
             }
             catch (Exception e)
             {
                 // ignored
             }
-            
-            // Точка сохранения
+
+            // Saved point
+            GameCaretaker.Save();
         }
+        
+        // Memento pattern
+        
+        public IMemento<List<ISavableArgs>> Save()
+        {
+            return new Memento<List<ISavableArgs>>(State, "Game");
+        }
+
+        public void Load(IMemento<List<ISavableArgs>> memento)
+        {
+            if (memento is not Memento<List<ISavableArgs>>)
+            {
+                throw new Exception("Unknown memento class " + memento.ToString());
+            }
+
+            State = memento.State;
+            GameEvent.Notify(new CurrentGameArgs(false, false, true, null, null, State.First() as SaveGameArgs));
+        }
+        
         
         public override void Dispose()
         {

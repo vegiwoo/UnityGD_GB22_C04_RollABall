@@ -9,9 +9,9 @@ namespace RollABall.Args
 
         public bool IsRestartGame { get; }
         public bool IsSaveGame { get; }
-        public SaveGameArgs? SaveGameArgs { get; }
         
-        public bool IsNeedState { get; }
+        public bool IsLoadGame { get; }
+        public SaveGameArgs? SaveGameArgs { get; }
         public (bool isLost, string message)? IsLostGame { get; }
         public (bool isWin, string message)? IsWinGame { get; }
         
@@ -19,15 +19,15 @@ namespace RollABall.Args
         
         #region Constructors
         
-        public CurrentGameArgs(bool isRestartGame, bool isSaveGame, bool isLoadGame, bool isNeedState,
+        public CurrentGameArgs(bool isRestartGame, bool isSaveGame, bool isLoadGame,
             (bool isLost, string message)? isLostGame = null, 
             (bool isWin, string message)? isWinGame = null,
             SaveGameArgs? saveGameArgs = null)
         {
             IsRestartGame = isRestartGame;
             IsSaveGame = isSaveGame;
+            IsLoadGame = isLoadGame;
             SaveGameArgs = saveGameArgs;
-            IsNeedState = isNeedState;
             IsLostGame = isLostGame;
             IsWinGame = isWinGame;
         }
