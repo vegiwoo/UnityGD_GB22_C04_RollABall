@@ -64,6 +64,8 @@ namespace RollABall.Managers
                 var rt = target.Value.GetComponent<RectTransform>();
                 rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left,bonusPointPosition.x, _blipWidth);
                 rt.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top,bonusPointPosition.y, _blipHeight);
+                
+                Log("Yep!");
             }
         }
     

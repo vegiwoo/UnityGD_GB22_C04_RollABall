@@ -31,11 +31,7 @@ namespace RollABall.Managers
         [field: SerializeField] private BonusManagerEvent BonusManagerEvent { get; set; }
 
         #endregion
-        
-        #region Properties
 
-        #endregion
-        
         #region Fields
 
         private AudioIsPlaying _audioIsPlaying;
@@ -95,7 +91,9 @@ namespace RollABall.Managers
 
             foreach (var bonusPoint in bonusPoints)
             {
-                var entities = State.OfType<BonusSaveArgs>().Where(it =>
+                var entities = State
+                    .Cast<BonusSaveArgs>()
+                    .Where(it =>
                 {
                     Vector3 position;
                     return Math.Abs(it.Point.PosX - (position = bonusPoint.position).x) < pointTolerance &&

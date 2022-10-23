@@ -114,6 +114,8 @@ namespace RollABall.Managers
         
         protected override void InitManager(InitItemMode mode)
         {
+            State = null;
+        
             var buttons = new[] { RestartButton, SaveButton, LoadButton };
             foreach (var button in buttons)
             {

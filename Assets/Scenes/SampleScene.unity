@@ -592,6 +592,10 @@ MonoBehaviour:
   <BonusPointImage>k__BackingField: {fileID: 7939039352776429933, guid: 01488d49e80b24d0dafbb9e4339b1bdd, type: 3}
   <BonusManagerEvent>k__BackingField: {fileID: 11400000, guid: 79040e16effe8432e86277991657ad48, type: 2}
   <RadarObjectsRepository>k__BackingField: {fileID: 11400000, guid: 944319b60f5944d9d8a237be11619439, type: 2}
+  <RadarDistance>k__BackingField: 15
+  <BlipSize>k__BackingField: 10
+  <UsePlayerDirection>k__BackingField: 1
+  <Player>k__BackingField: {fileID: 1256983356}
   <PlayerStats>k__BackingField: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
   <PlayerEvent>k__BackingField: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
   normalColor:
@@ -609,10 +613,6 @@ MonoBehaviour:
   <RestartButton>k__BackingField: {fileID: 305063254}
   <SaveButton>k__BackingField: {fileID: 432900462}
   <LoadButton>k__BackingField: {fileID: 2097201561}
-  radarDistance: 15
-  blipSize: 10
-  usePlayerDirection: 0
-  player: {fileID: 1256983356}
 --- !u!850595691 &174005602
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -2378,7 +2378,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.759596, y: 1}
+    m_SensorSize: {x: 2.8187702, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2687,7 +2687,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh27506
+  m_Name: pb_Mesh28776
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
