@@ -57,7 +57,6 @@ namespace RollABall.Managers
             if (Time.frameCount % 2 == 0 && RadarObjectsRepository.Count > 0)
             {
                 DisplayBonusesOnMap();
-                Log("Display");
             }
         }
         

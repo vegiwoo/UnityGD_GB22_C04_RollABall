@@ -67,14 +67,16 @@ namespace RollABall.Managers
             }
         }
     
-        private Vector3 NormalisedPosition(Vector3 playerPos, Vector3 targetPos) {
+        private Vector3 NormalisedPosition(Vector3 playerPos, Vector3 targetPos) 
+        {
             var normalisedTargetX = (targetPos.x - playerPos.x)/RadarDistance;
             var normalisedTargetZ = (targetPos.z - playerPos.z)/RadarDistance;
             
             return new Vector3(normalisedTargetX, 0, normalisedTargetZ);
         }
         
-        private Vector2 CalculateBonusPointPosition(Vector3 targetPos) {
+        private Vector2 CalculateBonusPointPosition(Vector3 targetPos) 
+        {
             // find the angle from the player to the target.
             var angleToTarget = Mathf.Atan2(targetPos.x,targetPos.z) * Mathf.Rad2Deg;
  
@@ -172,4 +174,3 @@ namespace RollABall.Managers
         #endregion
     }
 }
-
