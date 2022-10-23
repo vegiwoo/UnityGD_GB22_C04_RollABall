@@ -12,6 +12,8 @@ using static UnityEngine.Debug;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
+    // Work with radar map
+    // Reference: https://timcoster.com/2020/03/25/unity-enemy-radar-tutorial/
     public partial class UIManager : GameDevLib.Interfaces.IObserver<BonusManagerArgs>
     {
         #region Links 
@@ -21,6 +23,10 @@ namespace RollABall.Managers
         [field: SerializeField] private RawImage BonusPointImage { get; set; }
         [field: SerializeField] private BonusManagerEvent BonusManagerEvent { get; set; }
         [field: SerializeField] private  RadarObjectsRepository RadarObjectsRepository { get; set; }
+        [field: SerializeField] private float RadarDistance { get; set; } = 15;
+        [field: SerializeField] private float BlipSize { get; set; } = 10;
+        [field: SerializeField] private bool UsePlayerDirection { get; set; } = true;
+        [field: SerializeField] private Transform Player { get; set; }
         
         #endregion
         
@@ -41,7 +47,7 @@ namespace RollABall.Managers
         
         private void DisplayBonusesOnMap()
         {
-            PlayerPosition = player.position;
+            PlayerPosition = Player.position;
 
             foreach (var target in RadarObjectsRepository
                          .FindAll()
@@ -50,8 +56,8 @@ namespace RollABall.Managers
                 var targetPos = target.Key.position;
                 var distanceToTarget = Vector3.Distance(targetPos, PlayerPosition);
 
-                if (!(distanceToTarget <= radarDistance)) continue;
-                
+                if (!(distanceToTarget <= RadarDistance)) continue;
+
                 var normalisedTargetPosition = NormalisedPosition(PlayerPosition, targetPos);
                 var bonusPointPosition = CalculateBonusPointPosition(normalisedTargetPosition);
 
@@ -62,8 +68,8 @@ namespace RollABall.Managers
         }
     
         private Vector3 NormalisedPosition(Vector3 playerPos, Vector3 targetPos) {
-            var normalisedTargetX = (targetPos.x - playerPos.x)/radarDistance;
-            var normalisedTargetZ = (targetPos.z - playerPos.z)/radarDistance;
+            var normalisedTargetX = (targetPos.x - playerPos.x)/RadarDistance;
+            var normalisedTargetZ = (targetPos.z - playerPos.z)/RadarDistance;
             
             return new Vector3(normalisedTargetX, 0, normalisedTargetZ);
         }
@@ -73,7 +79,7 @@ namespace RollABall.Managers
             var angleToTarget = Mathf.Atan2(targetPos.x,targetPos.z) * Mathf.Rad2Deg;
  
             // The direction the player is facing.
-            var anglePlayer = usePlayerDirection? player.eulerAngles.y : 0;
+            var anglePlayer = UsePlayerDirection? Player.eulerAngles.y : 0;
  
             // Subtract the player angle, to get the relative angle to the object. Subtract 90
             // so 0 degrees (the same direction as the player) is Up.

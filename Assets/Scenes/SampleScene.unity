@@ -609,9 +609,9 @@ MonoBehaviour:
   <RestartButton>k__BackingField: {fileID: 305063254}
   <SaveButton>k__BackingField: {fileID: 432900462}
   <LoadButton>k__BackingField: {fileID: 2097201561}
-  radarDistance: 10
-  blipSize: 8
-  usePlayerDirection: 1
+  radarDistance: 15
+  blipSize: 10
+  usePlayerDirection: 0
   player: {fileID: 1256983356}
 --- !u!850595691 &174005602
 LightingSettings:

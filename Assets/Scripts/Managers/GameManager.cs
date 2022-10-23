@@ -55,10 +55,15 @@ namespace RollABall.Managers
         
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            // if (args.IsLoadGame)
-            // {
-            //     GameCaretaker.Load();
-            // }
+            if (args.IsSaveGame)
+            {
+                GameCaretaker.Save();
+            }
+            
+            if (args.IsLoadGame)
+            {
+                GameCaretaker.Load();
+            }
         }
         
         public void OnEventRaised(ISubject<List<ISavableArgs>> subject, List<ISavableArgs> args)
@@ -92,9 +97,6 @@ namespace RollABall.Managers
             {
                 // ignored
             }
-
-            // Saved point
-            GameCaretaker.Save();
         }
         
         // Memento pattern

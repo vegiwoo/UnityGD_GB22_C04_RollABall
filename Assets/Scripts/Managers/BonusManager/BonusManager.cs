@@ -82,7 +82,7 @@ namespace RollABall.Managers
 
         private void LoadGameProcedure()
         {
-            // Clear repo
+            // Cleanup repo
             BonusRepository.UpdateAllWithAction(UnsubscribeAndDestroyAction);
             BonusRepository.RemoveAll();
 
@@ -90,6 +90,7 @@ namespace RollABall.Managers
             BonusManagerEvent.Notify(new BonusManagerArgs(null, null, null, true));
 
             // Make items from loading file
+            
             const float pointTolerance = 0.05f;
 
             foreach (var bonusPoint in bonusPoints)

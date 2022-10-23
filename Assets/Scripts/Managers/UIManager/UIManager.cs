@@ -13,7 +13,7 @@ namespace RollABall.Managers
     public partial class UIManager : BaseManager, IObserver<PlayerArgs>
     {
         #region Links
-        
+        [field:Header("Other links")]
         [field: SerializeField] private PlayerStats PlayerStats { get; set; }
         [field:SerializeField] private PlayerEvent PlayerEvent { get; set; }
 
@@ -40,14 +40,6 @@ namespace RollABall.Managers
         private Rect _windowRect = new (Screen.width / 2 - 90, Screen.height / 2 - 100, 180, 120);
 
         #endregion
-        
-        #region Fields
-        
-        public float radarDistance = 15, blipSize = 10;
-        public bool usePlayerDirection = true;
-        public Transform player;
-        
-        #endregion
 
         #region MonoBehaviour methods
 
@@ -56,15 +48,16 @@ namespace RollABall.Managers
             base.Start();
             
             var rect = RadarMapImage.rectTransform.rect;
-            _blipHeight  = rect.height * blipSize / 100;
-            _blipWidth   = rect.width * blipSize / 100;
+            _blipHeight = rect.height * BlipSize / 100;
+            _blipWidth  = rect.width * BlipSize / 100;
         }
 
         private void Update()
         {
-            if (Time.frameCount % 2 == 0)
+            if (Time.frameCount % 2 == 0 && RadarObjectsRepository.Count > 0)
             {
                 DisplayBonusesOnMap();
+                Log("Display");
             }
         }
         
