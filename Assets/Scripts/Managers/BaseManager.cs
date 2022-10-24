@@ -32,8 +32,7 @@ namespace RollABall.Managers
         {
             InitManager();
         }
-
-
+        
         protected virtual void OnEnable()
         {
             GameEvent.Attach(this);

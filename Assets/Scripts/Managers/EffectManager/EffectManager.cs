@@ -155,7 +155,7 @@ namespace RollABall.Managers
             while (timer > 0)
             {
                 var effectInState = State
-                    .SingleOrDefault(el => el.AppliedEffect.EffectTarget == args.EffectTargetType);
+                    .SingleOrDefault(el => el.AppliedEffect == effect);
                 
                 if (effectInState != null)
                 {
