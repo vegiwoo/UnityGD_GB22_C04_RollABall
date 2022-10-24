@@ -1,4 +1,7 @@
+#nullable enable
+
 using System;
+using RollABall.Models;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Args
@@ -7,9 +10,9 @@ namespace RollABall.Args
     {
         #region Properties
 
-        public bool IsRestartGame { get; }
-        public bool IsSaveGame { get; }
-        public bool IsLoadGame { get; }
+        public CurrentGameState? CurrentGameState { get; }
+      
+        public SaveGameArgs? SaveGameArgs { get; }
         public (bool isLost, string message)? IsLostGame { get; }
         public (bool isWin, string message)? IsWinGame { get; }
         
@@ -17,13 +20,13 @@ namespace RollABall.Args
         
         #region Constructors
         
-        public CurrentGameArgs(bool isRestartGame, bool isSaveGame, bool isLoadGame,
+        public CurrentGameArgs(CurrentGameState? currentGameState,
+            SaveGameArgs? saveGameArgs,
             (bool isLost, string message)? isLostGame = null, 
             (bool isWin, string message)? isWinGame = null)
         {
-            IsRestartGame = isRestartGame;
-            IsSaveGame = isSaveGame;
-            IsLoadGame = isLoadGame;
+            CurrentGameState = currentGameState;
+            SaveGameArgs = saveGameArgs;
             IsLostGame = isLostGame;
             IsWinGame = isWinGame;
         }

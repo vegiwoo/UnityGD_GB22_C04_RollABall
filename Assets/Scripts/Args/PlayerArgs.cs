@@ -8,7 +8,7 @@ using RollABall.Models;
 namespace RollABall.Args
 {
     [Serializable]
-    public class PlayerArgs : EventArgs
+    public class PlayerArgs : EventArgs, ISavableArgs
     {
         #region Properties
         

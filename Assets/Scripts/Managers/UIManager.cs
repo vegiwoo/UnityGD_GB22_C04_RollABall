@@ -4,6 +4,7 @@ using System.Linq;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Models;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEditor;
@@ -214,12 +215,12 @@ namespace RollABall.Managers
             HpLabel.color = ScoreLabel.color = SpeedLabel.color = normalColor;
             SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, Vector3.one, 0));
         }
-
-        private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(true, false, false));
         
-        private void OnSaveButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, true, false));
+        private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(CurrentGameState.Restart, null));
         
-        private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(false, false, true));
+        private void OnSaveButtonClick() => GameEvent.Notify(new CurrentGameArgs(CurrentGameState.Save, null));
+        
+        private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(CurrentGameState.Load, null));
         
         // Event handler for PlayerEvent
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)

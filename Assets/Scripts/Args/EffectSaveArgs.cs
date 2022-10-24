@@ -6,7 +6,7 @@ using RollABall.Managers;
 namespace RollABall.Args
 {
     [Serializable]
-    public class EffectSaveArgs : EventArgs
+    public class EffectSaveArgs : EventArgs, ISavableArgs
     {
         #region Properties 
     

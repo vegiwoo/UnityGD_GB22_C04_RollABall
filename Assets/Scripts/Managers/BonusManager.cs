@@ -9,6 +9,7 @@ using RollABall.Args;
 using RollABall.Events;
 using RollABall.Infrastructure.Memento;
 using RollABall.Interactivity.Bonuses;
+using RollABall.Models;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
@@ -317,32 +318,40 @@ namespace RollABall.Managers
 
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            if (args.IsRestartGame)
+            
+            if (args.CurrentGameState.HasValue)
             {
-                InitManager();
-            }
-
-            if (args.IsSaveGame)
-            {
-                try
+                switch (args.CurrentGameState.Value)
                 {
-                    Caretaker.Save();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
-            }
-
-            if (args.IsLoadGame)
-            {
-                try
-                {
-                    Caretaker.Load();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
+                    case CurrentGameState.Restart:
+                        
+                        InitManager();
+                        
+                        break;
+                    case CurrentGameState.Save:
+                        
+                        try
+                        {
+                            Caretaker.Save();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
+                    case CurrentGameState.Load:
+                        
+                        try
+                        {
+                            Caretaker.Load();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
                 }
             }
         }   

@@ -6,6 +6,7 @@ using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Effects;
+using RollABall.Models;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
@@ -153,35 +154,42 @@ namespace RollABall.Player
         }
         
         public void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
-        { 
-            if (args.IsRestartGame)
+        {
+            if (args.CurrentGameState.HasValue)
             {
-                InitPlayer();
-                SendNotify();
-            }
-
-            if (args.IsSaveGame)
-            {
-                try
+                switch (args.CurrentGameState.Value)
                 {
-                    Caretaker.Save();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
-            }
-
-            if (args.IsLoadGame)
-            {
-                try
-                {
-                    Caretaker.Load();
-                    SendNotify();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
+                    case CurrentGameState.Restart:
+                        
+                        InitPlayer();
+                        SendNotify();
+                        
+                        break;
+                    case CurrentGameState.Save:
+                        
+                        try
+                        {
+                            Caretaker.Save();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
+                    case CurrentGameState.Load:
+                        
+                        try
+                        {
+                            Caretaker.Load();
+                            SendNotify();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
                 }
             }
         }

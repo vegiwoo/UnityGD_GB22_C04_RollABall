@@ -7,6 +7,7 @@ using RollABall.Args;
 using RollABall.Events;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
+using RollABall.Models;
 using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
@@ -226,39 +227,41 @@ namespace RollABall.Managers
         // Event handler for CurrentGameEvent
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            if (args.IsRestartGame)
+            if (args.CurrentGameState.HasValue)
             {
-                InitManager();
-                
-                // Send Rebirth Effect
-                // EffectEvent.Notify(new EffectArgs(EffectType.Buff, EffectTargetType.Rebirth));
+                switch (args.CurrentGameState.Value)
+                {
+                    case CurrentGameState.Restart:
+                        
+                        InitManager();
+                        
+                        break;
+                    case CurrentGameState.Save:
+                        
+                        try
+                        {
+                            Caretaker.Save();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
+                    case CurrentGameState.Load:
+                        
+                        try
+                        {
+                            Caretaker.Load();
+                        }
+                        catch (Exception e)
+                        {
+                            LogException(e);
+                        }
+                        
+                        break;
+                }
             }
-            
-            
-            if (args.IsSaveGame)
-            {
-                try
-                {
-                    Caretaker.Save();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
-            }
-
-            if (args.IsLoadGame)
-            {
-                try
-                {
-                    Caretaker.Load();
-                }
-                catch (Exception e)
-                {
-                    LogException(e);
-                }
-            }
-   
         }
 
         public void OnEventRaised(ISubject<IEffectable> subject, IEffectable args)
