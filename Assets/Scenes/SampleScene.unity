@@ -487,8 +487,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
-  <Caretaker>k__BackingField: {fileID: 11400000, guid: 5a15cb3910ec6401798a790340d2fb5a, type: 2}
-  <Stats>k__BackingField: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
+  <EffectStats>k__BackingField: {fileID: 11400000, guid: d0f1db594a01e4298b7831dc7ee71745, type: 2}
   <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
   <EffectEvent>k__BackingField: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
   <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
@@ -587,6 +586,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
+  <RadarMapImage>k__BackingField: {fileID: 506925992}
+  <BonusPointImage>k__BackingField: {fileID: 7939039352776429933, guid: 01488d49e80b24d0dafbb9e4339b1bdd, type: 3}
+  <BonusManagerEvent>k__BackingField: {fileID: 11400000, guid: 79040e16effe8432e86277991657ad48, type: 2}
+  <RadarObjectsRepository>k__BackingField: {fileID: 11400000, guid: 944319b60f5944d9d8a237be11619439, type: 2}
+  <RadarDistance>k__BackingField: 15
+  <BlipSize>k__BackingField: 10
+  <Player>k__BackingField: {fileID: 1256983356}
+  usePlayerDirection: 0
   <PlayerStats>k__BackingField: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
   <PlayerEvent>k__BackingField: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
   normalColor:
@@ -598,20 +605,12 @@ MonoBehaviour:
   buffColor:
     serializedVersion: 2
     rgba: 4294144934
-  <RadarMapImage>k__BackingField: {fileID: 506925992}
-  <BonusPointImage>k__BackingField: {fileID: 7939039352776429933, guid: 01488d49e80b24d0dafbb9e4339b1bdd, type: 3}
-  <BonusManagerEvent>k__BackingField: {fileID: 11400000, guid: 79040e16effe8432e86277991657ad48, type: 2}
-  <RadarObjectsRepository>k__BackingField: {fileID: 11400000, guid: 944319b60f5944d9d8a237be11619439, type: 2}
   <HpLabel>k__BackingField: {fileID: 1256965137}
   <ScoreLabel>k__BackingField: {fileID: 632354802}
   <SpeedLabel>k__BackingField: {fileID: 1831949398}
   <RestartButton>k__BackingField: {fileID: 305063254}
   <SaveButton>k__BackingField: {fileID: 432900462}
   <LoadButton>k__BackingField: {fileID: 2097201561}
-  radarDistance: 20
-  blipSize: 10
-  usePlayerDirection: 0
-  player: {fileID: 1256983356}
 --- !u!850595691 &174005602
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -1421,7 +1420,6 @@ MonoBehaviour:
   - {fileID: 343661998}
   - {fileID: 1866955714}
   - {fileID: 1386223124}
-  <Caretaker>k__BackingField: {fileID: 11400000, guid: 411a36dc1614c4fa98ff566c81869b21, type: 2}
   <BonusRepository>k__BackingField: {fileID: 11400000, guid: 344901e2dbf694471baf61508ef770af, type: 2}
   <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
   <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
@@ -2377,7 +2375,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 1.759596, y: 1}
+    m_SensorSize: {x: 2.1612904, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0

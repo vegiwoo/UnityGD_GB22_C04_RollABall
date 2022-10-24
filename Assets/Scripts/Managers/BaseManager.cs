@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Models;
 using UnityEngine;
 using GameStats = RollABall.Stats.GameStats;
 
@@ -20,6 +22,12 @@ namespace RollABall.Managers
         
         #endregion
         
+        #region Properties
+
+        protected List<ISavableArgs> State { get; set; }
+
+        #endregion
+        
         #region Filds
         
         protected readonly System.Random systemRandom = new ();
@@ -30,7 +38,7 @@ namespace RollABall.Managers
 
         protected virtual void Start()
         {
-            InitManager();
+            NewGameAction();
         }
         
         protected virtual void OnEnable()
@@ -47,14 +55,34 @@ namespace RollABall.Managers
 
         #region Functionality
 
-        /// <summary>
-        /// Initializes manager at start or restart of game.
-        /// </summary>
-        protected abstract void InitManager(bool fromLoad = false);
-        
         // Event handler for CurrentGameEvent
-        public abstract void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args);
-
+        public virtual void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
+        {
+            if (args.CurrentGameState.HasValue)
+            {
+                switch (args.CurrentGameState.Value)
+                {
+                    case CurrentGameState.Restart:
+                        RestartGameAction();
+                        break;
+                    case CurrentGameState.Save:
+                        SaveGameAction();
+                        break;
+                    case CurrentGameState.Load:
+                        LoadGameAction(args.SaveGameArgs);
+                        break;
+                }
+            }
+        }
+        
+        protected abstract void NewGameAction();
+        
+        protected abstract void SaveGameAction();
+        
+        protected abstract void LoadGameAction(SaveGameArgs args);
+        
+        protected abstract void RestartGameAction();
+        
         public virtual void Dispose()
         {
             GameEvent.Detach(this);

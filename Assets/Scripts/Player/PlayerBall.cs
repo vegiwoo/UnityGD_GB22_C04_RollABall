@@ -1,11 +1,10 @@
 using System;
 using RollABall.Args;
-using RollABall.Infrastructure.Memento;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
-    public class PlayerBall : Player, IMementoOrganizer<PlayerArgs>
+    public class PlayerBall : Player
     {
         #region MonoBehavior methods
 
@@ -15,14 +14,6 @@ namespace RollABall.Player
             transform.gameObject.tag = GameData.PlayerTag;
         }
 
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            
-            // Memento pattern - init caretaker for organizer.
-            Caretaker.Init(this, "Player", "PlayerMemento");
-        }
-        
         private void FixedUpdate()
         {
             Move();
@@ -116,24 +107,7 @@ namespace RollABall.Player
                 (int)GamePoints
             );
         }
-        
-        public IMemento<PlayerArgs> Save()
-        {
-            State = MakeState();
-            return new Memento<PlayerArgs>(State, "Player");
-        }
 
-        public void Load(IMemento<PlayerArgs> memento)
-        {
-            if (memento is not Memento<PlayerArgs>)
-            {
-                throw new Exception("Unknown memento class " + memento.ToString());
-            }
-            
-            State = memento.State;
-            InitPlayer(true);
-        }
-        
         #endregion
     }
 }

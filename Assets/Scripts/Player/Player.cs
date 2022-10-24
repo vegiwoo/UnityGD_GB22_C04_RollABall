@@ -34,8 +34,6 @@ namespace RollABall.Player
         [SerializeField] protected PlayerEvent playerEvent;
         [SerializeField] protected CurrentGameEvent gameEvent;
         
-        [field:Header("Memento")]
-        [field:SerializeField] protected PlayerCaretaker Caretaker { get; set; }
 
         #endregion
         
@@ -167,27 +165,12 @@ namespace RollABall.Player
                         break;
                     case CurrentGameState.Save:
                         
-                        try
-                        {
-                            Caretaker.Save();
-                        }
-                        catch (Exception e)
-                        {
-                            LogException(e);
-                        }
+                        // ...
                         
                         break;
                     case CurrentGameState.Load:
                         
-                        try
-                        {
-                            Caretaker.Load();
-                            SendNotify();
-                        }
-                        catch (Exception e)
-                        {
-                            LogException(e);
-                        }
+                       // ...
                         
                         break;
                 }

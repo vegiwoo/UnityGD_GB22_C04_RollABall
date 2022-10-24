@@ -6,7 +6,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public class GameManager : BaseManager, IObserver<PlayerArgs>
+    public partial class GameManager : BaseManager, IObserver<PlayerArgs>
     {
         #region Links
         
@@ -26,11 +26,6 @@ namespace RollABall.Managers
         
         #region Functionality
 
-        protected override void InitManager(bool fromLoad = false)
-        {
-            // Do something ...
-        }
-
         // Event handler for PlayerEvent 
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
         {
@@ -45,13 +40,7 @@ namespace RollABall.Managers
                 GameEvent.Notify(currentGameArgs);
             }
         }
-        
-        // Event handler for CurrentGameEvent 
-        public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
-        {
-            // Do something...
-        }
-        
+
         public override void Dispose()
         {
             base.Dispose();
@@ -61,3 +50,23 @@ namespace RollABall.Managers
         #endregion
     }
 }
+
+// public IMemento<PlayerArgs> Save()
+// {
+//     State = MakeState();
+//     return new Memento<PlayerArgs>(State, "Player");
+// }
+//
+// public void Load(IMemento<PlayerArgs> memento)
+// {
+//     if (memento is not Memento<PlayerArgs>)
+//     {
+//         throw new Exception("Unknown memento class " + memento.ToString());
+//     }
+//     
+//     State = memento.State;
+//     InitPlayer(true);
+// }
+        
+// // Memento pattern - init caretaker for organizer.
+// Caretaker.Init(this, "Player", "PlayerMemento");
