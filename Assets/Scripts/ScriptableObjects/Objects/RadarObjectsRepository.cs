@@ -8,7 +8,7 @@ using UnityEngine.UI;
 // ReSharper disable once CheckNamespace
 namespace RollABall.ScriptableObjects
 {
-    [CreateAssetMenu(fileName = "RadarObjectsRepository", menuName = "RollABall/Objects/RadarObjectsRepository", order = 1)]
+    [CreateAssetMenu(fileName = "RadarObjectsRepository", menuName = "RollABall/Objects/RadarObjectsRepository", order = 2)]
     public class RadarObjectsRepository : ScriptableObject, IRepositoryFindable<Transform, RawImage>, 
         IRepositoryUpdatable<Transform, RawImage>, IRepositoryRemovable
     {

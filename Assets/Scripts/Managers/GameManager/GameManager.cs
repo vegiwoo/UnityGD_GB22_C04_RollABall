@@ -1,6 +1,7 @@
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.ScriptableObjects;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -11,6 +12,7 @@ namespace RollABall.Managers
         #region Links
         
         [field:SerializeField] private PlayerEvent PlayerEvent { get; set; }
+        [field: SerializeField] private GameCaretaker Caretaker { get; set; }
 
         #endregion
 
@@ -19,7 +21,9 @@ namespace RollABall.Managers
         protected override void OnEnable()
         {
             base.OnEnable();
+            
             PlayerEvent.Attach(this);
+            SaveGameEvent.Attach(this);
         }
         
         #endregion
@@ -44,29 +48,11 @@ namespace RollABall.Managers
         public override void Dispose()
         {
             base.Dispose();
+            
             PlayerEvent.Detach(this);
+            SaveGameEvent.Detach(this);
         }
 
         #endregion
     }
 }
-
-// public IMemento<PlayerArgs> Save()
-// {
-//     State = MakeState();
-//     return new Memento<PlayerArgs>(State, "Player");
-// }
-//
-// public void Load(IMemento<PlayerArgs> memento)
-// {
-//     if (memento is not Memento<PlayerArgs>)
-//     {
-//         throw new Exception("Unknown memento class " + memento.ToString());
-//     }
-//     
-//     State = memento.State;
-//     InitPlayer(true);
-// }
-        
-// // Memento pattern - init caretaker for organizer.
-// Caretaker.Init(this, "Player", "PlayerMemento");

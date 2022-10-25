@@ -9,9 +9,9 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    public partial class EffectManager : BaseManager, GameDevLib.Interfaces.IObserver<IEffectable>
+    public partial class EffectManager : BaseManager, IObserver<IEffectable>
     {
-        #region Properties
+        #region Links
 
         [field: Header("Links")] 
         [field: SerializeField] public EffectStats EffectStats { get; set; }
@@ -19,6 +19,8 @@ namespace RollABall.Managers
         [field: SerializeField] public EffectEvent EffectEvent { get; set; }
         [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
 
+        [field: Header("Memento")] 
+        [field: SerializeField] private SaveGameEvent SaveGameEvent { get; set; }
         #endregion
         
         #region Monobehavior metods

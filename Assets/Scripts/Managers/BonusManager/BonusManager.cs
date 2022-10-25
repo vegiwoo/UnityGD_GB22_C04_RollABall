@@ -23,6 +23,9 @@ namespace RollABall.Managers
         [field: SerializeField] private ApplyEffectEvent ApplyEffectEvent { get; set; }
         [field: SerializeField] private BonusManagerEvent BonusManagerEvent { get; set; }
 
+        [field: Header("Memento")] 
+        [field: SerializeField] private SaveGameEvent SaveGameEvent { get; set; }
+        
         #endregion
 
         #region Fields

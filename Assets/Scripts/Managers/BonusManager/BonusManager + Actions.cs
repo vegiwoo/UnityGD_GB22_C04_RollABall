@@ -16,7 +16,7 @@ namespace RollABall.Managers
         
         protected override void NewGameAction()
         {
-            State = new List<ISavableArgs>(new List<BonusSaveArgs>());
+            SavedState = new List<ISavableArgs>(new List<BonusSaveArgs>());
             
             var counter = 0;
             while (counter < bonusPoints.Length)
@@ -56,7 +56,7 @@ namespace RollABall.Managers
 
             if (args.BonusSaveArgs is not null)
             {
-                State = new List<ISavableArgs>(args.BonusSaveArgs);
+                SavedState = new List<ISavableArgs>(args.BonusSaveArgs);
             }
             
             // Clear repo
@@ -71,7 +71,7 @@ namespace RollABall.Managers
                 
             foreach (var bonusPoint in bonusPoints)
             {
-                var entities = State
+                var entities = SavedState
                     .Cast<BonusSaveArgs>()
                     .Where(it =>
                 {
@@ -102,7 +102,7 @@ namespace RollABall.Managers
         protected override void RestartGameAction()
         {
             StopAllCoroutines();
-            State = new List<ISavableArgs>(new List<BonusSaveArgs>());
+            SavedState = new List<ISavableArgs>(new List<BonusSaveArgs>());
             
             if (BonusRepository.Count > 0)
             {
@@ -122,7 +122,7 @@ namespace RollABall.Managers
                     bonus.Bonus.Effect as Effect,
                     bonus.BonusGo.activeInHierarchy);
             
-            State = new List<ISavableArgs>(items.ToList());
+            SavedState = new List<ISavableArgs>(items.ToList());
         }
         
         #endregion

@@ -24,7 +24,7 @@ namespace RollABall.Managers
         
         #region Properties
 
-        protected List<ISavableArgs> State { get; set; }
+        public List<ISavableArgs> SavedState { get; set; }
 
         #endregion
         

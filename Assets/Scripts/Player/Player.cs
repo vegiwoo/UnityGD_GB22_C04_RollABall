@@ -34,7 +34,9 @@ namespace RollABall.Player
         [SerializeField] protected PlayerEvent playerEvent;
         [SerializeField] protected CurrentGameEvent gameEvent;
         
-
+        [field: Header("Memento")] 
+        [field: SerializeField] private SaveGameEvent SaveGameEvent { get; set; }
+        
         #endregion
         
         #region Fields

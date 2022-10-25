@@ -67,7 +67,7 @@ namespace RollABall.Managers
             
             // Add new effect in manager state.
             var effectStateArgs = new EffectSaveArgs(effect as Effect, effect.Duration);
-            State.Add(effectStateArgs);
+            SavedState.Add(effectStateArgs);
             
             switch (effect.EffectTarget)
             {
@@ -94,7 +94,7 @@ namespace RollABall.Managers
             var timer = remainingDuration > 0 ? remainingDuration : effect.Duration;
             while (timer > 0)
             {
-                var effectInState = State
+                var effectInState = SavedState
                     .Cast<EffectSaveArgs>()
                     .SingleOrDefault(el => el.AppliedEffect == effect);
                 
@@ -157,7 +157,7 @@ namespace RollABall.Managers
             _activeEffectsByTarget.Remove(effectTargetType);
 
             // Removing effects on target from state of manager.
-            State.RemoveAll(el => ((EffectSaveArgs)el).AppliedEffect.EffectTarget == effectTargetType);
+            //State.Cast<EffectArgs>().RemoveAll(el => ((EffectSaveArgs)el).AppliedEffect.EffectTarget == effectTargetType);
             
             Log($"Stop active effect on target {effectTargetType}");
         }

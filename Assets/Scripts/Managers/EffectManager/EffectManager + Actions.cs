@@ -12,7 +12,7 @@ namespace RollABall.Managers
         protected override void NewGameAction()
         {
             _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
-            State = new List<ISavableArgs>(new List<EffectSaveArgs>());
+            SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
         }
         
         protected override void SaveGameAction()
@@ -28,9 +28,9 @@ namespace RollABall.Managers
 
             if (args.EffectSaveArgs is null) return;
             
-            State = new List<ISavableArgs>(args.EffectSaveArgs);
+            SavedState = new List<ISavableArgs>(args.EffectSaveArgs);
                 
-            foreach (var item in State.OfType<EffectSaveArgs>())
+            foreach (var item in SavedState.OfType<EffectSaveArgs>())
             {
                 ApplyEffectOnPlayer(item.AppliedEffect, item.RemainingDuration);
             }
@@ -41,7 +41,7 @@ namespace RollABall.Managers
             StopAllCoroutines();
             
             _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
-            State = new List<ISavableArgs>(new List<EffectSaveArgs>());
+            SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
         }
     }
 }

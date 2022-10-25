@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RollABall.Args;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -9,12 +10,13 @@ namespace RollABall.Managers
     {
         protected override void NewGameAction()
         {
-            State = new List<ISavableArgs>(new List<SaveGameArgs>());
+            Caretaker.Init(this, SavedGamePrefix, "SavedGame");
+            State = null;
         }
 
         protected override void SaveGameAction()
         {
-            // ...
+            Caretaker.Save();
         }
 
         protected override void LoadGameAction(SaveGameArgs args)
@@ -24,7 +26,7 @@ namespace RollABall.Managers
 
         protected override void RestartGameAction()
         {
-            State = new List<ISavableArgs>(new List<SaveGameArgs>());
+            SavedState = new List<ISavableArgs>(new List<SaveGameArgs>());
         }
     }
 }

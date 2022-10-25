@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -12,22 +13,18 @@ namespace RollABall.Infrastructure.Memento
     /// <summary>
     /// Caretaker to save, store and download mementos.
     /// </summary>
-    /// <typeparam name="TState">Type of State parameter in IMemento<T>.</typeparam>
-    public abstract class Caretaker<TState> : ScriptableObject
+    /// <typeparam name="TState">Type of State parameter in IMemento<T></typeparam>
+    public abstract class Caretaker<TState> : ScriptableObject 
     {
         #region Field
 
-        // When saving multiple snapshots, a collection is used:
-        // protected readonly List<(IMemento<T> memento, string path)> mementos = new ();
-        private (IMemento<TState> memento, string path)? _savedMemento;
-
+        private List<(IMemento<TState> memento, string path)> _mementos;
+        
         private readonly JsonSerializerSettings _jsonFormatSetting = new ()
         {
             Formatting = Formatting.Indented,
             DateFormatHandling = DateFormatHandling.IsoDateFormat
         };
-        
-        private string SavedEntityName { get; set; }
         
         #endregion
     
@@ -35,27 +32,41 @@ namespace RollABall.Infrastructure.Memento
 
         private IMementoOrganizer<TState> Originator { get; set;}
         private string SavedPath { get; set; }
-        private string NamePrefix { get; set; }
-        private static string SavedDir => "Saved";
+        private string FilenamePrefix { get; set; }
+        private static string SavedDirName => "Saved";
+        private string SavedEntityName { get; set; }
+        
+        private SaveFormat SaveFormat { get; set; }
+        
+        /// <summary>
+        /// Number of saves that the caretaker must provide.
+        /// </summary>
+        private int NumberSaves { get; set; }
         
         #endregion
 
         #region Functionality
-        public void Init(IMementoOrganizer<TState> originator, string dirName, string namePrefix)
+        
+        public void Init(IMementoOrganizer<TState> originator, string filenamePrefix, string directoryName,
+            int numberSaves = 3, SaveFormat saveFormat = SaveFormat.Json)
         {
             Originator = originator;
-            SavedPath = Path.Combine(Application.persistentDataPath, $"{SavedDir}/{dirName}/");
-            NamePrefix = namePrefix;
-            SavedEntityName = dirName;
+            SavedPath = Path.Combine(Application.persistentDataPath, $"{SavedDirName}");
+            FilenamePrefix = filenamePrefix;
+            SavedEntityName = directoryName;
+
+            SaveFormat = saveFormat;
+            NumberSaves = numberSaves;
             
-            _savedMemento = null;
+            _mementos = new List<(IMemento<TState> memento, string path)>();
+            
             Preload();
         }
 
-        public void Save()
+        public async UniTaskVoid Save()
         {
             // Get memento
-            var memento = Originator.Save();
+            var memento =  await Originator.Save();
             
             // Check Directory
             var path = CheckExistenceDirectory(SavedPath, true);
@@ -69,73 +80,68 @@ namespace RollABall.Infrastructure.Memento
             
             // Writing 
             using var writer = new StreamWriter(savedPath, false, Encoding.Default);
-            var json = JsonConvert.SerializeObject(memento, _jsonFormatSetting);
-            writer.Write(json);
-            
-            // Save memento and path
-            _savedMemento = (memento, savedPath);
-                
+
+            switch (SaveFormat)
+            {
+                case SaveFormat.Json:
+                    
+                    var json = JsonConvert.SerializeObject(memento, _jsonFormatSetting);
+                    writer.Write(json);
+                    _mementos.Add((memento, savedPath));
+                    
+                    break;
+            }
+
             Debug.Log($"{SavedEntityName} saved ({memento.Name})");
         }
 
         private void Preload()
         {
             Action<string> debugLogMessage = Debug.Log;
-            
-            var dir = CheckExistenceDirectory(SavedPath, false);
-            if (dir is null)
+
+            var filePaths = GetFilesFromDirectory(CheckExistenceDirectory);
+            if (filePaths.noConditionFilePaths.Any())
             {
-                debugLogMessage($"No saved ({SavedEntityName}) games.");
-                return;
+                foreach (var noConditionFilePath in filePaths.noConditionFilePaths)
+                {
+                    File.Delete(noConditionFilePath); 
+                }
             }
             
-            var files = Directory.GetFiles(dir).Where(n => n.Contains(NamePrefix)).ToArray();
-            if (files.Length > 0)
+            if (filePaths.conditionFilePaths.Any())
             {
-                var oneFilePath = "";
-                    
-                // Cleaning a directory from other files
-                var filterFiles = files.Where(n => n.Contains(NamePrefix)).ToArray();
-                foreach (var filePath in filterFiles)
+                foreach (var conditionFilePath in filePaths.conditionFilePaths)
                 {
-                    if (filePath == filterFiles.First())
+                    switch (SaveFormat)
                     {
-                        oneFilePath = filePath;
-                    }
-                    else
-                    {
-                        File.Delete(filePath); 
-                    }
-                }  
-                    
-                // Reading 
-                using var reader = new StreamReader(oneFilePath);
-                var jsonString = reader.ReadToEnd();
-                var memento = JsonConvert.DeserializeObject<Memento<TState>>(jsonString, _jsonFormatSetting);
+                        case SaveFormat.Json:
 
-                // Saved in savedMemento
-                if (memento is not null)
-                {
-                    _savedMemento = (memento, oneFilePath);
+                            using (var reader = new StreamReader(conditionFilePath))
+                            {
+                                var jsonString = reader.ReadToEnd();
+                                var memento = JsonConvert.DeserializeObject<Memento<TState>>(jsonString, _jsonFormatSetting);
+
+                                if (memento != null)
+                                {
+                                    _mementos.Add((memento,conditionFilePath));
+                                }
+                            }
+                            
+                            break;
+                    }
+                    
                     debugLogMessage($"Game save ({SavedEntityName}) preloaded.");
                 }
-                else
-                {
-                    debugLogMessage($"No saved ({SavedEntityName}) games.");
-                }
-            }
-            else
-            {
-                debugLogMessage($"No saved ({SavedEntityName}) games.");
             }
         }
         
         public void Load()
         {
-            if(_savedMemento is not null)
+            if(_mementos.Count > 0)
             {
-                Originator.Load(_savedMemento.Value.memento);
-                Debug.Log($"{SavedEntityName} Loaded ({_savedMemento.Value.memento.Name})");
+                var firstMemento = _mementos.First().memento;
+                Originator.Load(firstMemento);
+                Debug.Log($"{SavedEntityName} Loaded ({firstMemento.Name})");
             }
             else
             {
@@ -170,7 +176,39 @@ namespace RollABall.Infrastructure.Memento
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Gets files from save directory and sorts them by condition.
+        /// </summary>
+        /// <param name="checkDirAction">Action to check directory.</param>
+        /// <returns>A tuple containing conditional (last saves by number of NumberSaves) and non-conditional
+        /// (all other) file paths.
+        /// </returns>
+        private (IEnumerable<string>? conditionFilePaths, IEnumerable<string>? noConditionFilePaths) 
+            GetFilesFromDirectory(Func<string, bool, string?> checkDirAction)
+        {
+            var dir = checkDirAction.Invoke(SavedPath, false);
+            if (dir == null)
+            {
+                Debug.Log("No saves.");
+                return (null, null);
+            }
+
+            var allFilePathsInDir = Directory.GetFiles(dir);
+            
+            var conditionFilePaths = allFilePathsInDir
+                .Where(p => p.Contains(FilenamePrefix))
+                .OrderBy(File.GetCreationTimeUtc)
+                .Take(NumberSaves)
+                .ToList();
+
+            var noConditionFilePaths = allFilePathsInDir
+                .Where(fp => !conditionFilePaths.Contains(fp))
+                .ToList();
+            
+            return (conditionFilePaths, noConditionFilePaths);
+        }
+
         /// <summary>
         /// Gets collection of types that generic interface is typed with. 
         /// </summary>
