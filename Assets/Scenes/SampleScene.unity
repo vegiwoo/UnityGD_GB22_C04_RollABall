@@ -2016,7 +2016,7 @@ GameObject:
   - component: {fileID: 835138726}
   - component: {fileID: 835138725}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: RadarMapCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -34007,6 +34007,18 @@ PrefabInstance:
     - target: {fileID: 285711422286811063, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
       propertyPath: m_RootOrder
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 285711422286811063, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 285711422286811063, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 285711422286811063, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 285711422286811063, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
       propertyPath: m_LocalPosition.x

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 namespace RollABall.Managers
 {
     // UIManager + RadarMap
+    // Reference: https://timcoster.com/2020/03/25/unity-enemy-radar-tutorial/ 
     public partial class UIManager
     {
         #region Links 
@@ -24,7 +25,7 @@ namespace RollABall.Managers
         
         #region Fields
         
-        public bool usePlayerDirection = true;
+        public bool usePlayerDirection = false;
         private float _radarWidth, _radarHeight, _blipWidth, _blipHeight;
         
         #endregion

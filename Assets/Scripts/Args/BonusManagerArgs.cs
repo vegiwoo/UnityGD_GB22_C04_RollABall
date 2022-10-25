@@ -28,4 +28,3 @@ namespace RollABall.Args
         #endregion
     }
 }
-

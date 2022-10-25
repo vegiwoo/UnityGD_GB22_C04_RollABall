@@ -7,7 +7,7 @@ using static UnityEngine.Debug;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
 {
-    //UIManager + EventHandlers    
+    // UIManager + EventHandlers    
     public partial class UIManager
     {
         private void OnRestartButtonClick() => GameEvent.Notify(new CurrentGameArgs(CurrentGameState.Restart, null));
@@ -16,7 +16,6 @@ namespace RollABall.Managers
         
         private void OnLoadButtonClick() => GameEvent.Notify(new CurrentGameArgs(CurrentGameState.Load, null));
         
-        // Event handler for PlayerEvent
         public void OnEventRaised(ISubject<PlayerArgs> subject, PlayerArgs args)
         {
             SetValues(args);
@@ -41,16 +40,17 @@ namespace RollABall.Managers
         {
             if (args.ActivatePoints is not null)
             {
+
                 RadarObjectsRepository.UpdateAllWithAction(UnactivateAndDestroyRadarPointAction);
                 RadarObjectsRepository.RemoveAll();
 
                 foreach (var point in args.ActivatePoints)
                 {
                     var newItem = Instantiate(BonusPointImage);
-
+                    
                     try
                     {
-                        newItem.transform.parent = RadarMapImage.transform;
+                        newItem.transform.SetParent(RadarMapImage.transform);
                         RadarObjectsRepository.Insert(point, newItem);
                     }
                     catch (Exception e)

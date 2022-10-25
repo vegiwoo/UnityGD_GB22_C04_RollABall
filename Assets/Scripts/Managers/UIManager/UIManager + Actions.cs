@@ -12,9 +12,10 @@ namespace RollABall.Managers
         
         protected override void NewGameAction()
         {
-            var rect = RadarMapImage.rectTransform.rect;
-            _blipHeight  = rect.height * BlipSize / 100;
-            _blipWidth   = rect.width * BlipSize / 100;
+            _radarWidth  = RadarMapImage.GetComponent<RectTransform>().rect.width;
+            _radarHeight = RadarMapImage.GetComponent<RectTransform>().rect.height;
+            _blipHeight  = _radarHeight * BlipSize/100;
+            _blipWidth   = _radarWidth * BlipSize/100;
             
             var buttons = new[] { RestartButton, SaveButton, LoadButton };
             foreach (var button in buttons)
@@ -43,6 +44,7 @@ namespace RollABall.Managers
         {
             // ...
         }
+        
         #endregion
     
         #region Repository actions 

@@ -38,20 +38,16 @@ namespace RollABall.Managers
                 ++counter;
             }
             
+            // Activation of a random bonus from a pair at each point
             BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
+            
+            // Placement notify
+            BonusManagerEvent.Notify(new BonusManagerArgs(bonusPoints,null,null,false));
         }
 
         protected override void SaveGameAction()
         {
-            var items =
-                from bonusPair in BonusRepository.FindAllValues()
-                from bonus in bonusPair
-                select new BonusSaveArgs(
-                    bonus.Bonus.Point.position, 
-                    bonus.Bonus.Effect as Effect,
-                    bonus.BonusGo.activeInHierarchy);
-            
-            State = new List<ISavableArgs>(items.ToList());
+            // MakeState(); ???
         }
 
         protected override void LoadGameAction(SaveGameArgs args)
@@ -114,6 +110,19 @@ namespace RollABall.Managers
             }
             
             BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
+        }
+
+        private void MakeState()
+        {
+            var items =
+                from bonusPair in BonusRepository.FindAllValues()
+                from bonus in bonusPair
+                select new BonusSaveArgs(
+                    bonus.Bonus.Point.position, 
+                    bonus.Bonus.Effect as Effect,
+                    bonus.BonusGo.activeInHierarchy);
+            
+            State = new List<ISavableArgs>(items.ToList());
         }
         
         #endregion
