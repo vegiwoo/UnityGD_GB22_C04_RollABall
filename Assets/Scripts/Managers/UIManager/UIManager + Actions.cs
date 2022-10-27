@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using RollABall.Args;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Managers
@@ -10,7 +11,7 @@ namespace RollABall.Managers
     {
         #region Game actions 
         
-        protected override void NewGameAction()
+        public override void NewGameAction()
         {
             _radarWidth  = RadarMapImage.GetComponent<RectTransform>().rect.width;
             _radarHeight = RadarMapImage.GetComponent<RectTransform>().rect.height;
@@ -30,21 +31,31 @@ namespace RollABall.Managers
             SetValues(new PlayerArgs(PlayerStats.MaxHp, false,  false, false, Vector3.one, 0));
         }
     
-        protected override void SaveGameAction()
+        public override void SaveGameAction()
         {
             // .. 
         }
     
-        protected override void LoadGameAction(SaveGameArgs args)
+        public override void LoadGameAction(SaveGameArgs args)
         {
             // ... 
         }
     
-        protected override void RestartGameAction()
+        public override void RestartGameAction()
         {
             // ...
         }
-        
+
+        public override void LostGameAction()
+        {
+            Log(GameData.LostGameMessage);
+        }
+
+        public override void WonGameAction()
+        {
+            Log(GameData.WonGameMessage);
+        }
+
         #endregion
     
         #region Repository actions 

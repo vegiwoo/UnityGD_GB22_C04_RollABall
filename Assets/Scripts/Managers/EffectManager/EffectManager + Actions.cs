@@ -9,21 +9,20 @@ namespace RollABall.Managers
 {
     public partial class EffectManager
     {
-        protected override void NewGameAction()
+        public override void NewGameAction()
         {
             _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
             SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
         }
         
-        protected override void SaveGameAction()
+        public override void SaveGameAction()
         {
             // TODO: Notify with state
         }
 
-        protected override void LoadGameAction(SaveGameArgs args)
+        public override void LoadGameAction(SaveGameArgs args)
         {
             StopAllCoroutines();
-            
             _activeEffectsByTarget.Clear();
 
             if (args.EffectSaveArgs is null) return;
@@ -36,12 +35,24 @@ namespace RollABall.Managers
             }
         }
 
-        protected override void RestartGameAction()
+        public override void RestartGameAction()
         {
             StopAllCoroutines();
             
             _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
             SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
+        }
+
+        public override void LostGameAction()
+        {
+            StopAllCoroutines();
+            _activeEffectsByTarget.Clear();
+        }
+
+        public override void WonGameAction()
+        {
+            StopAllCoroutines();
+            _activeEffectsByTarget.Clear();
         }
     }
 }

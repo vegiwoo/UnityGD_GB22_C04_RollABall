@@ -173,17 +173,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e0d73fe1c5954417b8ae998365e0e08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerStats: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
-  gameStats: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
-  inputEvent: {fileID: 11400000, guid: 2ff03efb4f4104ddc91e03f7e1730410, type: 2}
-  effectEvent: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
-  playerEvent: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
-  gameEvent: {fileID: 0}
-  <Caretaker>k__BackingField: {fileID: 0}
+  <PlayerStats>k__BackingField: {fileID: 11400000, guid: 88371b01002474745ac2fdc7c7081873, type: 2}
+  <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
+  <InputEvent>k__BackingField: {fileID: 11400000, guid: 2ff03efb4f4104ddc91e03f7e1730410, type: 2}
+  <EffectEvent>k__BackingField: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
+  <PlayerEvent>k__BackingField: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
+  <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GamePoints>k__BackingField: 0
   <CurrentHp>k__BackingField: 0
   <IsUnitInvulnerable>k__BackingField: 0
   <SpeedMultiplier>k__BackingField: 0.3
+  <SaveGameEvent>k__BackingField: {fileID: 11400000, guid: f80ed569a0d7944658eea4b140b85c64, type: 2}
 --- !u!1 &285711422468128013
 GameObject:
   m_ObjectHideFlags: 0

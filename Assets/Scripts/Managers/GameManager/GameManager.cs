@@ -1,6 +1,7 @@
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Models;
 using RollABall.ScriptableObjects;
 using UnityEngine;
 
@@ -10,8 +11,10 @@ namespace RollABall.Managers
     public partial class GameManager : BaseManager, IObserver<PlayerArgs>
     {
         #region Links
-        
+        [field: Header("Other events")]
         [field:SerializeField] private PlayerEvent PlayerEvent { get; set; }
+        
+        [field: Header("Memento")]
         [field: SerializeField] private GameCaretaker Caretaker { get; set; }
 
         #endregion
@@ -35,13 +38,16 @@ namespace RollABall.Managers
         {
             if (args.CurrentHp <= 0)
             {
-                var currentGameArgs = new CurrentGameArgs(null, null, (true, "You have spent all your hit points :("));
+                var currentGameArgs = new CurrentGameArgs(CurrentGameState.Lost, null);
                 GameEvent.Notify(currentGameArgs);
-                
-            } else if (args.GamePoints >= GameStats.GameHighScore)
+            } 
+            else if (args.GamePoints >= GameStats.GameHighScore)
             {
-                var currentGameArgs = new CurrentGameArgs(null, null, null, (true, "You have reached required number of points :)"));
+                var currentGameArgs = new CurrentGameArgs(CurrentGameState.Won, null);
                 GameEvent.Notify(currentGameArgs);
+            
+            
+                throw new System.NotImplementedException();
             }
         }
 

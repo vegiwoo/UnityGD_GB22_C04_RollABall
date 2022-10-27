@@ -3,7 +3,7 @@ namespace RollABall.Models
 {
     public enum CurrentGameState
     {
-        Restart, Save, Load
+        Restart, Save, Load, Lost, Won
     }
 }
 

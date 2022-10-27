@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Infrastructure;
 using RollABall.Models;
 using UnityEngine;
 using GameStats = RollABall.Stats.GameStats;
@@ -13,11 +14,13 @@ namespace RollABall.Managers
     /// <summary>
     /// Base manager for all other managers in game.
     /// </summary>
-    public abstract class BaseManager : MonoBehaviour, GameDevLib.Interfaces.IObserver<CurrentGameArgs>, IDisposable
+    public abstract class BaseManager : MonoBehaviour, IActionable, GameDevLib.Interfaces.IObserver<CurrentGameArgs>, IDisposable
     {
         #region Links
-
+        
+        [field: Header("Main stats")]
         [field: SerializeField] protected CurrentGameEvent GameEvent { get; set; }
+        [field: Header("Main events")]
         [field: SerializeField] protected GameStats GameStats { get; set; }
         
         #endregion
@@ -54,8 +57,19 @@ namespace RollABall.Managers
         #endregion
 
         #region Functionality
+        
+        public abstract void NewGameAction();
+        
+        public abstract void SaveGameAction();
+        
+        public abstract void LoadGameAction(SaveGameArgs args);
+        
+        public abstract void RestartGameAction();
 
-        // Event handler for CurrentGameEvent
+        public abstract void LostGameAction();
+
+        public abstract void WonGameAction();
+        
         public virtual void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
             if (args.CurrentGameState.HasValue)
@@ -68,20 +82,18 @@ namespace RollABall.Managers
                     case CurrentGameState.Save:
                         SaveGameAction();
                         break;
-                    case CurrentGameState.Load:
+                    case CurrentGameState.Load when args.SaveGameArgs is not null:
                         LoadGameAction(args.SaveGameArgs);
+                        break;
+                    case CurrentGameState.Lost:
+                        LostGameAction();
+                        break;
+                    case CurrentGameState.Won:
+                        WonGameAction();
                         break;
                 }
             }
         }
-        
-        protected abstract void NewGameAction();
-        
-        protected abstract void SaveGameAction();
-        
-        protected abstract void LoadGameAction(SaveGameArgs args);
-        
-        protected abstract void RestartGameAction();
         
         public virtual void Dispose()
         {

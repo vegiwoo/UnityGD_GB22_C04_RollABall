@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using RollABall.Args;
+using RollABall.Models;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -8,25 +9,36 @@ namespace RollABall.Managers
     // GameManager + Actions
     public partial class GameManager
     {
-        protected override void NewGameAction()
+        public override void NewGameAction()
         {
             Caretaker.Init(this, SavedGamePrefix, "SavedGame");
+            SavedState = null;
             State = null;
         }
 
-        protected override void SaveGameAction()
+        public override void SaveGameAction()
         {
-            Caretaker.Save();
+            Caretaker.Save().Forget();
         }
 
-        protected override void LoadGameAction(SaveGameArgs args)
+        public override void LoadGameAction(SaveGameArgs args)
         {
             // ...
         }
 
-        protected override void RestartGameAction()
+        public override void RestartGameAction()
         {
             SavedState = new List<ISavableArgs>(new List<SaveGameArgs>());
+        }
+
+        public override void LostGameAction()
+        {
+           // .. 
+        }
+
+        public override void WonGameAction()
+        {
+            // ... 
         }
     }
 }

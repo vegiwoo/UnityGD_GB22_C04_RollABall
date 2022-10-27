@@ -23,17 +23,7 @@ namespace RollABall.Managers
         
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            // Lost game
-            if (args.IsLostGame is { isLost: true })
-            {
-                Log(args.IsLostGame.Value.message);
-                IsLostGame = args.IsLostGame.Value;
-            }
-            else if (args.IsWinGame is { isWin: true })
-            {
-                Log(args.IsWinGame.Value.message);
-                IsWinGame = args.IsWinGame.Value;
-            }
+            // ... 
         }
         
         public void OnEventRaised(ISubject<BonusManagerArgs> subject, BonusManagerArgs args)

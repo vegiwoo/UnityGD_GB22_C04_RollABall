@@ -9,4 +9,3 @@ namespace RollABall.Events
     [CreateAssetMenu(fileName = "SaveGameEvent", menuName = "RollABall/Events/SaveGameEvent", order = 6)]
     public class SaveGameEvent : GameEvent<IList<ISavableArgs>> { }
 }
-

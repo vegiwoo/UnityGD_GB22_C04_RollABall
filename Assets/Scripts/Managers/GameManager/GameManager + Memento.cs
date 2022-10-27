@@ -1,7 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 using RollABall.Args;
 using RollABall.Infrastructure.Memento;
 using Cysharp.Threading.Tasks;
@@ -25,11 +24,14 @@ namespace RollABall.Managers
         {
             State = new SaveGameArgs();
             
-            await UniTask.WaitUntilValueChanged(this, m => m.State.PlayerArgs != null);
-            await UniTask.WaitUntilValueChanged(this, m => m.State.BonusSaveArgs != null);
-            await UniTask.WaitUntilValueChanged(this, m => m.State.EffectSaveArgs != null);
+            Debug.Log("Task await -");
+            
+            var task =  UniTask.WaitUntilValueChanged(State, s => s.PlayerArgs != null);
+            await (task);
+            
+            Debug.Log("Task await +");
 
-            Debug.Log("Yep!");
+            Debug.Log("Save is working!");
             
             return new Memento<SaveGameArgs>(State, SavedGamePrefix);
         }
@@ -42,7 +44,35 @@ namespace RollABall.Managers
         // SaveGameEvent handling
         public void OnEventRaised(ISubject<IList<ISavableArgs>> subject, IList<ISavableArgs> args)
         {
-            Debug.Log(args.GetType());
+            try
+            {
+                var playerArgs = args.Cast<PlayerArgs>().First();
+                State.PlayerArgs = playerArgs;
+            }
+            catch (Exception e)
+            {
+                // ignores
+            }
+            
+            try
+            {
+                var bonusArgs = args.Cast<BonusSaveArgs>().ToList();
+                State.BonusSaveArgs = bonusArgs;
+            }
+            catch (Exception e)
+            {
+                // ignores
+            }
+            
+            try
+            {
+                var effectArgs = args.Cast<EffectSaveArgs>().ToList();
+                State.EffectSaveArgs = effectArgs;
+            }
+            catch (Exception e)
+            {
+                // ignores
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Cysharp.Threading.Tasks;
+using RollABall.Args;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -66,8 +67,10 @@ namespace RollABall.Infrastructure.Memento
         public async UniTaskVoid Save()
         {
             // Get memento
-            var memento =  await Originator.Save();
-            
+            var memento = await Originator.Save();
+         
+            Debug.Log((memento.State as SaveGameArgs)?.PlayerArgs);
+
             // Check Directory
             var path = CheckExistenceDirectory(SavedPath, true);
             if (path is null)
@@ -79,14 +82,14 @@ namespace RollABall.Infrastructure.Memento
             Debug.Log(savedPath);
             
             // Writing 
-            using var writer = new StreamWriter(savedPath, false, Encoding.Default);
+            await using var writer = new StreamWriter(savedPath, false, Encoding.Default);
 
             switch (SaveFormat)
             {
                 case SaveFormat.Json:
                     
                     var json = JsonConvert.SerializeObject(memento, _jsonFormatSetting);
-                    writer.Write(json);
+                    await writer.WriteAsync(json);
                     _mementos.Add((memento, savedPath));
                     
                     break;

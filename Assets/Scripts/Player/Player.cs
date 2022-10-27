@@ -1,65 +1,60 @@
 using System;
+using System.Collections.Generic;
 using GameDevLib.Args;
 using GameDevLib.Events;
 using GameDevLib.Helpers;
 using GameDevLib.Interfaces;
 using RollABall.Args;
 using RollABall.Events;
+using RollABall.Infrastructure;
 using RollABall.Interactivity.Effects;
-using RollABall.Models;
-using RollABall.ScriptableObjects;
 using RollABall.Stats;
 using UnityEngine;
-using UnityEngine.Serialization;
 using EffectArgs = RollABall.Args.EffectArgs;
 using EffectEvent = RollABall.Events.EffectEvent;
-using static UnityEngine.Debug;
 
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
     [RequireComponent(typeof(Rigidbody))]
-    public abstract class Player : MonoBehaviour, IDisposable, GameDevLib.Interfaces.IObserver<InputManagerArgs>, 
-        GameDevLib.Interfaces.IObserver<CurrentGameArgs>,  GameDevLib.Interfaces.IObserver<EffectArgs>
+    public abstract partial class Player : MonoBehaviour, IActionable,
+        GameDevLib.Interfaces.IObserver<InputManagerArgs>, GameDevLib.Interfaces.IObserver<EffectArgs>, IDisposable
     {
         #region Links
-        
-        [Header("Stats")]
-        [SerializeField] protected PlayerStats playerStats;
-        [field: SerializeField] protected GameStats gameStats;
-        
-        [Header("Events")]
-        [SerializeField] private InputEvent inputEvent;
-        [SerializeField] private EffectEvent effectEvent;
-        [SerializeField] protected PlayerEvent playerEvent;
-        [SerializeField] protected CurrentGameEvent gameEvent;
-        
-        [field: Header("Memento")] 
-        [field: SerializeField] private SaveGameEvent SaveGameEvent { get; set; }
-        
+
+        [field:Header("Main stats")] 
+        [field:SerializeField] protected PlayerStats PlayerStats { get; set; }
+        [field: SerializeField] protected GameStats GameStats { get; set; }
+
+        [field:Header("Main events")] 
+        [field:SerializeField] private InputEvent InputEvent { get; set; }
+        [field:SerializeField] private EffectEvent EffectEvent { get; set; }
+        [field:SerializeField] protected PlayerEvent PlayerEvent { get; set; }
+        [field:SerializeField] protected CurrentGameEvent GameEvent{ get; set; }
+
         #endregion
-        
+
         #region Fields
-        
+
         protected Rigidbody playerRb;
-        
+
         #endregion
 
         #region Properties
+
         // Game 
         [field: SerializeField, ReadonlyField] protected float GamePoints { get; set; }
-        
+
         // HP
         [field: SerializeField, ReadonlyField] protected float CurrentHp { get; set; }
-        [field:SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
-        
+        [field: SerializeField, ReadonlyField] protected bool IsUnitInvulnerable { get; set; }
+
         // Movement
         private Vector2? MoveDirection { get; set; } = null;
         protected const float SpeedMultiplierConst = 3f;
         [field: SerializeField, ReadonlyField] protected float SpeedMultiplier { get; set; }
-        
-        // Memento - State 
-        public PlayerArgs State { get; set; }
+
+        public abstract List<ISavableArgs> SavedState { get; set; }
 
         #endregion
 
@@ -69,17 +64,11 @@ namespace RollABall.Player
         {
             playerRb = GetComponent<Rigidbody>();
         }
-
-        protected virtual void Start()
-        {
-            InitPlayer();
-        }
         
         protected virtual void OnEnable()
         {
-            gameEvent.Attach(this);
-            inputEvent.Attach(this);
-            effectEvent.Attach(this);
+            InputEvent.Attach(this);
+            EffectEvent.Attach(this);
         }
 
         protected virtual void OnDisable()
@@ -88,48 +77,37 @@ namespace RollABall.Player
         }
 
         #endregion
-        
+
         #region Functionality
+
+        public abstract void NewGameAction();
         
-        protected void InitPlayer(bool fromLoad = false)
-        {
-            if (!fromLoad)
-            {
-                GamePoints = 0;
-                CurrentHp = playerStats.MaxHp;
-                IsUnitInvulnerable = false;
-                SpeedMultiplier = SpeedMultiplierConst;
-            }
-            else
-            {
-                GamePoints = State.GamePoints;
-                CurrentHp = State.CurrentHp;
-                IsUnitInvulnerable = State.IsUnitInvulnerable;
-                SpeedMultiplier = SpeedMultiplierConst;
+        public abstract void SaveGameAction();
 
-                transform.position = new Vector3(State.Point.PosX, State.Point.PosY, State.Point.PosZ);
-            }
+        public abstract void LoadGameAction(SaveGameArgs args);
 
-            // Stop physical move on reboot
-            playerRb.velocity = new Vector3(0, playerRb.velocity.y, 0);
-        }
+        public abstract void RestartGameAction();
+
+        public abstract void LostGameAction();
+
+        public abstract void WonGameAction();
         
         protected void Move()
         {
             if (!MoveDirection.HasValue) return;
-            
+
             var value = MoveDirection.Value;
             var movement = new Vector3(value.x, 0, value.y);
 
             playerRb.AddForce(movement * SpeedMultiplier, ForceMode.Impulse);
         }
-        
+
         // Event handler for InputManagerEvent
         public void OnEventRaised(ISubject<InputManagerArgs> subject, InputManagerArgs args)
         {
             MoveDirection = args.Moving;
         }
-        
+
         // Event handler for EffectEvent
         public void OnEventRaised(ISubject<EffectArgs> subject, EffectArgs args)
         {
@@ -145,38 +123,12 @@ namespace RollABall.Player
                     SetSpeed(args.Power, args.Increase, args.CancelEffect);
                     break;
                 case EffectTargetType.Rebirth:
-                    transform.position = gameStats.PlayerSpawnPoint;
-                    InitPlayer();
+                    //transform.position = gameStats.PlayerSpawnPoint;
+                    //InitPlayer();
                     break;
             }
-            
-           SendNotify();
-        }
-        
-        public void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
-        {
-            if (args.CurrentGameState.HasValue)
-            {
-                switch (args.CurrentGameState.Value)
-                {
-                    case CurrentGameState.Restart:
-                        
-                        InitPlayer();
-                        SendNotify();
-                        
-                        break;
-                    case CurrentGameState.Save:
-                        
-                        // ...
-                        
-                        break;
-                    case CurrentGameState.Load:
-                        
-                       // ...
-                        
-                        break;
-                }
-            }
+
+            SendNotify();
         }
 
         /// <summary>
@@ -195,11 +147,11 @@ namespace RollABall.Player
 
         public virtual void Dispose()
         {
-            gameEvent.Detach(this);
-            inputEvent.Detach(this);
-            effectEvent.Detach(this);
+            InputEvent.Detach(this);
+            EffectEvent.Detach(this);
         }
 
         #endregion
     }
+
 }

@@ -491,6 +491,7 @@ MonoBehaviour:
   <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
   <EffectEvent>k__BackingField: {fileID: 11400000, guid: cd4c98fa1280f438bb4179632ce6dc94, type: 2}
   <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
+  <SaveGameEvent>k__BackingField: {fileID: 11400000, guid: f80ed569a0d7944658eea4b140b85c64, type: 2}
 --- !u!1 &162190893
 GameObject:
   m_ObjectHideFlags: 0
@@ -1424,6 +1425,7 @@ MonoBehaviour:
   <EffectRepository>k__BackingField: {fileID: 11400000, guid: 047f23d90030441bd83804757087873b, type: 2}
   <ApplyEffectEvent>k__BackingField: {fileID: 11400000, guid: dd27a9077633d4e5aa0a44496c289062, type: 2}
   <BonusManagerEvent>k__BackingField: {fileID: 11400000, guid: 79040e16effe8432e86277991657ad48, type: 2}
+  <SaveGameEvent>k__BackingField: {fileID: 11400000, guid: f80ed569a0d7944658eea4b140b85c64, type: 2}
 --- !u!114 &479113081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2492,7 +2494,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <GameEvent>k__BackingField: {fileID: 11400000, guid: 313152b9fd2d34a1ba12ad0edba1fee3, type: 2}
   <GameStats>k__BackingField: {fileID: 11400000, guid: 3cfb1f720a5804532b14bf359544c3e4, type: 2}
+  <SaveGameEvent>k__BackingField: {fileID: 11400000, guid: f80ed569a0d7944658eea4b140b85c64, type: 2}
   <PlayerEvent>k__BackingField: {fileID: 11400000, guid: f8aa28377c3104fe8a97e9b41a5c1d19, type: 2}
+  <Caretaker>k__BackingField: {fileID: 11400000, guid: 9c220c16d284745daa464866c27f986f, type: 2}
 --- !u!1 &1138981120
 GameObject:
   m_ObjectHideFlags: 0
@@ -2682,7 +2686,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh27506
+  m_Name: pb_Mesh26488
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -33972,6 +33976,10 @@ PrefabInstance:
       propertyPath: <SomeColor>k__BackingField.r
       value: 0.10946172
       objectReference: {fileID: 0}
+    - target: {fileID: 285711422286811060, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
+      propertyPath: <SaveGameEvent>k__BackingField
+      value: 
+      objectReference: {fileID: 11400000, guid: f80ed569a0d7944658eea4b140b85c64, type: 2}
     - target: {fileID: 285711422286811060, guid: 78d134bd6cb2e41c8b9bbf68c3ad1c94, type: 3}
       propertyPath: <SomeGradient>k__BackingField.ctime0
       value: 193

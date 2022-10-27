@@ -10,11 +10,11 @@ using static UnityEngine.Debug;
 namespace RollABall.Managers
 {
     // BonusManager + Actions
-    public partial class BonusManager
+    public partial class BonusManager 
     {
         #region Manager actions 
         
-        protected override void NewGameAction()
+        public override void NewGameAction()
         {
             SavedState = new List<ISavableArgs>(new List<BonusSaveArgs>());
             
@@ -45,12 +45,12 @@ namespace RollABall.Managers
             BonusManagerEvent.Notify(new BonusManagerArgs(bonusPoints,null,null,false));
         }
 
-        protected override void SaveGameAction()
+        public override void SaveGameAction()
         {
             // MakeState(); ???
         }
 
-        protected override void LoadGameAction(SaveGameArgs args)
+        public override void LoadGameAction(SaveGameArgs args)
         {
             StopAllCoroutines();
 
@@ -99,7 +99,7 @@ namespace RollABall.Managers
             }
         }
 
-        protected override void RestartGameAction()
+        public override void RestartGameAction()
         {
             StopAllCoroutines();
             SavedState = new List<ISavableArgs>(new List<BonusSaveArgs>());
@@ -110,6 +110,16 @@ namespace RollABall.Managers
             }
             
             BonusRepository.UpdateAllWithAction(RandomActivateAndSubscribeAction);
+        }
+
+        public override void LostGameAction()
+        {
+            // ... 
+        }
+
+        public override void WonGameAction()
+        {
+            // ... 
         }
 
         private void MakeState()

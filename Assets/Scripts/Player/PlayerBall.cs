@@ -4,14 +4,20 @@ using RollABall.Args;
 // ReSharper disable once CheckNamespace
 namespace RollABall.Player
 {
-    public class PlayerBall : Player
+    public partial class PlayerBall : Player
     {
         #region MonoBehavior methods
 
-        protected override void Start()
+        private void Start()
         {
-            base.Start();
             transform.gameObject.tag = GameData.PlayerTag;
+            NewGameAction();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            GameEvent.Attach(this);
         }
 
         private void FixedUpdate()
@@ -29,8 +35,8 @@ namespace RollABall.Player
             {
                 GamePoints = increase.Value switch
                 {
-                    true => GamePoints + points >= gameStats.GameHighScore
-                        ? gameStats.GameHighScore
+                    true => GamePoints + points >= GameStats.GameHighScore
+                        ? GameStats.GameHighScore
                         : GamePoints += points.Value,
                     false => GamePoints - points > 0
                         ? GamePoints -= points.Value
@@ -87,17 +93,15 @@ namespace RollABall.Player
         
         protected override void SendNotify()
         {
-            State = MakeState();
-            playerEvent.Notify(State);
+            var currentState = MakeState();
+            PlayerEvent.Notify(currentState);
         }
-        
-        // Memento pattern methods
 
-        public PlayerArgs MakeState()
+        private PlayerArgs MakeState()
         {
             var isSpeedUp = SpeedMultiplier > SpeedMultiplierConst;
             var isSpeedDown = SpeedMultiplier < SpeedMultiplierConst;
-
+        
             return new PlayerArgs(
                 CurrentHp,
                 IsUnitInvulnerable,
@@ -106,6 +110,12 @@ namespace RollABall.Player
                 transform.position,
                 (int)GamePoints
             );
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            GameEvent.Detach(this);
         }
 
         #endregion
