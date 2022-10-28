@@ -23,7 +23,7 @@ namespace RollABall.Managers
         
         public override void OnEventRaised(ISubject<CurrentGameArgs> subject, CurrentGameArgs args)
         {
-            // ... 
+            // Do something... 
         }
         
         public void OnEventRaised(ISubject<BonusManagerArgs> subject, BonusManagerArgs args)

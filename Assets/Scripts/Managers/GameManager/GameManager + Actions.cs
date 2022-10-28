@@ -28,12 +28,12 @@ namespace RollABall.Managers
 
         public override void RestartGameAction()
         {
-            SavedState = new List<ISavableArgs>(new List<SaveGameArgs>());
+            // ... 
         }
 
         public override void LostGameAction()
         {
-           // .. 
+           // ...
         }
 
         public override void WonGameAction()

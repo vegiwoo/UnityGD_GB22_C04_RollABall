@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RollABall.Args;
-using RollABall.Interactivity.Effects;
+using RollABall.Interactivity.Bonuses;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
@@ -11,22 +12,24 @@ namespace RollABall.Managers
     {
         public override void NewGameAction()
         {
-            _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
-            SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
+           _activeEffectsOnPlayer = new List<ActiveEffectArg>();
         }
         
         public override void SaveGameAction()
         {
-            // TODO: Notify with state
+            SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
+            foreach (var value in _activeEffectsOnPlayer)
+            {
+                SavedState.Add(value.SaveEffect());
+            }
+            SaveGameEvent.Notify(SavedState);
         }
 
         public override void LoadGameAction(SaveGameArgs args)
         {
             StopAllCoroutines();
-            _activeEffectsByTarget.Clear();
+            _activeEffectsOnPlayer.Clear();
 
-            if (args.EffectSaveArgs is null) return;
-            
             SavedState = new List<ISavableArgs>(args.EffectSaveArgs);
                 
             foreach (var item in SavedState.OfType<EffectSaveArgs>())
@@ -38,21 +41,19 @@ namespace RollABall.Managers
         public override void RestartGameAction()
         {
             StopAllCoroutines();
-            
-            _activeEffectsByTarget = new Dictionary<EffectTargetType, Coroutine>();
-            SavedState = new List<ISavableArgs>(new List<EffectSaveArgs>());
+            NewGameAction();
         }
 
         public override void LostGameAction()
         {
             StopAllCoroutines();
-            _activeEffectsByTarget.Clear();
+            _activeEffectsOnPlayer.Clear();
         }
 
         public override void WonGameAction()
         {
             StopAllCoroutines();
-            _activeEffectsByTarget.Clear();
+            _activeEffectsOnPlayer.Clear();
         }
     }
 }

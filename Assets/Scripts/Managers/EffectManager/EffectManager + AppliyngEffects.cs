@@ -1,9 +1,9 @@
-
-
-
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using RollABall.Args;
 using RollABall.Interactivity.Bonuses;
 using RollABall.Interactivity.Effects;
@@ -15,9 +15,14 @@ namespace RollABall.Managers
 {
     public partial class EffectManager
     {
-        private Dictionary<EffectTargetType, Coroutine> _activeEffectsByTarget;
-
-        private void ApplyEffectOnPlayer(IEffectable effect, float remainingDuration = 0)
+        #region Fields
+        
+        private List<ActiveEffectArg> _activeEffectsOnPlayer;
+        
+        #endregion
+        
+        #region Functionality
+        private async void ApplyEffectOnPlayer(IEffectable effect, float remainingDuration = 0)
         {
             Log(effect.ToString());
 
@@ -31,10 +36,9 @@ namespace RollABall.Managers
                 // Stopping active effect with duration on same target
                 StopEffectByType(effect.EffectTarget); 
                     
-                // Apply effects with duration
-                var effectCoroutine = StartCoroutine(ApplyEffectWithDurationCoroutine(effect, remainingDuration));
-                // Store effect Coroutine in dictionary
-                _activeEffectsByTarget[effect.EffectTarget] = effectCoroutine;
+                // Apply effects with duration and store in dict
+                var task = ApplyEffectWithDurationTask(effect, new CancellationTokenSource(), remainingDuration);
+                await task;
             }
         }
 
@@ -60,61 +64,104 @@ namespace RollABall.Managers
             
             EffectEvent.Notify(args);
         }
-        
-        private IEnumerator ApplyEffectWithDurationCoroutine(IEffectable effect, float remainingDuration = 0)
+
+        private async UniTask ApplyEffectWithDurationTask(IEffectable effect, CancellationTokenSource cancellationSource, 
+            float remainingDuration = 0)
         {
-            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+            var activeEffectArg = new ActiveEffectArg(effect, cancellationSource, remainingDuration);
+            _activeEffectsOnPlayer.Add(activeEffectArg);
             
-            // Add new effect in manager state.
-            var effectStateArgs = new EffectSaveArgs(effect as Effect, effect.Duration);
-            SavedState.Add(effectStateArgs);
+            var effectArgs = new EffectArgs(effect.Type, effect.EffectTarget);
             
             switch (effect.EffectTarget)
             {
                 case EffectTargetType.HitPoints:
                     if (effect.Type == EffectType.Buff)
                     {
-                        args.Init(null,null, true);
+                        effectArgs.Init(null,null, true);
                     }
                     break;
                 case EffectTargetType.UnitSpeed:
-                    args.Init(effect.Type == EffectType.Buff ? 
-                        effect.PositivePower : 
-                        effect.NegativePower, 
+                    effectArgs.Init(effect.Type == EffectType.Buff ? 
+                            effect.PositivePower : 
+                            effect.NegativePower, 
                         effect.Type == EffectType.Buff);
                     break;
-                default:
-                    yield break;
             }
             
             // Apply effect notify
-            EffectEvent.Notify(args);
+            EffectEvent.Notify(effectArgs);
 
             // Apply effect
             var timer = remainingDuration > 0 ? remainingDuration : effect.Duration;
-            while (timer > 0)
+            var step = 1;
+            
+            do
             {
-                var effectInState = SavedState
-                    .Cast<EffectSaveArgs>()
-                    .SingleOrDefault(el => el.AppliedEffect == effect);
+                try
+                {
+                    activeEffectArg.RemainingDuration = timer;
+                }
+                catch (Exception e)
+                {
+                    Log(e.Message);
+                }
                 
-                if (effectInState != null)
-                {
-                    effectInState.RemainingDuration = timer;
-                }
-                else
-                {
-                    LogError($"Effect not found in effect manager state (by target {args.EffectTargetType})");
-                }
+                timer -= step;
+                await UniTask.Delay(TimeSpan.FromSeconds(step));
 
-                timer -= Time.deltaTime;
-                yield return null;
-            }
-
+            } while (timer > 0);
+            
+            await UniTask.WaitUntil(() => timer <= 0, cancellationToken: cancellationSource.Token);
+ 
             // Stop effect 
             StopEffectByType(effect.EffectTarget, effect.Type);
+            
+            // // breaks further execution of this method
+            // cancellationSource.Token.ThrowIfCancellationRequested();
+        }
+        
+        
+        private IEnumerator ApplyEffectWithDurationCoroutine(IEffectable effect, float remainingDuration = 0)
+        {
 
-            yield return null;
+            var args = new EffectArgs(effect.Type, effect.EffectTarget);
+
+                switch (effect.EffectTarget)
+                {
+                    case EffectTargetType.HitPoints:
+                        if (effect.Type == EffectType.Buff)
+                        {
+                            args.Init(null,null, true);
+                        }
+                        break;
+                    case EffectTargetType.UnitSpeed:
+                        args.Init(effect.Type == EffectType.Buff ? 
+                                effect.PositivePower : 
+                                effect.NegativePower, 
+                            effect.Type == EffectType.Buff);
+                        break;
+                    default:
+                        yield break;
+                }
+            
+                // Apply effect notify
+                EffectEvent.Notify(args);
+
+                // Apply effect
+                var timer = remainingDuration > 0 ? remainingDuration : effect.Duration;
+                while (timer > 0)
+                {
+                   // _activeEffectsOnPlayer[effect].RemainingDuration = timer;
+                    timer -= Time.deltaTime;
+                    yield return null;
+                }
+ 
+                // Stop effect 
+                StopEffectByType(effect.EffectTarget, effect.Type);
+                
+                yield return null;
+     
         }
 
         /// <summary>
@@ -125,41 +172,49 @@ namespace RollABall.Managers
         /// <remarks>Applied when receiving an effect again on same target as applied one.</remarks>>
         private void StopEffectByType(EffectTargetType effectTargetType, EffectType? effectType = null)
         {
-            if (!_activeEffectsByTarget.ContainsKey(effectTargetType)) return;
+            var activeEffectByType =
+                _activeEffectsOnPlayer
+                    .SingleOrDefault(el => el.Effect.EffectTarget == effectTargetType);
 
-            EffectArgs args = default;
-            
-            if (effectType.HasValue)
+            if (activeEffectByType is not null)
             {
-                args = new EffectArgs(effectType.Value, effectTargetType);
-                
-                switch (effectTargetType)
+                EffectArgs args = default;
+            
+                if (effectType.HasValue)
                 {
-                    case EffectTargetType.HitPoints:
-                        if (effectType is EffectType.Buff)
-                        {
-                            args.Init(null, null, false);
-                        }
-                        break;
-                    case EffectTargetType.UnitSpeed:
-                        args.Init(null, null, null, true);
-                        break;
+                    args = new EffectArgs(effectType.Value, effectTargetType);
+                
+                    switch (effectTargetType)
+                    {
+                        case EffectTargetType.HitPoints:
+                            if (effectType is EffectType.Buff)
+                            {
+                                args.Init(null, null, false);
+                            }
+                            break;
+                        case EffectTargetType.UnitSpeed:
+                            args.Init(null, null, null, true);
+                            break;
+                    }
                 }
-            }
             
-            if(args is not null)
-            {
-                EffectEvent.Notify(args);
+                if(args is not null)
+                {
+                    EffectEvent.Notify(args);
+                }
+
+                // Stop coroutines with effects on the target and give from the dictionary
+                //StopCoroutine(_activeEffects[activeEffectByType.Key].Routine);
+                activeEffectByType.Dispose();
+                if (_activeEffectsOnPlayer.Contains(activeEffectByType))
+                {
+                    _activeEffectsOnPlayer.Remove(activeEffectByType);
+                }
+                
+                Log($"Stop active effect on target {effectTargetType}");
             }
-
-            // Stop coroutines with effects on the target and give from the dictionary
-            StopCoroutine(_activeEffectsByTarget[effectTargetType]);
-            _activeEffectsByTarget.Remove(effectTargetType);
-
-            // Removing effects on target from state of manager.
-            //State.Cast<EffectArgs>().RemoveAll(el => ((EffectSaveArgs)el).AppliedEffect.EffectTarget == effectTargetType);
-            
-            Log($"Stop active effect on target {effectTargetType}");
         }
+        
+        #endregion
     }
 }

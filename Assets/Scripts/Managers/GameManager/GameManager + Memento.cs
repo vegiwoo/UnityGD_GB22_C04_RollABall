@@ -22,31 +22,31 @@ namespace RollABall.Managers
         
         public async UniTask<IMemento<SaveGameArgs>> Save()
         {
-            State = new SaveGameArgs();
+            var playerArgsTask =  UniTask.WaitUntil(() => State.PlayerArgs is not null);
+            var bonusesArgsTask =  UniTask.WaitUntil(() => State.BonusSaveArgs is not null);
+            var effectsArgsTask =  UniTask.WaitUntil(() => State.EffectSaveArgs is not null);
             
-            Debug.Log("Task await -");
-            
-            var task =  UniTask.WaitUntilValueChanged(State, s => s.PlayerArgs != null);
-            await (task);
-            
-            Debug.Log("Task await +");
+            await (playerArgsTask, bonusesArgsTask, effectsArgsTask);
 
-            Debug.Log("Save is working!");
-            
             return new Memento<SaveGameArgs>(State, SavedGamePrefix);
         }
         
         public void Load(IMemento<SaveGameArgs> memento)
         {
-            //throw new System.NotImplementedException();
+            // ... 
         }
-
-        // SaveGameEvent handling
+        
         public void OnEventRaised(ISubject<IList<ISavableArgs>> subject, IList<ISavableArgs> args)
         {
+            void IsStateExist()
+            {
+                State ??= new SaveGameArgs();
+            }
+
             try
             {
                 var playerArgs = args.Cast<PlayerArgs>().First();
+                IsStateExist();
                 State.PlayerArgs = playerArgs;
             }
             catch (Exception e)
@@ -57,6 +57,7 @@ namespace RollABall.Managers
             try
             {
                 var bonusArgs = args.Cast<BonusSaveArgs>().ToList();
+                IsStateExist();
                 State.BonusSaveArgs = bonusArgs;
             }
             catch (Exception e)
@@ -67,7 +68,9 @@ namespace RollABall.Managers
             try
             {
                 var effectArgs = args.Cast<EffectSaveArgs>().ToList();
+                IsStateExist();
                 State.EffectSaveArgs = effectArgs;
+                Debug.Log("Effects ok");
             }
             catch (Exception e)
             {
@@ -76,23 +79,3 @@ namespace RollABall.Managers
         }
     }
 }
-
-// public IMemento<PlayerArgs> Save()
-// {
-//     State = MakeState();
-//     return new Memento<PlayerArgs>(State, "Player");
-// }
-//
-// public void Load(IMemento<PlayerArgs> memento)
-// {
-//     if (memento is not Memento<PlayerArgs>)
-//     {
-//         throw new Exception("Unknown memento class " + memento.ToString());
-//     }
-//     
-//     State = memento.State;
-//     InitPlayer(true);
-// }
-        
-// // Memento pattern - init caretaker for organizer.
-// Caretaker.Init(this, "Player", "PlayerMemento");

@@ -26,7 +26,7 @@ namespace RollABall.Interactivity.Bonuses
             return other switch
             {
                 null => false,
-                not null => Id == other.Id && Type == other.Type
+                not null => Id == other.Id && Type == other.Type && EffectTarget == other.EffectTarget
             };
         }  
 

@@ -47,7 +47,8 @@ namespace RollABall.Managers
 
         public override void SaveGameAction()
         {
-            // MakeState(); ???
+            MakeState();
+            SaveGameEvent.Notify(SavedState);
         }
 
         public override void LoadGameAction(SaveGameArgs args)
